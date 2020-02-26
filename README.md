@@ -1,4 +1,4 @@
-# gmod_addons / SplatoonSWEPs!
+# SplatoonSWEPs
 This is a huge rework of my existing addon, [SplatoonSWEPs][1].
 
 The aim of this rework is the following:
