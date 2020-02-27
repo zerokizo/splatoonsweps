@@ -103,7 +103,6 @@ local WL_NotInWater = 0
 local WL_Feet = 1
 local WL_Waist = 2
 local WL_Eyes = 3
-local WALLCLIMB_KEYS = bit.bor(IN_JUMP, IN_FORWARD, IN_BACK)
 local function IsDead() return ply:Health() <= 0 and not ply:Alive() end
 local function GetAirSpeedCap() return 30.0 end
 local function GetCurrentGravity() return GetConVar "sv_gravity":GetFloat() end
@@ -1809,110 +1808,13 @@ local function GetInFence(w, oldpos, newpos)
 	return tr.Entity ~= NULL and util.TraceHull(t).Entity == NULL
 end
 
-local AttackMask = bit.bnot(IN_ATTACK)
-local DuckMask = bit.bnot(IN_DUCK)
 function ss.MoveHook(w, p, m)
-	local crouching = p:Crouching()
+	ss.PredictedThinkMoveHook(w, p, m)
 
 	ply, mv = p, m
-	ss.ProtectedCall(w.Move, w, p, m)
-	if w:CheckCanStandup() and w:GetKey() ~= 0 and w:GetKey() ~= IN_DUCK
-	or CurTime() > w:GetEnemyInkTouchTime() + 20 * ss.FrameToSec and ply:KeyDown(IN_DUCK)
-	or CurTime() < w:GetCooldown() then
-		mv:SetButtons(bit.band(mv:GetButtons(), DuckMask))
-		crouching = false
-	end
-
-	local maxspeed = math.min(mv:GetMaxSpeed(), w.InklingSpeed * 1.1)
-	if ply:OnGround() then -- Max speed clip
-		maxspeed = ss.ProtectedCall(w.CustomMoveSpeed, w) or w.InklingSpeed
-		maxspeed = maxspeed * Either(crouching, ss.SquidSpeedOutofInk, 1)
-		maxspeed = w:GetInInk() and w.SquidSpeed or maxspeed
-		maxspeed = w:GetOnEnemyInk() and w.OnEnemyInkSpeed or maxspeed
-		maxspeed = maxspeed * (w.IsDisruptored and ss.DisruptoredSpeed or 1)
-		mv:SetMaxSpeed(maxspeed)
-		mv:SetMaxClientSpeed(maxspeed)
-		ply:SetMaxSpeed(maxspeed)
-		ply:SetRunSpeed(maxspeed)
-		ply:SetWalkSpeed(maxspeed)
-	end
-
-	if ss.PlayerShouldResetCamera[ply] then
-		local a = ply:GetAimVector():Angle()
-		a.p = math.NormalizeAngle(a.p) / 2
-		ply:SetEyeAngles(a)
-		ss.PlayerShouldResetCamera[ply] = math.abs(a.p) > 1
-	end
-
-	ply:SetJumpPower(w:GetOnEnemyInk() and w.OnEnemyInkJumpPower or w.JumpPower)
-	if CLIENT then w:UpdateInkState() end -- Ink state prediction
-
-	for v, i in pairs {
-		[mv:GetVelocity()] = true, -- Current velocity
-		[me.m_vecVelocity[ply] or false] = false,
-	} do -- Wall climbing
-		if not v then continue end
-		local speed, vz = v:Length2D(), v.z -- Horizontal speed, Z component
-		if w:GetInWallInk() and mv:KeyDown(WALLCLIMB_KEYS) then
-			local sp = ply:GetShootPos()
-			local t = {
-				start = sp, endpos = sp + ply:GetForward() * 32768,
-				mask = ss.SquidSolidMask, collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT, filter = ply,
-			}
-			local fw = util.TraceLine(t)
-			t.endpos = sp - ply:GetForward() * 32768
-			local bk = util.TraceLine(t)
-			if fw.Fraction < bk.Fraction == mv:KeyDown(IN_FORWARD) then
-				vz = math.max(math.abs(vz) * -.75, vz + math.min(
-				12 + (mv:KeyPressed(IN_JUMP) and maxspeed / 4 or 0), maxspeed))
-				if ply:OnGround() then
-					t.endpos = sp + ply:GetRight() * 32768
-					local r = util.TraceLine(t)
-					t.endpos = sp - ply:GetRight() * 32768
-					local l = util.TraceLine(t)
-					if math.min(fw.Fraction, bk.Fraction) < math.min(r.Fraction, l.Fraction) then
-						mv:AddKey(IN_JUMP)
-					end
-				end
-			end
-		end
-
-		if speed > maxspeed then -- Limits horizontal speed
-			v:Mul(maxspeed / speed)
-			speed = math.min(speed, maxspeed)
-		end
-
-		v.z = w.OnOutofInk and not w:GetInWallInk()
-		and math.min(vz, ply:GetJumpPower() * .7) or vz
-		if i then mv:SetVelocity(v) end
-	end
-
-	-- Send viewmodel animation.
+	local crouching = p:Crouching()
 	local infence = Either(SERVER, w:GetInFence(), me.m_bInFence[ply])
-	if crouching then
-		w.SwimSound:ChangeVolume(math.Clamp(mv:GetVelocity():Length() / w.SquidSpeed * (w:GetInInk() and 1 or 0), 0, 1))
-		if not w:GetOldCrouching() then
-			w:SetWeaponAnim(ss.ViewModel.Squid)
-			if w:GetNWInt "playermodel" ~= ss.PLAYER.NOCHANGE then
-				ply:RemoveAllDecals()
-			end
-
-			if IsFirstTimePredicted() then
-				ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToSquid")
-			end
-		end
-	elseif infence then -- Cannot stand while in fence
-		mv:AddKey(IN_DUCK) -- it's not correct behavior though
-	elseif w:GetOldCrouching() then
-		w.SwimSound:ChangeVolume(0)
-		w:SetWeaponAnim(w:GetThrowing() and ss.ViewModel.Throwing or ss.ViewModel.Standing)
-		if IsFirstTimePredicted() then
-			ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToHuman")
-		end
-	end
-
-	w.OnOutofInk = w:GetInWallInk()
-	w:SetOldCrouching(crouching or infence)
+	if infence then mv:AddKey(IN_DUCK) end -- Cannot stand while in fence, it's not correct behavior though
 	me.m_angViewPunchAngles[ply] = ply:GetViewPunchAngles()
 	me.m_bAllowAutoMovement[ply] = true
 	me.m_bInDuckJump[ply] = crouching and not ply:OnGround()

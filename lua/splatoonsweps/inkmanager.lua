@@ -12,7 +12,7 @@ local cos = math.cos
 local Either = Either
 local EndSuppressHostEventsMP = ss.EndSuppressHostEventsMP
 local floor = math.floor
-local GetBoundingBox = ss.GetBoundingBox
+local InkQueueReceiveFunction = ss.InkQueueReceiveFunction
 local ipairs = ipairs
 local isnumber = isnumber
 local KeyFromValue = table.KeyFromValue
@@ -136,15 +136,8 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 			net_WriteUInt(inktype, ss.INK_TYPE_BITS)
 			net_WriteVector(pos)
 			net_Send(ss.PlayersReady)
-			if s.Normal.x > 0.8 then
-				print(s.Index)
-			end
 		else
-			ss.InkQueueReceiveFunction(s.Index, misc, color, ply, inktype, pos)
-			if s.Index == 6888 then
-				local t = {} for i, v in ipairs(s.Vertices) do t[i] = v.pos end
-				greatzenkakuman.debug.DPoly(t)
-			end
+			InkQueueReceiveFunction(s.Index, misc, color, ply, inktype, pos)
 		end
 	end
 

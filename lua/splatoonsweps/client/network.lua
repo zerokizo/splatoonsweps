@@ -78,6 +78,8 @@ function ss.InkQueueReceiveFunction(index, misc, color, ply, inktype, pos)
 		ratio = misc.z,
 		t = inktype,
 	}
+	if ply == LocalPlayer() then return end
+	ss.AddInkRectangle(color, inktype, misc.y, pos, misc.x, misc.z, ss.SurfaceArray[index])
 end
 
 net.Receive("SplatoonSWEPs: Send an ink queue", function()

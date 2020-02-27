@@ -159,7 +159,7 @@ hook.Add("PostCleanupMap", "SplatoonSWEPs: Cleanup all ink", ss.ClearAllInk)
 hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function()
 	local path = ("splatoonsweps/%s.txt"):format(game.GetMap())
 	local pathbsp = ("maps/%s.bsp"):format(game.GetMap())
-	local data = util.JSONToTable(file.Read(path) or "") or {}
+	local data = util.JSONToTable(util.Decompress(file.Read(path) or "")) or {}
 	local mapCRC = tonumber(util.CRC(file.Read(pathbsp, true)))
 	if not file.Exists("splatoonsweps", "DATA") then file.CreateDir "splatoonsweps" end
 	if data.MapCRC ~= mapCRC then

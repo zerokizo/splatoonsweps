@@ -435,12 +435,13 @@ local function ReadGameLump()
 
     local function GetInfo(solidtype, modelname, origin, angles)
         if solidtype ~= SOLID_VPHYSICS then return end
-        if not file.Exists(modelname or "/", "GAME") then return end
+        if not modelname then return end
+        if not file.Exists(modelname, "GAME") then return end
+        if not file.Exists(modelname:sub(1, -4) .. "phy", "GAME") then return end
         local mdl = ents.Create "prop_physics"
         if not IsValid(mdl) then return end
         mdl:SetModel(modelname)
         mdl:Spawn()
-        mdl:PhysicsInit(SOLID_VPHYSICS)
         local ph = mdl:GetPhysicsObject()
         local mat = IsValid(ph) and ph:GetMaterial()
         local physmesh = IsValid(ph) and ph:GetMesh()

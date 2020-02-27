@@ -88,8 +88,14 @@ local function RetrieveOption(self, name, pt)
 	end
 
 	local value = greatzenkakuman.cvartree.GetValue(pt, self.Owner)
-	if isbool(value) and self:GetNWBool(name) ~= value then self:SetNWBool(name, value) end
-	if isnumber(value) and self:GetNWInt(name) ~= value then self:SetNWInt(name, value) end
+	if isbool(value) and self:GetNWBool(name) ~= value then
+		self:SetNWBool(name, value)
+	end
+
+	if isnumber(value) and self:GetNWInt(name) ~= value then
+		if not self.Owner:IsPlayer() and name == "inkcolor" then return end
+		self:SetNWInt(name, value)
+	end
 end
 
 function SWEP:GetOptions()
@@ -99,7 +105,9 @@ function SWEP:GetOptions()
 	end
 
 	if self.Owner:IsPlayer() then return end
-	self:SetNWInt("inkcolor", ss.GetNPCInkColor(self.Owner))
+	local NPCInkColor = ss.GetNPCInkColor(self.Owner)
+	if self:GetNWInt "inkcolor" == NPCInkColor then return end
+	self:SetNWInt("inkcolor", NPCInkColor)
 end
 
 function SWEP:ApplySkinAndBodygroups()
@@ -274,9 +282,6 @@ end
 -- Begin to use special weapon.
 function SWEP:Reload()
 	if self:GetHolstering() then return end
-	if ss.sp and self.Owner:IsPlayer() and IsValid(self.Owner) then
-		self:CallOnClient "Reload"
-	end
 end
 
 function SWEP:CheckCanStandup()

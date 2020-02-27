@@ -107,7 +107,9 @@ local function ProcessPaintQueue()
 	local CollisionAABB2D = ss.CollisionAABB2D
 	local Dot = Vector().Dot
 	local floor = math.floor
+	local format = string.format
 	local GetColor = ss.GetColor
+	local ipairs = ipairs
 	local LocalPlayer = LocalPlayer
 	local max = math.max
 	local next = next
@@ -138,20 +140,30 @@ local function ProcessPaintQueue()
 	local DrawTexturedRectRotated = surface.DrawTexturedRectRotated
 	local SetDrawColor = surface.SetDrawColor
 	local SetMaterial = surface.SetMaterial
+
+	local GetLightColor = render.GetLightColor
+	local ComputeLighting = render.ComputeLighting
+	local LengthSqr = Vector().LengthSqr
+	local Normalize = Vector().Normalize
 	local function GetLight(p, n)
-		local lightcolor = render.GetLightColor(p + n)
-		local light = render.ComputeLighting(p + n, n)
-		if lightcolor:LengthSqr() > 1 then lightcolor:Normalize() end
-		if light:LengthSqr() > 1 then light:Normalize() end
+		local lightcolor = GetLightColor(p + n)
+		local light = ComputeLighting(p + n, n)
+		if LengthSqr(lightcolor) > 1 then Normalize(lightcolor) end
+		if LengthSqr(light) > 1 then Normalize(light) end
 		return ToColor((light + lightcolor + amb) / 2.3)
 	end
 
-	local num = 7
-	local frac = num / 7 -- Used to sample lightmap
-	local radfrac = rad(360 / num)
+	local IsNotSplatoonPortedMap = not ss.SplatoonMapPorts[game.GetMap()]
+	local MAX_QUEUE_TIME = ss.FrameToSec / 2
+	local MAX_QUEUES_TOLERANCE = 75 -- Possible number of queues to be processed at once without losing FPS.
+	local LightmapSampleNum = 7 -- Used to sample lightmap
+	local radfrac = rad(360 / LightmapSampleNum)
 	while true do
 		Benchmark = SysTime()
 		for time, queuetable in SortedPairs(PaintQueue, true) do
+			local frac = #queuetable / MAX_QUEUES_TOLERANCE
+			LightmapSampleNum = math.ceil(Lerp(frac, 7, 2))
+			NumRepetition = math.ceil(Lerp(frac, 5, 1))
 			for id, q in SortedPairs(queuetable) do
 				local s = ss.SurfaceArray[q.index]
 				local angle, origin, normal, moved = Angle(s.Angles), s.Origin, s.Normal, s.Moved
@@ -167,7 +179,7 @@ local function ProcessPaintQueue()
 				local up = s.u * UVToPixels
 				local vp = s.v * UVToPixels
 				local lightorg = q.pos - normal * q.dispflag * (Dot(normal, q.pos - origin) - 1)
-				local settexture = texturename:format(q.t)
+				local settexture = format(texturename, q.t)
 				if moved then px, py = -px, by - py end
 				local cx = Round(px + up) -- 2D center position
 				local cy = Round(py + vp)
@@ -176,7 +188,10 @@ local function ProcessPaintQueue()
 				local tx = ceil(up + bx) + 1 -- ScissorRect end
 				local ty = ceil(vp + by) + 1
 				if q.done == 0 then
-					q.draw = CollisionAABB2D(Vector(sx, sy) , Vector(tx, ty), Vector(cx - r, cy - r), Vector(cx + r, cy + r))
+					q.draw = CollisionAABB2D(
+						Vector(sx, sy) , Vector(tx, ty),
+						Vector(cx - r, cy - r), Vector(cx + r, cy + r))
+					if not q.draw then queuetable[id] = nil end
 				end
 
 				if q.draw then
@@ -214,45 +229,36 @@ local function ProcessPaintQueue()
 					PopRenderTarget()
 
 					--Draw on lightmap
-					r = r / 2
-					PushRenderTarget(Lightmap)
-					SetScissorRect(sx, sy, tx, ty, true)
-					Start2D()
-					SetDrawColor(GetLight(lightorg, normal))
-					SetMaterial(lightmapmaterial)
-					DrawTexturedRect(cx - r * frac, cy - r * frac, 2 * r * frac, 2 * r * frac)
-					local sign = moved and -1 or 1
-					for i = 1, num do
-						local rx = cos(radfrac * i) * r * sign
-						local ry = sin(radfrac * i) * r
-						local rv = Vector(rx, ry) * PixelsToUnits
-						SetDrawColor(GetLight(To3D(rv, lightorg, angle), normal))
-						DrawTexturedRect(floor(rx + cx - r), floor(ry + cy - r), 2 * r, 2 * r)
+					if IsNotSplatoonPortedMap then
+						local offset = r / 2
+						local sign = moved and -1 or 1
+						PushRenderTarget(Lightmap)
+						SetScissorRect(sx, sy, tx, ty, true)
+						Start2D()
+						SetDrawColor(GetLight(lightorg, normal))
+						SetMaterial(lightmapmaterial)
+						DrawTexturedRect(cx - offset, cy - offset, r, r)
+						for i = 1, LightmapSampleNum do
+							local rx = cos(radfrac * i) * offset * sign
+							local ry = sin(radfrac * i) * offset
+							local rv = Vector(rx, ry) * PixelsToUnits
+							SetDrawColor(GetLight(To3D(rv, lightorg, angle), normal))
+							DrawTexturedRect(floor(rx + cx - offset), floor(ry + cy - offset), r, r)
+						end
+						End2D()
+						SetScissorRect(0, 0, 0, 0, false)
+						PopRenderTarget()
 					end
-					End2D()
-					SetScissorRect(0, 0, 0, 0, false)
-					PopRenderTarget()
 
 					q.done = q.done + 1
-					if q.done > NumRepetition then
-						queuetable[id] = nil
-						if q.owner ~= LocalPlayer() then
-							AddInkRectangle(q.c, q.t, q.inkangle, q.pos, q.r, q.ratio, surf)
-						end
-					end
-
-					if SysTime() - Benchmark > ss.FrameToSec then
-						yield()
-						Benchmark = SysTime()
-					end
-					
+					if q.done > NumRepetition then queuetable[id] = nil end
+					if SysTime() - Benchmark > MAX_QUEUE_TIME then break end
 					-- if ss.Debug then ss.Debug.ShowInkDrawn(Vector(sx, sy), Vector(cx, cy), Vector(tx, ty), surf, q, moved) end
-				else
-					queuetable[id] = nil
 				end
 			end
 
 			if not next(queuetable) then PaintQueue[time] = nil end
+			if SysTime() - Benchmark > MAX_QUEUE_TIME then break end
 		end
 
 		yield()

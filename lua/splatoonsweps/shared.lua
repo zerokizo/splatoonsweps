@@ -414,6 +414,111 @@ include "trajectory.lua"
 include "weapons.lua"
 include "weaponregistration.lua"
 
+local CrouchMask = bit.bnot(IN_DUCK)
+local WALLCLIMB_KEYS = bit.bor(IN_JUMP, IN_FORWARD, IN_BACK)
+function ss.PredictedThinkMoveHook(w, ply, mv)
+	ss.ProtectedCall(w.Move, w, ply, mv)
+
+	local crouching = ply:Crouching()
+	if w:CheckCanStandup() and w:GetKey() ~= 0 and w:GetKey() ~= IN_DUCK
+	or CurTime() > w:GetEnemyInkTouchTime() + 20 * ss.FrameToSec and ply:KeyDown(IN_DUCK)
+	or CurTime() < w:GetCooldown() then
+		mv:SetButtons(bit.band(mv:GetButtons(), CrouchMask))
+		crouching = false
+	end
+
+	local maxspeed = math.min(mv:GetMaxSpeed(), w.InklingSpeed * 1.1)
+	if ply:OnGround() then -- Max speed clip
+		maxspeed = ss.ProtectedCall(w.CustomMoveSpeed, w) or w.InklingSpeed
+		maxspeed = maxspeed * Either(crouching, ss.SquidSpeedOutofInk, 1)
+		maxspeed = w:GetInInk() and w.SquidSpeed or maxspeed
+		maxspeed = w:GetOnEnemyInk() and w.OnEnemyInkSpeed or maxspeed
+		maxspeed = maxspeed * (w.IsDisruptored and ss.DisruptoredSpeed or 1)
+		mv:SetMaxSpeed(maxspeed)
+		mv:SetMaxClientSpeed(maxspeed)
+		ply:SetMaxSpeed(maxspeed)
+		ply:SetRunSpeed(maxspeed)
+		ply:SetWalkSpeed(maxspeed)
+	end
+
+	if ss.PlayerShouldResetCamera[ply] then
+		local a = ply:GetAimVector():Angle()
+		a.p = math.NormalizeAngle(a.p) / 2
+		ply:SetEyeAngles(a)
+		ss.PlayerShouldResetCamera[ply] = math.abs(a.p) > 1
+	end
+
+	ply:SetJumpPower(w:GetOnEnemyInk() and w.OnEnemyInkJumpPower or w.JumpPower)
+	if CLIENT then w:UpdateInkState() end -- Ink state prediction
+
+	for v, i in pairs {
+		[mv:GetVelocity()] = true, -- Current velocity
+		[ss.MoveEmulation.m_vecVelocity[ply] or false] = false,
+	} do
+		if v then
+			local speed, vz = v:Length2D(), v.z -- Horizontal speed, Z component
+			if w:GetInWallInk() and mv:KeyDown(WALLCLIMB_KEYS) then -- Wall climbing
+				local sp = ply:GetShootPos()
+				local t = {
+					start = sp, endpos = sp + ply:GetForward() * 32768,
+					mask = ss.SquidSolidMask,
+					collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
+					filter = ply,
+				}
+				local fw = util.TraceLine(t)
+				t.endpos = sp - ply:GetForward() * 32768
+				local bk = util.TraceLine(t)
+				if fw.Fraction < bk.Fraction == mv:KeyDown(IN_FORWARD) then
+					vz = math.max(math.abs(vz) * -.75,
+					vz + math.min(12 + (mv:KeyPressed(IN_JUMP) and maxspeed / 4 or 0), maxspeed))
+					if ply:OnGround() then
+						t.endpos = sp + ply:GetRight() * 32768
+						local r = util.TraceLine(t)
+						t.endpos = sp - ply:GetRight() * 32768
+						local l = util.TraceLine(t)
+						if math.min(fw.Fraction, bk.Fraction) < math.min(r.Fraction, l.Fraction) then
+							mv:AddKey(IN_JUMP)
+						end
+					end
+				end
+			end
+
+			if speed > maxspeed then -- Limits horizontal speed
+				v:Mul(maxspeed / speed)
+				speed = math.min(speed, maxspeed)
+			end
+
+			v.z = w.OnOutofInk and not w:GetInWallInk()
+			and math.min(vz, ply:GetJumpPower() * .7) or vz
+			if i then mv:SetVelocity(v) end
+		end
+	end
+
+	-- Send viewmodel animation.
+	if crouching then
+		w.SwimSound:ChangeVolume(math.Clamp(mv:GetVelocity():Length() / w.SquidSpeed * (w:GetInInk() and 1 or 0), 0, 1))
+		if not w:GetOldCrouching() then
+			w:SetWeaponAnim(ss.ViewModel.Squid)
+			if w:GetNWInt "playermodel" ~= ss.PLAYER.NOCHANGE then
+				ply:RemoveAllDecals()
+			end
+
+			if IsFirstTimePredicted() then
+				ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToSquid")
+			end
+		end
+	elseif w:GetOldCrouching() then
+		w.SwimSound:ChangeVolume(0)
+		w:SetWeaponAnim(w:GetThrowing() and ss.ViewModel.Throwing or ss.ViewModel.Standing)
+		if IsFirstTimePredicted() then
+			ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToHuman")
+		end
+	end
+
+	w.OnOutofInk = w:GetInWallInk()
+	w:SetOldCrouching(crouching or infence)
+end
+
 -- Short for Entity:NetworkVar().
 -- A new function Entity:AddNetworkVar() is created to the given entity.
 -- Argument:
