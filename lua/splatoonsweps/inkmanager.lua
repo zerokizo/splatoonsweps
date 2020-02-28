@@ -37,7 +37,7 @@ local To3D = ss.To3D
 local Vector = Vector
 local vector_origin = vector_origin
 local WorldToLocal = WorldToLocal
-local MAX_COS_DEG_DIFF = ss.MAX_COS_DEG_DIFF
+local MAX_COS_DIFF = ss.MAX_COS_DIFF
 local MIN_BOUND = 20 -- Ink minimum bounding box scale
 local POINT_BOUND = ss.vector_one * .1
 local reference_polys = {}
@@ -111,7 +111,7 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 	local ang = normal:Angle()
 	local ignoreprediction = not ply:IsPlayer() and SERVER and mp or nil
 	local AABB = {mins = ss.vector_one * math.huge, maxs = -ss.vector_one * math.huge}
-	ang.roll = abs(normal.z) > MAX_COS_DEG_DIFF and angle * normal.z or ang.yaw
+	ang.roll = abs(normal.z) > MAX_COS_DIFF and angle * normal.z or ang.yaw
 	for i, v in ipairs(reference_polys) do -- Scaling
 		local vertex = To3D(v * radius, pos, ang)
 		AABB.mins = ss.MinVector(AABB.mins, vertex)

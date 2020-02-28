@@ -129,7 +129,7 @@ local function MakeBrushSurface(verts, disp)
         local degrees = -math.deg(math.atan2(segment.y, segment.x))
 		local ang = Angle(0, degrees + 90, 0)
 		local mins, maxs = GetRotatedAABB(verts2D, ang)
-		local size = maxs - mins
+        local size = maxs - mins
 		if area > size.x * size.y then
 			if size.x < size.y then
 				ang.yaw = degrees
@@ -144,6 +144,7 @@ local function MakeBrushSurface(verts, disp)
 		end
 	end
     
+    if area == 0 then return end
 	minmins:Rotate(minangle)
 	center = ss.To3D(minmins, center, angle)
 	angle:RotateAroundAxis(normal, minangle.yaw)
@@ -311,11 +312,6 @@ local function ReadFaces()
 	local texinfo = BSP.Data[LUMP.TEXINFO]
     local dispinfooffset = BSP.Header[LUMP.DISPINFO].offset
     local dispvertsoffset = BSP.Header[LUMP.DISP_VERTS].offset
-    local function GetCenter(verts)
-        local c = Vector()
-        for i, v in ipairs(verts) do c:Add(v) end
-        return c / #verts
-    end
 
     BSPFile:Seek(header.offset)
     header.num = math.min(math.floor(header.length / size) - 1, 65536 - 1)
@@ -433,6 +429,7 @@ local function ReadGameLump()
 		headers[i].filelen = read "Long"
     end
 
+    local Axes = {x = {"y", "z"}, y = {"x", "z"}, z = {"x", "y"}}
     local function GetInfo(solidtype, modelname, origin, angles)
         if solidtype ~= SOLID_VPHYSICS then return end
         if not modelname then return end
@@ -444,25 +441,156 @@ local function ReadGameLump()
         mdl:Spawn()
         local ph = mdl:GetPhysicsObject()
         local mat = IsValid(ph) and ph:GetMaterial()
-        local physmesh = IsValid(ph) and ph:GetMesh()
+        local physmesh = IsValid(ph) and ph:GetMeshConvexes()
         mdl:Remove()
 
         if not IsValid(ph) then return end
         if mat:find "chain" or mat:find "grate" then return end
-        for _, v in ipairs(physmesh) do
-            v.pos:Rotate(angles)
-            v.pos:Add(origin)
-        end
+        for _, convex in ipairs(physmesh) do
+            local projection_planes = {}
+            for _, n in ipairs {
+                Vector(1, 0, 0), Vector(-1, 0, 0),
+                Vector(0, 1, 0), Vector(0, -1, 0),
+                Vector(0, 0, 1), Vector(0, 0, -1),
+            } do
+                projection_planes[tostring(n)] = {
+                    axis_n = nil, -- normal = "x", "y", or "z"
+                    axis_t = nil, -- tangent
+                    axis_b = nil, -- binormal
+                    component_n = nil, -- base plane components
+                    max_t = nil, min_t = nil, -- tangent max, min
+                    max_b = nil, min_b = nil, -- binormal max, min
+                    Vertices = {},
+                    VerticesGrid = {},
+                    Triangles = {},
+                }
+            end
 
-        for i = 1, #physmesh, 3 do
-            local v1 = physmesh[i].pos
-            local v2 = physmesh[i + 1].pos
-            local v3 = physmesh[i + 2].pos
-            local v2v1 = v1 - v2
-            local v2v3 = v3 - v2
-            local t = {v1, v2, v3} -- normal around v1<-v2->v3 is valid then
-            if v2v1:Cross(v2v3):LengthSqr() > 4000 then
-                lump[#lump + 1] = MakeBrushSurface(t)
+            for i = 1, #convex, 3 do
+                local v1 = convex[i].pos
+                local v2 = convex[i + 1].pos
+                local v3 = convex[i + 2].pos
+                local v2v1 = v1 - v2
+                local v2v3 = v3 - v2
+                local n = v2v1:Cross(v2v3) -- normal around v1<-v2->v3
+                if n:LengthSqr() > 4000 then -- normal is valid then
+                    v1:Rotate(angles) -- vertices are local
+                    v2:Rotate(angles) -- make them global
+                    v3:Rotate(angles)
+                    v1:Add(origin)
+                    v2:Add(origin)
+                    v3:Add(origin)
+                    n:Normalize() -- normalize the normal
+
+                    local center = (v1 + v2 + v3) / 3
+                    local issolid = true
+                    for _, sample_point in ipairs {
+                        center,
+                        (center * 0.001 + v1 * 0.999),
+                        (center * 0.001 + v2 * 0.999),
+                        (center * 0.001 + v3 * 0.999),
+                        (center + v1) / 2,
+                        (center + v2) / 2,
+                        (center + v3) / 2,
+                        (center * 0.25 + v1 * 0.75),
+                        (center * 0.25 + v2 * 0.75),
+                        (center * 0.25 + v3 * 0.75),
+                        (center + v1 + v2) / 3,
+                        (center + v2 + v3) / 3,
+                        (center + v1 + v3) / 3,
+                    } do
+                        local c = util.PointContents(sample_point + n * 0.01)
+                        issolid = issolid and bit.band(c, MASK_VISIBLE) > 0
+                        if not issolid then break end
+                    end
+
+                    if not issolid then
+                        -- detect the appropriate projection plane
+                        local component_sign, normal
+                        local max_component = 0
+                        local projection_normal = Vector()
+                        for axis in pairs(Axes) do
+                            local abs_component = math.abs(n[axis])
+                            if abs_component > max_component then
+                                component_sign = n[axis] > 0 and 1 or -1
+                                max_component = abs_component
+                                normal = axis
+                            end
+                        end
+                        
+                        projection_normal[normal] = component_sign
+                        local minmax = component_sign > 0 and math.min or math.max
+                        local plane = projection_planes[tostring(projection_normal)]
+                        local verts = plane.Vertices
+                        local tris = plane.Triangles
+                        verts[#verts + 1] = v1
+                        verts[#verts + 1] = v2
+                        verts[#verts + 1] = v3
+                        tris[#tris + 1] = {#verts - 2, #verts - 1, #verts}
+                        plane.axis_n = normal
+                        plane.axis_t = Axes[plane.axis_n][1]
+                        plane.axis_b = Axes[plane.axis_n][2]
+                        plane.component_n = minmax(unpack {
+                            v1[plane.axis_n],
+                            v2[plane.axis_n],
+                            v3[plane.axis_n],
+                            plane.component_n,
+                        })
+                        plane.max_t = math.max(unpack {
+                            v1[plane.axis_t],
+                            v2[plane.axis_t],
+                            v3[plane.axis_t],
+                            plane.max_t,
+                        })
+                        plane.max_b = math.max(unpack {
+                            v1[plane.axis_b],
+                            v2[plane.axis_b],
+                            v3[plane.axis_b],
+                            plane.max_b,
+                        })
+                        plane.min_t = math.min(unpack {
+                            v1[plane.axis_t],
+                            v2[plane.axis_t],
+                            v3[plane.axis_t],
+                            plane.min_t,
+                        })
+                        plane.min_b = math.min(unpack {
+                            v1[plane.axis_b],
+                            v2[plane.axis_b],
+                            v3[plane.axis_b],
+                            plane.min_b,
+                        })
+                    end
+                end
+            end
+
+            for n, p in pairs(projection_planes) do
+                if p.axis_n then
+                    local vertices = {Vector(), Vector(), Vector(), Vector()}
+                    for _, v in ipairs(vertices) do v[p.axis_n] = p.component_n end
+                    vertices[1][p.axis_t] = p.min_t
+                    vertices[1][p.axis_b] = p.min_b
+                    vertices[2][p.axis_t] = p.min_t
+                    vertices[2][p.axis_b] = p.max_b
+                    vertices[3][p.axis_t] = p.max_t
+                    vertices[3][p.axis_b] = p.max_b
+                    vertices[4][p.axis_t] = p.max_t
+                    vertices[4][p.axis_b] = p.min_b
+
+                    local v2v1 = vertices[1] - vertices[2]
+                    local v2v3 = vertices[3] - vertices[2]
+                    local n_test = v2v1:Cross(v2v3)
+                    if n_test:Dot(Vector(n)) < 0 then -- correct vertex order (cw/ccw)
+                        vertices[2], vertices[4] = vertices[4], vertices[2]
+                    end
+
+                    for i, v in ipairs(p.Vertices) do
+                        p.VerticesGrid[i] = Vector(v)
+                        p.VerticesGrid[i][p.axis_n] = p.component_n
+                    end
+
+                    lump[#lump + 1] = MakeBrushSurface(vertices, p)
+                end
             end
         end
     end
@@ -496,7 +624,6 @@ local function ReadGameLump()
                 BSPFile:Skip(4)
                 local solidtype = read "Byte"
                 local mdlname = Model(modelnames[proptype + 1])
-                -- lump[#lump + 1] = GetInfo(solidtype, mdlname, origin, angles)
                 GetInfo(solidtype, mdlname, origin, angles)
             end
 
@@ -505,6 +632,7 @@ local function ReadGameLump()
     end
 end
 
+util.TimerCycle()
 ReadBSPHeader()
 ReadPlanes()
 ReadVertexes()
@@ -651,7 +779,6 @@ local function ConstructAABBTree(Tree, AABBs, nodeIndex)
     ConstructAABBTree(Tree, rightAABBs, node.Children[2])
 end
 
-util.TimerCycle()
 ConstructAABBTree(AABBTree, SurfIndicesRoot, 1)
 print("MAKE", util.TimerCycle())
 

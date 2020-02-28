@@ -39,7 +39,7 @@ end
 
 local function HitPaint(ink, t)
 	local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
-	local hitfloor = t.HitNormal.z > ss.MAX_COS_DEG_DIFF
+	local hitfloor = t.HitNormal.z > ss.MAX_COS_DIFF
 	local lmin = data.PaintNearDistance
 	local lmin_ratio = data.PaintRatioNearDistance
 	local lmax = data.PaintFarDistance
@@ -61,8 +61,8 @@ local function HitPaint(ink, t)
 			local radiusmul = ink.Parameters.mPaintRateLastSplash
 			if hitfloor then radius = radius * radiusmul end
 			if tr.LengthSum < data.Range then
-				local cos = math.Clamp(-data.InitDir.z, ss.MAX_COS_DEG_DIFF, 1)
-				ratio = math.Remap(cos, ss.MAX_COS_DEG_DIFF, 1, ratio, 1)
+				local cos = math.Clamp(-data.InitDir.z, ss.MAX_COS_DIFF, 1)
+				ratio = math.Remap(cos, ss.MAX_COS_DIFF, 1, ratio, 1)
 			end
 		elseif weapon.IsBlaster then
 			data.DoDamage = false
@@ -104,7 +104,7 @@ local function HitPaint(ink, t)
 			start = data.InitPos,
 		}
 
-		if math.abs(tn.HitNormal.z) < ss.MAX_COS_DEG_DIFF
+		if math.abs(tn.HitNormal.z) < ss.MAX_COS_DIFF
 		and t.FractionPaintWall < tn.Fraction
 		and not tn.StartSolid and tn.HitWorld then
 			ss.PaintSchedule[{

@@ -25,7 +25,6 @@ SplatoonSWEPs = SplatoonSWEPs or {
 include "splatoonsweps/const.lua"
 include "splatoonsweps/shared.lua"
 include "network.lua"
-include "bsp.lua"
 
 local ss = SplatoonSWEPs
 if not ss.GetOption "enabled" then

@@ -137,7 +137,8 @@ function ss.SearchAABB(AABB, normal)
 		if a.SurfIndices then
 			for _, i in ipairs(a.SurfIndices) do
 				local a = ss.SurfaceArray[i]
-				if a.Normal:Dot(normal) > ss.MAX_COS_DEG_DIFF then
+				local max_diff = a.Displacement and ss.MAX_COS_DIFF_DISP or ss.MAX_COS_DIFF
+				if a.Normal:Dot(normal) > max_diff then
 					if ss.CollisionAABB(a.AABB.mins, a.AABB.maxs, AABB.mins, AABB.maxs) then
 						t[#t + 1] = a
 					end

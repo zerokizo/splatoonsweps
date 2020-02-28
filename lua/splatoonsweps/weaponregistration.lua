@@ -149,10 +149,9 @@ end)
 
 if CLIENT then return end
 local NPCWeaponList = list.GetForEdit "NPCUsableWeapons"
-local WeaponList = list.Get "Weapon"
 hook.Add("PlayerSpawnNPC", "SplatoonSWEPs: Apply NPC Weapon", function(ply, npc, w)
     if NPCWeaponList[w] then return end
-    local weapontable = WeaponList[w]
+    local weapontable = list.Get "Weapon"[w]
     if not weapontable then return end
     if not weapontable.IsSplatoonWeapon then return end
     NPCWeaponList[w] = {
