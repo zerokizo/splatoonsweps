@@ -142,7 +142,7 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 	end
 
 	EndSuppressHostEventsMP(ply)
-	if not ply:IsPlayer() then return end
+	if not ply:IsPlayer() or ply:IsBot() then return end
 
 	ss.WeaponRecord[ply].Inked[classname] = (ss.WeaponRecord[ply].Inked[classname] or 0) - area * gridarea
 	if sp and SERVER then

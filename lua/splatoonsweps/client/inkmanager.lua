@@ -155,7 +155,7 @@ local function ProcessPaintQueue()
 
 	local IsNotSplatoonPortedMap = not ss.SplatoonMapPorts[game.GetMap()]
 	local MAX_QUEUE_TIME = ss.FrameToSec / 2
-	local MAX_QUEUES_TOLERANCE = 75 -- Possible number of queues to be processed at once without losing FPS.
+	local MAX_QUEUES_TOLERANCE = 50 -- Possible number of queues to be processed at once without losing FPS.
 	local LightmapSampleNum = 7 -- Used to sample lightmap
 	local radfrac = rad(360 / LightmapSampleNum)
 	while true do

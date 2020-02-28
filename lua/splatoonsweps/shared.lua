@@ -180,23 +180,6 @@ function ss.MaxVector(a, b)
 	return Vector(math.max(a.x, b.x), math.max(a.y, b.y), math.max(a.z, b.z))
 end
 
--- Returns an AABB which contains all given points.
--- Arguments:
---   table vectors		| Table of vectors to make an AABB.
---   number minbound	| Minimum length of AABB.
--- Returns:
---   number mins, maxs	| An AABB represented by minimum and maximum vectors.
-function ss.GetBoundingBox(vectors, minbound)
-	local mins = Vector(math.huge, math.huge, math.huge)
-	local maxs = -mins
-	local bound = ss.vector_one * (minbound or 0)
-	for _, v in ipairs(vectors) do
-		mins = ss.MinVector(mins, v - bound)
-		maxs = ss.MaxVector(maxs, v + bound)
-	end
-	return mins, maxs
-end
-
 -- Takes two AABBs and returns if they are colliding each other.
 -- Arguments:
 --   Vector mins1, maxs1	| The first AABB.
@@ -709,6 +692,11 @@ end
 local gain = ss.GetOption "gain"
 function ss.GetMaxHealth() return gain "maxhealth" end
 function ss.GetMaxInkAmount() return gain "inkamount" end
+
+function ss.GetBotOption(pt)
+	print(pt.cl, pt.cl:GetDefault())
+	return (pt.cl or pt.sv):GetDefault()
+end
 
 -- Play footstep sound of ink.
 function ss.PlayerFootstep(w, ply, pos, foot, soundName, volume, filter)

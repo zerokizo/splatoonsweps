@@ -186,9 +186,8 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
 end)
 
 hook.Add("PlayerInitialSpawn", "SplatoonSWEPs: Add a player", function(ply)
-	if ply:IsBot() then return end
-	ss.ClearAllInk()
 	ss.InitializeMoveEmulation(ply)
+	if not ply:IsBot() then ss.ClearAllInk() end	
 end)
 
 hook.Add("PlayerAuthed", "SplatoonSWEPs: Store player ID", function(ply, id)

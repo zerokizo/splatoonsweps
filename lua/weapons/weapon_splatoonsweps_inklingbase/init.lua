@@ -10,7 +10,8 @@ include "baseinfo.lua"
 include "ai_translations.lua"
 
 local function InvalidPlayer(Owner)
-	return not IsValid(Owner) or Owner:IsPlayer() and not table.HasValue(ss.PlayersReady, Owner)
+	return not IsValid(Owner) or Owner:IsPlayer() and
+	not Owner:IsBot() and not table.HasValue(ss.PlayersReady, Owner)
 end
 
 function SWEP:ChangePlayermodel(data)

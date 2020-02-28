@@ -94,7 +94,8 @@ function GetValue(t, ply)
 	if override and override ~= -1 or SERVER and not (IsValid(ply) and ply:IsPlayer()) then
 		return not translate and servervalue or translate(servervalue)
 	elseif not t.options.serverside then
-		local value = SERVER and ply:GetInfo(t.cl:GetName(), t.cl:GetDefault()) or t.cl:GetString()
+		local value = SERVER and ply:GetInfo(t.cl:GetName()) or t.cl:GetString()
+		if value == "" then value = t.cl:GetDefault() end -- For bots
 		return not translate and value or translate(value)
 	end
 end
