@@ -148,6 +148,12 @@ function ss.GetNPCInkColor(n)
 	return colors[NPCFactions[class]] or colors.others or 1
 end
 
+function ss.GetBotInkColor(weapon)
+	local color = math.random(1, ss.MAX_COLORS)
+	weapon.BotInkColor = weapon.BotInkColor or color
+	return weapon.BotInkColor
+end
+
 function ss.GetFallDamage(self, ply, speed)
 	if ss.GetOption "takefalldamage" then return end
 	return 0

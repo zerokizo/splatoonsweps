@@ -93,7 +93,11 @@ local function RetrieveOption(self, name, pt)
 	end
 
 	if isnumber(value) and self:GetNWInt(name) ~= value then
-		if not self.Owner:IsPlayer() and name == "inkcolor" then return end
+		if name == "inkcolor" then
+			if self.Owner:IsNPC() then return end
+			if self.Owner:IsPlayer() and self.Owner:IsBot() then return end
+		end
+
 		self:SetNWInt(name, value)
 	end
 end
@@ -104,10 +108,16 @@ function SWEP:GetOptions()
 		RetrieveOption(self, name, pt)
 	end
 
-	if self.Owner:IsPlayer() then return end
-	local NPCInkColor = ss.GetNPCInkColor(self.Owner)
-	if self:GetNWInt "inkcolor" == NPCInkColor then return end
-	self:SetNWInt("inkcolor", NPCInkColor)
+	if self.Owner:IsPlayer() and not self.Owner:IsBot() then return end
+	local inkcolor
+	if self.Owner:IsPlayer() and self.Owner:IsBot() then
+		inkcolor = ss.GetBotInkColor(self)
+	else
+		inkcolor = ss.GetNPCInkColor(self.Owner)
+	end
+
+	if self:GetNWInt "inkcolor" == inkcolor then return end
+	self:SetNWInt("inkcolor", inkcolor)
 end
 
 function SWEP:ApplySkinAndBodygroups()
