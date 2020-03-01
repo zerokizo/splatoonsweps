@@ -82,7 +82,7 @@ function ss.AddInkRectangle(color, inktype, localang, pos, radius, ratio, s)
 					if 0 <= i and i <= sw and 0 <= k and k <= sh then
 						pointcount[i] = pointcount[i] or {}
 						pointcount[i][k] = (pointcount[i][k] or 0) + 1
-						if pointcount[i][k] > 25 then
+						if pointcount[i][k] > 18 then
 							ink[i] = ink[i] or {}
 							if ink[i][k] ~= color then area = area + 1 end
 							ink[i][k] = color
