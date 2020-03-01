@@ -6,7 +6,6 @@ module("greatzenkakuman.debug", package.seeall)
 local t = 5 -- Debugoverlay time
 local csv = Color(0, 255, 255)
 local ccl = Color(255, 255, 0) -- Debugoverlay color
-local s = 30 -- Debugoverlay size
 local g = true -- Debugoverlay ignoreZ
 local sp = game.SinglePlayer()
 local d = sp or CLIENT
@@ -97,7 +96,8 @@ function DPlane(v, n, z, sv)
 	end
 end
 
-function DPoint(v, z, sv)
+function DPoint(v, s, z, sv)
+	if isbool(s) then s, z, sv = 10, s, z end
 	z = Either(z ~= nil, z, g)
 	if d then
 		debugoverlay.Cross(v, s, t, sv and csv or ccl, z)

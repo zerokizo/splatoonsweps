@@ -466,20 +466,24 @@ local function ReadGameLump()
                 }
             end
 
+            local vertices_absolute = {}
+            local convex_center = Vector()
+            for i, v in ipairs(convex) do
+                local v = LocalToWorld(v.pos, angle_zero, origin, angles)
+                vertices_absolute[i] = v
+                convex_center:Add(v)
+            end
+
+            convex_center = convex_center / #convex
+
             for i = 1, #convex, 3 do
-                local v1 = convex[i].pos
-                local v2 = convex[i + 1].pos
-                local v3 = convex[i + 2].pos
+                local v1 = vertices_absolute[i]
+                local v2 = vertices_absolute[i + 1]
+                local v3 = vertices_absolute[i + 2]
                 local v2v1 = v1 - v2
                 local v2v3 = v3 - v2
                 local n = v2v1:Cross(v2v3) -- normal around v1<-v2->v3
                 if n:LengthSqr() > 4000 then -- normal is valid then
-                    v1:Rotate(angles) -- vertices are local
-                    v2:Rotate(angles) -- make them global
-                    v3:Rotate(angles)
-                    v1:Add(origin)
-                    v2:Add(origin)
-                    v3:Add(origin)
                     n:Normalize() -- normalize the normal
 
                     local center = (v1 + v2 + v3) / 3
@@ -505,6 +509,8 @@ local function ReadGameLump()
                     end
 
                     if not issolid then
+                        -- if n:Dot(center - convex_center) < 0 then error "AAA" n = -n end
+
                         -- detect the appropriate projection plane
                         local component_sign, normal
                         local max_component = 0

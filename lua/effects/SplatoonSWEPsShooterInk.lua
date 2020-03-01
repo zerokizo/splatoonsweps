@@ -240,7 +240,7 @@ function EFFECT:RenderBlaster() -- Blaster bullet
 	render.DrawSphere(self:GetPos(), self.DrawRadius, 8, 8, self.Color)
 	if LocalPlayer():FlashlightIsOn() or #ents.FindByClass "*projectedtexture*" > 0 then
 		render.PushFlashlightMode(true) -- Ink lit by player's flashlight or a projected texture
-		render.DrawSphere(self:GetPos(), r, 8, 8, self.Color)
+		render.DrawSphere(self:GetPos(), self.DrawRadius, 8, 8, self.Color)
 		render.PopFlashlightMode()
 	end
 end
