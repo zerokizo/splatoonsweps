@@ -43,6 +43,10 @@ function EFFECT:Init(e)
 		local right = self.Weapon.Owner:GetRight()
 		local up = self.Weapon.Owner:GetUp()
 		local yaw = self.Weapon.Owner:GetAngles().yaw
+		if self.Weapon.Owner:IsPlayer() then
+			yaw = self.Weapon.Owner:GetAimVector():Angle().yaw
+		end
+		
 		if self.IsRollerSwing then
 			pos:Add(forward * 60)
 			pos:Add(right * e:GetScale())

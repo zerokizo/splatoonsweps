@@ -154,7 +154,7 @@ local function ProcessPaintQueue()
 	end
 
 	local IsNotSplatoonPortedMap = not ss.SplatoonMapPorts[game.GetMap()]
-	local MAX_QUEUE_TIME = ss.FrameToSec
+	local MAX_QUEUE_TIME = ss.FrameToSec / 2
 	local MAX_QUEUES_TOLERANCE = 100 -- Possible number of queues to be processed at once without losing FPS.
 	local LightmapSampleNum = 7 -- Used to sample lightmap
 	local radfrac = rad(360 / LightmapSampleNum)
@@ -196,7 +196,10 @@ local function ProcessPaintQueue()
 
 				if q.draw then
 					local alphatestreference = max(1 - q.done / NumRepetition, 0.0625)
-					if 10 <= q.t and q.t <= 12 then alphatestreference = 0.0625 end
+					if alphatestreference ~= alphatestreference or 10 <= q.t and q.t <= 12 then
+						alphatestreference = 0.0625
+					end
+					
 					SetTexture(inkmaterial, "$basetexture", settexture)
 					SetTexture(normalmaterial, "$basetexture", settexture .. "n")
 					SetFloat(inkmaterial, "$alphatestreference", alphatestreference)
