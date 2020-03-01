@@ -110,8 +110,6 @@ ss.CleanupTypeInk = "SplatoonSWEPs Ink"
 ss.GrayScaleFactor = Vector(.298912, .586611, .114478)
 ss.ShooterGravityMul = 15
 ss.RollerGravityMul = 2.25
-ss.COLOR_BITS = 5 -- unsigned
-ss.INK_TYPE_BITS = 4 -- unsigned
 ss.PLAYER_BITS = 3 -- unsigned enum
 ss.SEND_ERROR_DURATION_BITS = 4 -- unsgined
 ss.SEND_ERROR_NOTIFY_BITS = 3 -- unsigned NOTIFY_ enum 0 to 4
@@ -187,11 +185,14 @@ function ss.GetSquidmodel(pmid)
 	return file.Exists(squid, "GAME") and squid or nil
 end
 
-for i, t in ipairs(include "splatoonsweps/constants/inkcolors.lua") do
-	local c = HSVToColor(t[1], t[2], t[3])
-	ss.InkColors[i] = ColorAlpha(c, c.a)
-	ss.CrosshairColors[i] = t[4]
-	ss.MAX_COLORS = #ss.InkColors
+do -- Color tables
+	for i, t in ipairs(include "splatoonsweps/constants/inkcolors.lua") do
+		local c = HSVToColor(t[1], t[2], t[3])
+		ss.InkColors[i] = ColorAlpha(c, c.a)
+		ss.CrosshairColors[i] = t[4]
+		ss.MAX_COLORS = #ss.InkColors
+	end
+	ss.COLOR_BITS = select(2, math.frexp(ss.MAX_COLORS))
 end
 
 do -- Ink distribution map
@@ -211,7 +212,10 @@ do -- Ink distribution map
 
 		ss.InkShotMaterials[i] = mask
 	end
+	
+	ss.INK_TYPE_BITS = select(2, math.frexp(#ss.InkShotMaterials))
 end
+
 game.AddParticles "particles/splatoonsweps.pcf"
 for _, p in pairs(ss.Particles) do PrecacheParticleSystem(p) end
 

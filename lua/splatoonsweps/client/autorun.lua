@@ -55,6 +55,7 @@ function ss.PrepareInkSurface(data)
 	ss.AspectSum  = data.UVInfo.AspectSum
 	ss.AspectSumX = data.UVInfo.AspectSumX
 	ss.AspectSumY = data.UVInfo.AspectSumY
+	ss.SURFACE_ID_BITS = select(2, math.frexp(#ss.SurfaceArray))
 
 	if ss.SplatoonMapPorts[game.GetMap()] then INK_SURFACE_DELTA_NORMAL = 2 end
 	local numsurfs = #ss.SurfaceArray

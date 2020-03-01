@@ -63,31 +63,37 @@ net.Receive("SplatoonSWEPs: Send turf inked", function()
 	ss.WeaponRecord[LocalPlayer()].Inked[classname] = inked
 end)
 
--- misc = Vector(Radius, Inkangle, Ratio)
-function ss.InkQueueReceiveFunction(index, misc, color, ply, inktype, pos)
-	local t = ss.PaintQueue[CurTime()] or {}
-	ss.PaintQueue[CurTime()], t[#t + 1] = t, {
+function ss.InkQueueReceiveFunction(index, radius, ang, ratio, color, ply, inktype, pos, order, time)
+	local t = ss.PaintQueue[time] or {}
+	ss.PaintQueue[time], t[order + 256] = t, {
 		c = color,
 		dispflag = ss.SurfaceArray[index].Displacement and 0 or 1,
 		done = 0,
 		index = index,
-		inkangle = misc.y,
+		inkangle = ang,
 		owner = ply,
 		pos = pos,
-		r = misc.x,
-		ratio = misc.z,
+		r = radius,
+		ratio = ratio,
 		t = inktype,
 	}
 	if ply == LocalPlayer() then return end
-	ss.AddInkRectangle(color, inktype, misc.y, pos, misc.x, misc.z, ss.SurfaceArray[index])
+	ss.AddInkRectangle(color, inktype, ang, pos, radius, ratio, ss.SurfaceArray[index])
 end
 
-net.Receive("SplatoonSWEPs: Send an ink queue", function()
+net.Receive("SplatoonSWEPs: Send an ink queue", function(len)
 	local index = net.ReadUInt(ss.SURFACE_ID_BITS)
-	local misc = net.ReadVector()
 	local color = net.ReadUInt(ss.COLOR_BITS)
-	local ply = net.ReadEntity()
+	local ply = Entity(net.ReadUInt(13))
 	local inktype = net.ReadUInt(ss.INK_TYPE_BITS)
-	local pos = net.ReadVector()
-	ss.InkQueueReceiveFunction(index, misc, color, ply, inktype, pos)
+	local radius = net.ReadUInt(8)
+	local ratio = net.ReadVector().x
+	local ang = net.ReadInt(9)
+	local x = net.ReadInt(16)
+	local y = net.ReadInt(16)
+	local z = net.ReadInt(16)
+	local order = net.ReadUInt(8)
+	local time = net.ReadFloat()
+	local pos = Vector(x, y, z) / 2
+	ss.InkQueueReceiveFunction(index, radius, ang, ratio, color, ply, inktype, pos, order, time)
 end)

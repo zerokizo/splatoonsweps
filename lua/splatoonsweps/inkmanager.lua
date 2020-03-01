@@ -16,6 +16,7 @@ local InkQueueReceiveFunction = ss.InkQueueReceiveFunction
 local ipairs = ipairs
 local isnumber = isnumber
 local KeyFromValue = table.KeyFromValue
+local min = math.min
 local mp = ss.mp
 local net_Send = net.Send
 local net_Start = net.Start
@@ -28,6 +29,7 @@ local net_WriteVector = net.WriteVector
 local NormalizeAngle = math.NormalizeAngle
 local pairs = pairs
 local rad = math.rad
+local Round = math.Round
 local SERVER = SERVER
 local sin = math.sin
 local sp = ss.sp
@@ -48,7 +50,7 @@ for i = 1, circle_polys do
 	reference_vert:Rotate(Angle(0, circle_polys))
 end
 
--- Internal function to record a new ink to ink history.
+-- Internal function to record a new ink to the map.
 local gridsize = ss.InkGridSize
 local gridarea = gridsize * gridsize
 local griddivision = 1 / gridsize
@@ -80,7 +82,7 @@ function ss.AddInkRectangle(color, inktype, localang, pos, radius, ratio, s)
 					if 0 <= i and i <= sw and 0 <= k and k <= sh then
 						pointcount[i] = pointcount[i] or {}
 						pointcount[i][k] = (pointcount[i][k] or 0) + 1
-						if pointcount[i][k] > 3 then
+						if pointcount[i][k] > 25 then
 							ink[i] = ink[i] or {}
 							if ink[i][k] ~= color then area = area + 1 end
 							ink[i][k] = color
@@ -96,23 +98,31 @@ end
 
 -- Draws ink.
 -- Arguments:
---   Vector pos		| Center position.
---   Vector normal	| Normal of the surface to draw.
---   number radius	| Scale of ink in Hammer units.
---   number angle	| Ink rotation in degrees.
---   number inktype | Shape of ink.
---   number ratio	| Aspect ratio.
+--   Vector pos		  | Center position.
+--   Vector normal	  | Normal of the surface to draw.
+--   number radius	  | Scale of ink in Hammer units.
+--   number angle	  | Ink rotation in degrees.
+--   number inktype   | Shape of ink.
+--   number ratio	  | Aspect ratio.
+--   Entity ply       | The shooter.
+--   string classname | Weapon's class name.
+local Order, OrderTime = 1, 0 -- The ink paint order at OrderTime[sec]
 local AddInkRectangle = ss.AddInkRectangle
 function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classname)
-	inktype = floor(inktype)
-	angle = NormalizeAngle(angle)
+	-- Parameter limit to reduce network traffic
+	pos.x = Round(pos.x * 2) / 2
+	pos.y = Round(pos.y * 2) / 2 -- -16384 to 16384, 0.5 step
+	pos.z = Round(pos.z * 2) / 2
+	radius = min(Round(radius), 255) -- 0 to 255, integer
+	inktype = floor(inktype) -- 0 to MAX_INK_TYPE, integer
+	angle = Round(NormalizeAngle(angle))
 
 	local area = 0
 	local ang = normal:Angle()
 	local ignoreprediction = not ply:IsPlayer() and SERVER and mp or nil
 	local AABB = {mins = ss.vector_one * math.huge, maxs = -ss.vector_one * math.huge}
 	ang.roll = abs(normal.z) > MAX_COS_DIFF and angle * normal.z or ang.yaw
-	for i, v in ipairs(reference_polys) do -- Scaling
+	for i, v in ipairs(reference_polys) do
 		local vertex = To3D(v * radius, pos, ang)
 		AABB.mins = ss.MinVector(AABB.mins, vertex)
 		AABB.maxs = ss.MaxVector(AABB.maxs, vertex)
@@ -123,21 +133,33 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 	SuppressHostEventsMP(ply)
 	for _, s in SearchAABB(AABB, normal) do
 		local _, localang = WorldToLocal(vector_origin, ang, vector_origin, s.Normal:Angle())
-		localang = ang.yaw - localang.roll + s.DefaultAngles
+		localang = ang.yaw - localang.roll + s.DefaultAngles + (CLIENT and s.Moved and 90 or 0)
+		localang = Round(NormalizeAngle(localang)) -- -180 to 179, integer
 		area = area + AddInkRectangle(color, inktype, localang, pos, radius, ratio, s)
 
-		local misc = Vector(radius, localang + (CLIENT and s.Moved and 90 or 0), ratio)
+		Order = Order + 1
+		if CurTime() > OrderTime then
+			OrderTime = CurTime()
+			Order = 1
+		end
+
 		if SERVER then
 			net_Start "SplatoonSWEPs: Send an ink queue"
 			net_WriteUInt(s.Index, ss.SURFACE_ID_BITS)
-			net_WriteVector(misc)
 			net_WriteUInt(color, ss.COLOR_BITS)
-			net_WriteEntity(ply)
+			net_WriteUInt(ply:EntIndex(), 13)
 			net_WriteUInt(inktype, ss.INK_TYPE_BITS)
-			net_WriteVector(pos)
+			net_WriteUInt(radius, 8)
+			net_WriteVector(Vector(ratio))
+			net_WriteInt(localang, 9)
+			net_WriteInt(pos.x * 2, 16)
+			net_WriteInt(pos.y * 2, 16)
+			net_WriteInt(pos.z * 2, 16)
+			net_WriteUInt(Order, 8) -- 119 to 128 bits
+			net_WriteFloat(OrderTime)
 			net_Send(ss.PlayersReady)
 		else
-			InkQueueReceiveFunction(s.Index, misc, color, ply, inktype, pos)
+			InkQueueReceiveFunction(s.Index, radius, localang, ratio, color, ply, inktype, pos, Order - 256, OrderTime)
 		end
 	end
 

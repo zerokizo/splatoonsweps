@@ -154,16 +154,16 @@ local function ProcessPaintQueue()
 	end
 
 	local IsNotSplatoonPortedMap = not ss.SplatoonMapPorts[game.GetMap()]
-	local MAX_QUEUE_TIME = ss.FrameToSec / 2
-	local MAX_QUEUES_TOLERANCE = 50 -- Possible number of queues to be processed at once without losing FPS.
+	local MAX_QUEUE_TIME = ss.FrameToSec
+	local MAX_QUEUES_TOLERANCE = 100 -- Possible number of queues to be processed at once without losing FPS.
 	local LightmapSampleNum = 7 -- Used to sample lightmap
 	local radfrac = rad(360 / LightmapSampleNum)
 	while true do
 		Benchmark = SysTime()
-		for time, queuetable in SortedPairs(PaintQueue, true) do
+		for time, queuetable in SortedPairs(PaintQueue) do
 			local frac = #queuetable / MAX_QUEUES_TOLERANCE
 			LightmapSampleNum = math.ceil(Lerp(frac, 7, 2))
-			NumRepetition = math.ceil(Lerp(frac, 5, 1))
+			NumRepetition = math.ceil(Lerp(frac, 4, 0))
 			for id, q in SortedPairs(queuetable) do
 				local s = ss.SurfaceArray[q.index]
 				local angle, origin, normal, moved = Angle(s.Angles), s.Origin, s.Normal, s.Moved
