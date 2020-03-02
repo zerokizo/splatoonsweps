@@ -23,6 +23,9 @@ The aim of this rework is the following:
 * [ ] Your environment (OS, Graphics card, and so on).
 * [ ] Addons in your game - Some of them may conflict. Please specify the one.  
 **Something like "I have 300+ addons" isn't helpful, either.**
+* [ ] Try removing cache files! Some updates conflicts with your old cache files.  
+They're located in *garrysmod/data/splatoonsweps/mapname.txt* for singleplayer and listen server host,  
+and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
 
 ***
 ## Done

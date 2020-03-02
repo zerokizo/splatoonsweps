@@ -123,7 +123,7 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 			net.WriteFloat(OrderTick)
 			net.Send(ss.PlayersReady)
 		else
-			ss.InkQueueReceiveFunction(s.Index, radius, localang, ratio, color, ply, inktype, pos, Order - 256, OrderTick)
+			ss.ReceiveInkQueue(s.Index, radius, localang, ratio, color, ply, inktype, pos, Order - 256, OrderTick)
 		end
 	end
 

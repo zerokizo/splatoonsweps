@@ -20,7 +20,7 @@ local ChargeQuarter      = false -- Press Shift to fire any charger at 25% charg
 local DrawInkUVMap       = false -- Press Shift to draw ink UV map.
 local DrawInkUVBounds    = false -- Also draws UV boundary.
 local ShowInkSurface     = false -- Press E for serverside, Shift for clientside, draws ink surface nearby player #1.
-local ShowInkStateMesh   = false -- New ink algorithm attempts!  Shows the mesh to determine ink color of surface.
+local ShowInkStateMesh   = false -- Shows the mesh to determine ink color of surface.
 local ShowDisplacement   = false -- Shows a displacement mesh where player is looking at.
 local ShowInkChecked_ServerTime = CurTime()
 function sd.ShowInkChecked(r, s)
@@ -170,15 +170,15 @@ if CLIENT then
             if not ply:KeyPressed(IN_SPEED) then return end
             d.DShort()
             d.DColor(255, 255, 255)
-            d.DPoly {Vector(0, 0), Vector(0, c), Vector(c, c), Vector(c, 0)}
+            d.DPoly {Vector(0, 0), Vector(0, c), Vector(-c, c), Vector(-c, 0)}
             d.DColor(255, 0, 0)
-            d.DVector(Vector(c, 0), Vector(c, 0))
+            d.DVector(Vector(-c, 0), Vector(-c, 0))
             d.DColor(0, 255, 0)
             d.DVector(Vector(0, c), Vector(0, c))
             for _, s in ipairs(ss.SurfaceArray) do
                 local t = {}
                 for i, v in ipairs(s.Vertices) do
-                    t[i] = Vector(v.u, v.v) * c
+                    t[i] = Vector(-v.u, v.v) * c
                 end
 
                 d.DColor()
@@ -186,7 +186,7 @@ if CLIENT then
 
                 if DrawInkUVBounds then
                     d.DColor(255, 255, 255)
-                    local bu, bv = s.Bound.x * ss.UnitsToUV, s.Bound.y * ss.UnitsToUV
+                    local bu, bv = -s.Bound.x * ss.UnitsToUV, s.Bound.y * ss.UnitsToUV
                     for i, ti in ipairs(t) do
                         d.DVector(ti, vector_up * c / 500)
                         d.DPoly {

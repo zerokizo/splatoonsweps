@@ -3,27 +3,18 @@
 
 local ss = SplatoonSWEPs
 if not ss then return end
-local amb = render.GetAmbientLightColor() * .3
-local amblen = amb:Length() * .3
-if amblen > 1 then amb = amb / amblen end
-local ambscale = ss.GrayScaleFactor:Dot(amb) / 2
 local CVarWireframe = GetConVar "mat_wireframe"
 local CVarMinecraft = GetConVar "mat_showlowresimage"
-local lightmapmaterial = Material "splatoonsweps/lightmapbrush"
 local inkhdrscale = ss.vector_one * .05
 local inkmaterials = {}
-local normalmaterials = {}
+local rt = ss.RenderTarget
 for i = 1, 12 do
 	inkmaterials[i] = {}
-	normalmaterials[i] = {}
 	for j = 1, 4 do
 		inkmaterials[i][j] = Material(("splatoonsweps/inkshot/%d/%d.vmt"):format(i, j))
-		normalmaterials[i][j] = Material(("splatoonsweps/inkshot/%d/%dn.vmt"):format(i, j))
 	end
 end
 
-local rt = ss.RenderTarget
-local world = game.GetWorld()
 local function DrawMeshes(bDrawingDepth, bDrawingSkybox)
 	if ss.GetOption "hideink" then return end
 	if not rt.Ready or bDrawingSkybox or CVarWireframe:GetBool() or CVarMinecraft:GetBool() then return end
@@ -47,12 +38,6 @@ function ss.ClearAllInk()
 	table.Empty(ss.InkQueue)
 	table.Empty(ss.PaintSchedule)
 	if rt.Ready then table.Empty(ss.PaintQueue) end
-	local amb = ss.AmbientColor
-	if not amb then
-		amb = render.GetAmbientLightColor():ToColor()
-		ss.AmbientColor = amb
-	end
-
 	for _, s in ipairs(ss.SurfaceArray) do table.Empty(s.InkSurfaces) end
 
 	render.PushRenderTarget(rt.BaseTexture)
@@ -62,15 +47,9 @@ function ss.ClearAllInk()
 	render.Clear(0, 0, 0, 0)
 	render.OverrideColorWriteEnable(false)
 	render.PopRenderTarget()
-
-	render.PushRenderTarget(rt.Lightmap)
-	render.ClearDepth()
-	render.ClearStencil()
-	render.Clear(amb.r, amb.g, amb.b, 255)
-	render.PopRenderTarget()
 end
 
-function ss.InkQueueReceiveFunction(index, radius, ang, ratio, color, ply, inktype, pos, order, tick)
+function ss.ReceiveInkQueue(index, radius, ang, ratio, color, ply, inktype, pos, order, tick)
 	local s = ss.SurfaceArray[index]
 	local angle = Angle(s.Angles)
 	if s.Moved then angle:RotateAroundAxis(s.Normal, -90) end

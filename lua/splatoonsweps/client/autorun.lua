@@ -207,6 +207,52 @@ function ss.PrepareInkSurface(data)
 	ss.PixelsToUV = 1 / ss.UVToPixels
 	ss.RenderTarget.Ready = true
 	collectgarbage "collect"
+
+	timer.Simple(0, function()
+		local lightmapmaterial = Material "splatoonsweps/lightmapbrush"
+		local amb = render.GetAmbientLightColor()
+		local ambcolor = amb:ToColor()
+		local function GetLight(p, n)
+			local lightcolor = render.GetLightColor(p + n)
+			local light = render.ComputeLighting(p + n, n)
+			if lightcolor:LengthSqr() > 1 then lightcolor:Normalize() end
+			if light:LengthSqr() > 1 then light:Normalize() end
+			return ((light + lightcolor + amb) / 2.3):ToColor()
+		end
+	
+		render.PushRenderTarget(rt.Lightmap)
+		render.ClearDepth()
+		render.ClearStencil()
+		render.Clear(ambcolor.r, ambcolor.g, ambcolor.b, 255)
+		cam.Start2D()
+		draw.NoTexture()
+
+		local step = 8
+		for _, s in ipairs(ss.SurfaceArray) do
+			local angle = Angle(s.Angles)
+			local xs, ys = math.floor(s.u * rtsize), math.floor(s.v * rtsize) -- in pixels
+			local xb, yb = s.Bound.x / arearatio, s.Bound.y / arearatio -- in pixels
+			if s.Moved then
+				angle:RotateAroundAxis(s.Normal, -90)
+				xb, yb = yb, xb
+			end
+
+			local xe, ye = math.ceil(xs + xb), math.ceil(ys + yb)
+			render.SetScissorRect(xs, ys, xe, ye, true)
+			for x = xs, xe, step do
+				for y = ys, ye, step do
+					local pixel2d = Vector(x + step / 2 - xs, y + step / 2 - ys)
+					local pos3d = ss.To3D(pixel2d * arearatio, s.Origin, angle)
+					surface.SetDrawColor(GetLight(pos3d, s.Normal))
+					surface.DrawTexturedRect(x, y, step, step)
+				end
+			end
+			render.SetScissorRect(0, 0, 0, 0, false)
+		end
+
+		cam.End2D()
+		render.PopRenderTarget()
+	end)
 end
 
 local IMAGE_FORMAT_BGRA5551 = 21

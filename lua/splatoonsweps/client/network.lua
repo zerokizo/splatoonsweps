@@ -77,5 +77,5 @@ net.Receive("SplatoonSWEPs: Send an ink queue", function(len)
 	local order = net.ReadUInt(8)
 	local time = net.ReadFloat()
 	local pos = Vector(x, y, z) / 2
-	ss.InkQueueReceiveFunction(index, radius, ang, ratio, color, ply, inktype, pos, order, time)
+	ss.ReceiveInkQueue(index, radius, ang, ratio, color, ply, inktype, pos, order, time)
 end)
