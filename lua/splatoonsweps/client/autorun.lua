@@ -135,8 +135,6 @@ function ss.PrepareInkSurface(data)
 			local s = ss.SurfaceArray[k]
 			if half and sortedID >= half.id then -- If current polygon is moved
 				local bu = s.Bound.x / convertunit * divuv
-				s.Bound.x, s.Bound.y = s.Bound.y, s.Bound.x
-				s.Angles:RotateAroundAxis(s.Normal, -90)
 				s.u, s.v = s.v - dv, 1 - s.u - bu
 				s.Moved = true
 				for _, vert in ipairs(s.Vertices) do
@@ -232,18 +230,9 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Clientside initialization", function(
 		MATERIAL_RT_DEPTH_NONE,
 		rt.Flags.BaseTexture,
 		CREATERENDERTARGETFLAGS_HDR,
-		IMAGE_FORMAT_BGRA4444 -- 8192x8192, 128MB
+		IMAGE_FORMAT_RGBA8888 -- 8192x8192, 256MB
 	)
 	rtsize = math.min(rt.BaseTexture:Width(), rt.BaseTexture:Height())
-	rt.Normalmap = GetRenderTargetEx(
-		rt.Name.Normalmap,
-		rtsize, rtsize,
-		RT_SIZE_NO_CHANGE,
-		MATERIAL_RT_DEPTH_NONE,
-		rt.Flags.Normalmap,
-		CREATERENDERTARGETFLAGS_HDR,
-		IMAGE_FORMAT_BGRA4444 -- 8192x8192, 128MB
-	)
 	rt.Lightmap = GetRenderTargetEx(
 		rt.Name.Lightmap,
 		rtsize, rtsize,
@@ -267,23 +256,11 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Clientside initialization", function(
 		"LightmappedGeneric",
 		{
 			["$basetexture"] = rt.Name.BaseTexture,
-			["$bumpmap"] = rt.Name.Normalmap,
 			["$ssbump"] = "1",
 			["$nolod"] = "1",
 			["$alpha"] = "0.9",
 			["$alphatest"] = "1",
 			["$alphatestreference"] = "0.0625",
-		}
-	)
-	rt.WaterMaterial = CreateMaterial(
-		rt.Name.WaterMaterial,
-		"Refract",
-		{
-			["$normalmap"] = rt.Name.Normalmap,
-			["$nolod"] = "1",
-			["$bluramount"] = "2",
-			["$refractamount"] = ".125",
-			["$refracttint"] = "[1 1 1]",
 		}
 	)
 	rt.InkSplashMaterial = CreateMaterial(

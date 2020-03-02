@@ -73,9 +73,13 @@ end
 function ss.InkQueueReceiveFunction(index, radius, ang, ratio, color, ply, inktype, pos, order, tick)
 	local s = ss.SurfaceArray[index]
 	local angle = Angle(s.Angles)
+	if s.Moved then angle:RotateAroundAxis(s.Normal, -90) end
 	local pos2d = ss.To2D(pos, s.Origin, angle) * ss.UnitsToPixels
 	local b = s.Bound * ss.UnitsToPixels
-	if s.Moved then pos2d.x, pos2d.y = -pos.x, b.y - pos2d.y end
+	if s.Moved then
+		b.x, b.y = b.y, b.x
+		pos2d.x, pos2d.y = -pos2d.x, b.y - pos2d.y
+	end
 
 	local r = math.Round(radius * ss.UnitsToPixels)
 	local uv = Vector(s.u, s.v) * ss.UVToPixels
