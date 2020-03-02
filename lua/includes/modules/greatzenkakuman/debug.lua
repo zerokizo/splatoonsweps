@@ -97,7 +97,7 @@ function DPlane(v, n, z, sv)
 end
 
 function DPoint(v, s, z, sv)
-	if isbool(s) then s, z, sv = 10, s, z end
+	if s == nil or isbool(s) then s, z, sv = 10, s, z end
 	z = Either(z ~= nil, z, g)
 	if d then
 		debugoverlay.Cross(v, s, t, sv and csv or ccl, z)

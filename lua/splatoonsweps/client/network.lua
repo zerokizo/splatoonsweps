@@ -63,24 +63,6 @@ net.Receive("SplatoonSWEPs: Send turf inked", function()
 	ss.WeaponRecord[LocalPlayer()].Inked[classname] = inked
 end)
 
-function ss.InkQueueReceiveFunction(index, radius, ang, ratio, color, ply, inktype, pos, order, time)
-	local t = ss.PaintQueue[time] or {}
-	ss.PaintQueue[time], t[order + 256] = t, {
-		c = color,
-		dispflag = ss.SurfaceArray[index].Displacement and 0 or 1,
-		done = 0,
-		index = index,
-		inkangle = ang,
-		owner = ply,
-		pos = pos,
-		r = radius,
-		ratio = ratio,
-		t = inktype,
-	}
-	if ply == LocalPlayer() then return end
-	ss.AddInkRectangle(color, inktype, ang, pos, radius, ratio, ss.SurfaceArray[index])
-end
-
 net.Receive("SplatoonSWEPs: Send an ink queue", function(len)
 	local index = net.ReadUInt(ss.SURFACE_ID_BITS)
 	local color = net.ReadUInt(ss.COLOR_BITS)

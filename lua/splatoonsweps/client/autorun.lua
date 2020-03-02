@@ -135,6 +135,8 @@ function ss.PrepareInkSurface(data)
 			local s = ss.SurfaceArray[k]
 			if half and sortedID >= half.id then -- If current polygon is moved
 				local bu = s.Bound.x / convertunit * divuv
+				s.Bound.x, s.Bound.y = s.Bound.y, s.Bound.x
+				s.Angles:RotateAroundAxis(s.Normal, -90)
 				s.u, s.v = s.v - dv, 1 - s.u - bu
 				s.Moved = true
 				for _, vert in ipairs(s.Vertices) do

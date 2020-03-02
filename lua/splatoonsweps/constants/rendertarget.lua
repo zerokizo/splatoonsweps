@@ -6,9 +6,6 @@ local DSMALL    = 2 -- 2x4096x4096,     256MB
 local MEDIUM    = 3 -- 8192x8192,       512MB
 local DMEDIUM   = 4 -- 2x8192x8192,     1GB 
 local LARGE     = 5 -- 16384x16384,     2GB
-local DLARGE    = 6 -- 2x16384x16384,   4GB
-local ULTRA     = 7 -- 32768x32768,     8GB
-local DULTRA    = 8 -- 2x32768x32768,   16GB
 return {
 	RESOLUTION = {
 		MINIMUM = MINIMUM,
@@ -17,9 +14,6 @@ return {
 		MEDIUM  = MEDIUM,
 		DMEDIUM = DMEDIUM,
 		LARGE   = LARGE,
-		DLARGE  = DLARGE,
-		ULTRA   = ULTRA,
-		DULTRA  = ULTRA,
 	},
 	Size = {
 		[MINIMUM] = 2048,
@@ -28,9 +22,6 @@ return {
 		[MEDIUM ] = 8192,
 		[DMEDIUM] = 11585,
 		[LARGE  ] = 16384,
-		[DLARGE ] = 23170,
-		[ULTRA  ] = 32768,
-		[DULTRA ] = 40132,
 	},
 	Name = {
 		BaseTexture			= "splatoonsweps_basetexture",

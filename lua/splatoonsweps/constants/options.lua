@@ -24,7 +24,6 @@ return {
 	LeftHand = false,
 	MoveViewmodel = true,
 	NewStyleCrosshair = false,
-	NoRefract = {false, order = 1, clientside = true},
 	NPCInkColor = {
 		__closed = true,
 		Citizen = {1, order = 1, type = "color", serverside = true},

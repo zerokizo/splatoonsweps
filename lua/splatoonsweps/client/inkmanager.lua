@@ -9,10 +9,19 @@ if amblen > 1 then amb = amb / amblen end
 local ambscale = ss.GrayScaleFactor:Dot(amb) / 2
 local CVarWireframe = GetConVar "mat_wireframe"
 local CVarMinecraft = GetConVar "mat_showlowresimage"
-local inkhdrscale = ss.vector_one * .05
-local inkmaterial = Material "splatoonsweps/splatoonink"
 local lightmapmaterial = Material "splatoonsweps/lightmapbrush"
-local normalmaterial = Material "splatoonsweps/splatoonink_normal"
+local inkhdrscale = ss.vector_one * .05
+local inkmaterials = {}
+local normalmaterials = {}
+for i = 1, 12 do
+	inkmaterials[i] = {}
+	normalmaterials[i] = {}
+	for j = 1, 4 do
+		inkmaterials[i][j] = Material(("splatoonsweps/inkshot/%d/%d.vmt"):format(i, j))
+		normalmaterials[i][j] = Material(("splatoonsweps/inkshot/%d/%dn.vmt"):format(i, j))
+	end
+end
+
 local rt = ss.RenderTarget
 local world = game.GetWorld()
 local function DrawMeshes(bDrawingDepth, bDrawingSkybox)
@@ -26,12 +35,6 @@ local function DrawMeshes(bDrawingDepth, bDrawingSkybox)
 	for i, m in ipairs(ss.IMesh) do m:Draw() end -- Draw ink surface
 	render.OverrideDepthEnable(false) -- Back to default
 	render.SetToneMappingScaleLinear(hdrscale) -- Back to default
-
-	if not ss.GetConVar "norefract":GetBool() then
-		render.UpdateRefractTexture() -- Make the ink watery
-		render.SetMaterial(rt.WaterMaterial) -- Set water texture for ink
-		for i, m in ipairs(ss.IMesh) do m:Draw() end -- Draw ink again
-	end
 
 	if not LocalPlayer():FlashlightIsOn() and #ents.FindByClass "*projectedtexture*" == 0 then return end
 	render.PushFlashlightMode(true) -- Ink lit by player's flashlight or projected texture
@@ -50,11 +53,7 @@ function ss.ClearAllInk()
 		ss.AmbientColor = amb
 	end
 
-	for _, s in ipairs(ss.SurfaceArray) do
-		for i, v in pairs(s.InkSurfaces) do
-			table.Empty(v)
-		end
-	end
+	for _, s in ipairs(ss.SurfaceArray) do table.Empty(s.InkSurfaces) end
 
 	render.PushRenderTarget(rt.BaseTexture)
 	render.OverrideAlphaWriteEnable(true, true)
@@ -64,14 +63,6 @@ function ss.ClearAllInk()
 	render.OverrideColorWriteEnable(false)
 	render.PopRenderTarget()
 
-	render.PushRenderTarget(rt.Normalmap)
-	render.OverrideAlphaWriteEnable(true, true)
-	render.ClearDepth()
-	render.ClearStencil()
-	render.Clear(128, 128, 255, 0)
-	render.OverrideAlphaWriteEnable(false)
-	render.PopRenderTarget()
-
 	render.PushRenderTarget(rt.Lightmap)
 	render.ClearDepth()
 	render.ClearStencil()
@@ -79,55 +70,51 @@ function ss.ClearAllInk()
 	render.PopRenderTarget()
 end
 
+function ss.InkQueueReceiveFunction(index, radius, ang, ratio, color, ply, inktype, pos, order, tick)
+	local s = ss.SurfaceArray[index]
+	local angle = Angle(s.Angles)
+	local pos2d = ss.To2D(pos, s.Origin, angle) * ss.UnitsToPixels
+	local b = s.Bound * ss.UnitsToPixels
+	if s.Moved then pos2d.x, pos2d.y = -pos.x, b.y - pos2d.y end
+
+	local r = math.Round(radius * ss.UnitsToPixels)
+	local uv = Vector(s.u, s.v) * ss.UVToPixels
+	local center = Vector(math.Round(pos2d.x + uv.x), math.Round(pos2d.y + uv.y))
+	local start = Vector(math.floor(uv.x) - 1, math.floor(uv.y) - 1)
+	local endpos = Vector(math.ceil(uv.x + b.x) + 1, math.ceil(uv.y + b.y) + 1)
+	local vr = ss.vector_one * r
+	if not ss.CollisionAABB2D(start, endpos, center - vr, center + vr) then return end
+	ss.PaintQueue[tick * 512 + order + 256] = {
+		angle = ang,
+		center = center,
+		color = ss.GetColor(color),
+		colorid = color,
+		done = 0,
+		endpos = endpos,
+		ply = ply,
+		pos = pos,
+		radius = radius,
+		ratio = ratio,
+		size = 2 * r,
+		start = start,
+		surf = s,
+		t = inktype,
+	}
+end
+
 local function ProcessPaintQueue()
 	while not rt.Ready do coroutine.yield() end
-	local NumRepetition = 5
-	local BlendFuncs = {
-		BLEND_ONE,
-		BLEND_ZERO,
-		BLENDFUNC_ADD,
-		BLEND_ONE,
-		BLEND_ONE,
-		BLENDFUNC_ADD,
-	}
+	local NumRepetition = 4
+	local Painted = 0
 	local Benchmark = SysTime()
-	local texturename = "splatoonsweps/inkshot/shot%s"
-
 	local BaseTexture = rt.BaseTexture
-	local Normalmap = rt.Normalmap
-	local Lightmap = rt.Lightmap
-	local PixelsToUnits = ss.PixelsToUnits
-	local UnitsToPixels = ss.UnitsToPixels
-	local UVToPixels = ss.UVToPixels
-
-	local AddInkRectangle = ss.AddInkRectangle
-	local Angle = Angle
 	local ceil = math.ceil
-	local cos = math.cos
-	local CollisionAABB2D = ss.CollisionAABB2D
-	local Dot = Vector().Dot
-	local floor = math.floor
-	local format = string.format
-	local GetColor = ss.GetColor
-	local ipairs = ipairs
-	local LocalPlayer = LocalPlayer
-	local max = math.max
+	local Clamp = math.Clamp
+	local Lerp = Lerp
 	local next = next
 	local PaintQueue = ss.PaintQueue
-	local rad = math.rad
-	local Recompute = inkmaterial.Recompute
-	local RotateAroundAxis = Angle().RotateAroundAxis
-	local Round = math.Round
-	local SetFloat = inkmaterial.SetFloat
-	local SetTexture = inkmaterial.SetTexture
-	local sin = math.sin
 	local SortedPairs = SortedPairs
 	local SysTime = SysTime
-	local To2D = ss.To2D
-	local To3D = ss.To3D
-	local ToColor = Vector().ToColor
-	local unpack = unpack
-	local Vector = Vector
 	local yield = coroutine.yield
 
 	local Start2D = cam.Start2D
@@ -136,134 +123,43 @@ local function ProcessPaintQueue()
 	local PushRenderTarget = render.PushRenderTarget
 	local PopRenderTarget = render.PopRenderTarget
 	local SetScissorRect = render.SetScissorRect
-	local DrawTexturedRect = surface.DrawTexturedRect
 	local DrawTexturedRectRotated = surface.DrawTexturedRectRotated
 	local SetDrawColor = surface.SetDrawColor
 	local SetMaterial = surface.SetMaterial
-
-	local GetLightColor = render.GetLightColor
-	local ComputeLighting = render.ComputeLighting
-	local LengthSqr = Vector().LengthSqr
-	local Normalize = Vector().Normalize
-	local function GetLight(p, n)
-		local lightcolor = GetLightColor(p + n)
-		local light = ComputeLighting(p + n, n)
-		if LengthSqr(lightcolor) > 1 then Normalize(lightcolor) end
-		if LengthSqr(light) > 1 then Normalize(light) end
-		return ToColor((light + lightcolor + amb) / 2.3)
-	end
-
-	local IsNotSplatoonPortedMap = not ss.SplatoonMapPorts[game.GetMap()]
 	local MAX_QUEUE_TIME = ss.FrameToSec / 2
-	local MAX_QUEUES_TOLERANCE = 100 -- Possible number of queues to be processed at once without losing FPS.
-	local LightmapSampleNum = 7 -- Used to sample lightmap
-	local radfrac = rad(360 / LightmapSampleNum)
+	local MAX_QUEUES_TOLERANCE = 5 -- Possible number of queues to be processed at once without losing FPS.
 	while true do
 		Benchmark = SysTime()
-		for time, queuetable in SortedPairs(PaintQueue) do
-			local frac = #queuetable / MAX_QUEUES_TOLERANCE
-			LightmapSampleNum = math.ceil(Lerp(frac, 7, 2))
-			NumRepetition = math.ceil(Lerp(frac, 4, 0))
-			for id, q in SortedPairs(queuetable) do
-				local s = ss.SurfaceArray[q.index]
-				local angle, origin, normal, moved = Angle(s.Angles), s.Origin, s.Normal, s.Moved
-				if moved then RotateAroundAxis(angle, normal, -90) end
-				local pos2d = To2D(q.pos, origin, angle) * UnitsToPixels
-				local px = pos2d.x
-				local py = pos2d.y
-				local bx = s.Bound.x * UnitsToPixels
-				local by = s.Bound.y * UnitsToPixels
-				if moved then bx, by = by, bx end
-				local color = GetColor(q.c)
-				local r = Round(q.r * UnitsToPixels)
-				local up = s.u * UVToPixels
-				local vp = s.v * UVToPixels
-				local lightorg = q.pos - normal * q.dispflag * (Dot(normal, q.pos - origin) - 1)
-				local settexture = format(texturename, q.t)
-				if moved then px, py = -px, by - py end
-				local cx = Round(px + up) -- 2D center position
-				local cy = Round(py + vp)
-				local sx = floor(up) - 1 -- ScissorRect start
-				local sy = floor(vp) - 1
-				local tx = ceil(up + bx) + 1 -- ScissorRect end
-				local ty = ceil(vp + by) + 1
-				if q.done == 0 then
-					q.draw = CollisionAABB2D(
-						Vector(sx, sy) , Vector(tx, ty),
-						Vector(cx - r, cy - r), Vector(cx + r, cy + r))
-					if not q.draw then queuetable[id] = nil end
-				end
+		NumRepetition = ceil(Lerp(Painted / MAX_QUEUES_TOLERANCE, 4, 0))
+		for order, q in SortedPairs(PaintQueue) do
+			local alpha = Clamp(NumRepetition - q.done, 1, 4)
+			if 10 <= q.t and q.t <= 12 then alpha = 1 end
+			local inkmaterial = inkmaterials[q.t][alpha]
+			
+			PushRenderTarget(BaseTexture)
+			Start2D()
+			SetDrawColor(q.color)
+			SetMaterial(inkmaterial)
+			SetScissorRect(q.start.x, q.start.y, q.endpos.x, q.endpos.y, true)
+			OverrideBlend(true, BLEND_ONE, BLEND_ZERO, BLENDFUNC_ADD, BLEND_ONE, BLEND_ONE, BLENDFUNC_ADD)
+			DrawTexturedRectRotated(q.center.x, q.center.y, q.size * q.ratio, q.size, q.angle)
+			OverrideBlend(false)
+			SetScissorRect(0, 0, 0, 0, false)
+			End2D()
+			PopRenderTarget()
 
-				if q.draw then
-					local alphatestreference = max(1 - q.done / NumRepetition, 0.0625)
-					if alphatestreference ~= alphatestreference or 10 <= q.t and q.t <= 12 then
-						alphatestreference = 0.0625
-					end
-					
-					SetTexture(inkmaterial, "$basetexture", settexture)
-					SetTexture(normalmaterial, "$basetexture", settexture .. "n")
-					SetFloat(inkmaterial, "$alphatestreference", alphatestreference)
-					Recompute(inkmaterial)
-					SetFloat(normalmaterial, "$alphatestreference", alphatestreference)
-					Recompute(normalmaterial)
-					PushRenderTarget(BaseTexture)
-					SetScissorRect(sx, sy, tx, ty, true)
-					Start2D()
-					SetDrawColor(color)
-					SetMaterial(inkmaterial)
-					OverrideBlend(true, unpack(BlendFuncs))
-					DrawTexturedRectRotated(cx, cy, 2 * r * q.ratio, 2 * r, q.inkangle)
-					OverrideBlend(false)
-					End2D()
-					SetScissorRect(0, 0, 0, 0, false)
-					PopRenderTarget()
-
-					--Draw on normal map
-					PushRenderTarget(Normalmap)
-					SetScissorRect(sx, sy, tx, ty, true)
-					Start2D()
-					SetDrawColor(color_white)
-					SetMaterial(normalmaterial)
-					OverrideBlend(true, unpack(BlendFuncs))
-					DrawTexturedRectRotated(cx, cy, 2 * r * q.ratio, 2 * r, q.inkangle)
-					OverrideBlend(false)
-					End2D()
-					SetScissorRect(0, 0, 0, 0, false)
-					PopRenderTarget()
-
-					--Draw on lightmap
-					if IsNotSplatoonPortedMap then
-						local offset = r / 2
-						local sign = moved and -1 or 1
-						PushRenderTarget(Lightmap)
-						SetScissorRect(sx, sy, tx, ty, true)
-						Start2D()
-						SetDrawColor(GetLight(lightorg, normal))
-						SetMaterial(lightmapmaterial)
-						DrawTexturedRect(cx - offset, cy - offset, r, r)
-						for i = 1, LightmapSampleNum do
-							local rx = cos(radfrac * i) * offset * sign
-							local ry = sin(radfrac * i) * offset
-							local rv = Vector(rx, ry) * PixelsToUnits
-							SetDrawColor(GetLight(To3D(rv, lightorg, angle), normal))
-							DrawTexturedRect(floor(rx + cx - offset), floor(ry + cy - offset), r, r)
-						end
-						End2D()
-						SetScissorRect(0, 0, 0, 0, false)
-						PopRenderTarget()
-					end
-
-					q.done = q.done + 1
-					if q.done > NumRepetition then queuetable[id] = nil end
-					if SysTime() - Benchmark > MAX_QUEUE_TIME then break end
-					-- if ss.Debug then ss.Debug.ShowInkDrawn(Vector(sx, sy), Vector(cx, cy), Vector(tx, ty), surf, q, moved) end
-				end
+			q.done = q.done + 1
+			Painted = Painted + 1
+			if q.done > NumRepetition then
+				ss.AddInkRectangle(q.colorid, q.t, q.angle, q.pos, q.radius, q.ratio, q.surf)
+				PaintQueue[order] = nil
 			end
 
-			if not next(queuetable) then PaintQueue[time] = nil end
 			if SysTime() - Benchmark > MAX_QUEUE_TIME then break end
+			-- if ss.Debug then ss.Debug.ShowInkDrawn(q.start, q.center, q.endpos, q.surf, q, q.surf.Moved) end
 		end
 
+		Painted = 0
 		yield()
 	end
 end

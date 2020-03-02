@@ -25,7 +25,6 @@ return {CVars = {
     LeftHand = "Use left hand to hold weapons. (1: enabled, 0: disabled)",
     MoveViewmodel = "Move viewmodel when avoid setting is enabled. (1: enabled, 0: disabled)",
     NewStyleCrosshair = "Make crosshair act like Splatoon 2. (1: enabled, 0: disabled)",
-    NoRefract = "Don't draw the refraction effect of ink. (1: don't draw, 0: draw)",
     NPCInkColor = {
         Citizen = "Ink color for citizen.",
         Combine = "Ink color for Combine forces.",
@@ -51,10 +50,7 @@ Make sure your graphics card has enough space of video memory.
     This option uses 256MB of your VRAM.
 3: 8192x8192, using 512MB.
 4: 2x8192x8192, 1GB.
-5: 16384x16384, 2GB.
-6: 2x16384x16384, 4GB.
-7: 32768x32768, 8GB.
-8: 2x32768x32768, 16GB.]],
+5: 16384x16384, 2GB.]],
     TakeFallDamage = "Whether to take fall damage when you equip a Splatoon weapon. (1: do, 0: do not)",
     ToggleADS = "Aim down sight mode. (1: toggle, 0: hold)",
 	weapon_splatoonsweps_blaster_base = {

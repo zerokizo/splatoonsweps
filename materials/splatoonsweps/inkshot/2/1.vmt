@@ -1,6 +1,6 @@
 "UnlitGeneric"
 {
-	"$basetexture" "splatoonsweps/inkshot/shot1"
+	"$basetexture" "splatoonsweps/inkshot/2/base"
 	"$alphatest" "1"
 	"$alphatestreference" "0.0625"
 	"$vertexcolor" "1"
