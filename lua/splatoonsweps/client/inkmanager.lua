@@ -45,7 +45,7 @@ function ss.ClearAllInk()
 	render.ClearDepth()
 	render.ClearStencil()
 	render.Clear(0, 0, 0, 0)
-	render.OverrideColorWriteEnable(false)
+	render.OverrideAlphaWriteEnable(false)
 	render.PopRenderTarget()
 end
 

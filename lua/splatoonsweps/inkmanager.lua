@@ -134,7 +134,7 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 	if ss.sp and SERVER then
 		net.Start "SplatoonSWEPs: Send turf inked"
 		net.WriteDouble(ss.WeaponRecord[ply].Inked[classname])
-		net.WriteUInt(KeyFromValue(ss.WeaponClassNames, classname), ss.WEAPON_CLASSNAMES_BITS)
+		net.WriteUInt(table.KeyFromValue(ss.WeaponClassNames, classname), ss.WEAPON_CLASSNAMES_BITS)
 		net.Send(ply)
 	end
 end
