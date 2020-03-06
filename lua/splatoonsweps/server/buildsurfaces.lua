@@ -168,6 +168,28 @@ local function MakeBrushSurface(verts, disp)
     }
 end
 
+local function IsExposed(verts, normal)
+    local issolid = true
+    local center = Vector()
+    for i, v in ipairs(verts) do center:Add(v) end
+    center = center / #verts
+    local sample_points = {center}
+    for i = 1, #verts do
+        local v1 = verts[i]
+        local v2 = verts[i % #verts + 1]
+        sample_points[#sample_points + 1] = center * 0.001 + v1 * 0.999
+        sample_points[#sample_points + 1] = center * 0.500 + v1 * 0.500
+        sample_points[#sample_points + 1] = center * 0.250 + v1 * 0.750
+        sample_points[#sample_points + 1] = (center + v1 + v2) / 3
+    end
+
+    for _, sp in ipairs(sample_points) do
+        local c = util.PointContents(sp + normal * 0.05)
+        issolid = issolid and bit.band(c, MASK_VISIBLE) > 0
+        if not issolid then return true end
+    end
+end
+
 local function read(arg)
 	if isstring(arg) then
 		if arg == "SignedByte" then
@@ -293,13 +315,15 @@ local function ReadTexInfos()
     BSPFile:Seek(header.offset)
 	header.num = math.min(math.floor(header.length / size) - 1, 12288 - 1)
 	for i = 0, header.num do
-		BSPFile:Skip(size - 8)
-		lump[i] = {}
+		BSPFile:Skip(32)
+        lump[i] = {}
+        lump[i].LightmapVecS = read "Vector"
+        lump[i].LightmapOffsetS = read "Float"
+        lump[i].LightmapVecT = read "Vector"
+        lump[i].LightmapOffsetT = read "Float"
 		lump[i].flags = read "Long"
-		local texdataID = read "Long"
-		if texdataID >= 0 then
-			lump[i].TexData = TexData[texdataID]
-		end
+		local texID = read "Long"
+		if texID >= 0 then lump[i].TexData = TexData[texID] end
     end
 end
 
@@ -316,7 +340,7 @@ local function ReadFaces()
     BSPFile:Seek(header.offset)
     header.num = math.min(math.floor(header.length / size) - 1, 65536 - 1)
     for i = 0, header.num do
-        lump[i] = {}
+        local face = {}
         local planeIndex = read "UShort"
         local PlaneTable = planes[planeIndex]
         local normal = PlaneTable.normal
@@ -326,6 +350,14 @@ local function ReadFaces()
         local numedges = read "Short" - 1
 		local TexInfoTable = texinfo[read "Short"]
         local dispinfo = read "Short"
+        BSPFile:Skip(6) -- short surfaceFogVolumeID, byte[4] styles
+        local lightofs = read "Long"
+        local area = read "Float"
+        local LightmapMinsU = read "Long"
+        local LightmapMinsV = read "Long"
+        local LightmapSizeU = read "Long"
+        local LightmapSizeV = read "Long"
+        BSPFile:Skip(12)
         local rawverts = {unpack(surfedges, firstedge, firstedge + numedges)}
         local verts = {}
         local center = Vector()
@@ -340,8 +372,6 @@ local function ReadFaces()
         end
 
         center = center / #verts
-        BSPFile:Skip(42)
-        
 		local texname = TexInfoTable.TexData.name
         local texlow = texname:lower()
         local invalid = texlow:find "tools/" or texlow:find "water"
@@ -349,11 +379,18 @@ local function ReadFaces()
         or Material(texname):GetString "$surfaceprop" == "metalgrate"
         or #verts < 3
         
-        local contents = util.PointContents(center - normal * 0.001)
+        local contents = util.PointContents(center - normal * 0.05)
         local issolid = bit.band(contents, MASK_SOLID) > 0
         local isdisplacement = dispinfo >= 0
         if not invalid and (issolid or isdisplacement) then
-            lump[i].Vertices = verts
+            face.Vertices = verts
+            face.LightmapOffset = lightofs
+            face.LightmapMins = Vector(LightmapMinsU, LightmapMinsV)
+            face.LightmapSize = Vector(LightmapSizeU, LightmapSizeV)
+            face.LightmapVecS = TexInfoTable.LightmapVecS
+            face.LightmapOffsetS = TexInfoTable.LightmapOffsetS
+            face.LightmapVecT = TexInfoTable.LightmapVecT
+            face.LightmapOffsetT = TexInfoTable.LightmapOffsetT
             if isdisplacement then
                 local here = BSPFile:Tell()
                 BSPFile:Seek(dispinfooffset + dispinfo * 176)
@@ -407,8 +444,10 @@ local function ReadFaces()
                     end
                 end
         
-                lump[i].Displacement = disp
+                face.Displacement = disp
             end
+
+            lump[#lump + 1] = face
         end
     end
 end
@@ -485,34 +524,8 @@ local function ReadGameLump()
                 local n = v2v1:Cross(v2v3) -- normal around v1<-v2->v3
                 if n:LengthSqr() > 4000 then -- normal is valid then
                     n:Normalize() -- normalize the normal
-
-                    local center = (v1 + v2 + v3) / 3
-                    local issolid = true
-                    for _, sample_point in ipairs {
-                        center,
-                        (center * 0.001 + v1 * 0.999),
-                        (center * 0.001 + v2 * 0.999),
-                        (center * 0.001 + v3 * 0.999),
-                        (center + v1) / 2,
-                        (center + v2) / 2,
-                        (center + v3) / 2,
-                        (center * 0.25 + v1 * 0.75),
-                        (center * 0.25 + v2 * 0.75),
-                        (center * 0.25 + v3 * 0.75),
-                        (center + v1 + v2) / 3,
-                        (center + v2 + v3) / 3,
-                        (center + v1 + v3) / 3,
-                    } do
-                        local c = util.PointContents(sample_point + n * 0.01)
-                        issolid = issolid and bit.band(c, MASK_VISIBLE) > 0
-                        if not issolid then break end
-                    end
-
-                    if not issolid then
-                        -- if n:Dot(center - convex_center) < 0 then error "AAA" n = -n end
-
-                        -- detect the appropriate projection plane
-                        local component_sign, normal
+                    if IsExposed({v1, v2, v3}, n) then
+                        local component_sign, normal -- detect the appropriate projection plane
                         local max_component = 0
                         local projection_normal = Vector()
                         for axis in pairs(Axes) do
@@ -653,6 +666,15 @@ local NumDisplacements = 0
 for i, face in ipairs(BSP.Data[LUMP.FACES]) do
     if face.Vertices then
         SurfaceArray[#SurfaceArray + 1] = MakeBrushSurface(face.Vertices, face.Displacement)
+        SurfaceArray[#SurfaceArray].LightmapInfo = {
+            Offset = face.LightmapOffset,
+            Mins = face.LightmapMins,
+            Size = face.LightmapSize,
+            VecS = face.LightmapVecS,
+            OffsetS = face.LightmapOffsetS,
+            VecT = face.LightmapVecT,
+            OffsetT = face.LightmapOffsetT,
+        }
         if face.Displacement then
             NumDisplacements = NumDisplacements + 1
         end
@@ -789,8 +811,9 @@ ConstructAABBTree(AABBTree, SurfIndicesRoot, 1)
 print("MAKE", util.TimerCycle())
 
 ss.AABBTree = AABBTree
-ss.SurfaceArray = SurfaceArray
+ss.LightmapTableOffset = BSP.Header[LUMP.LIGHTING].offset
 ss.NumDisplacements = NumDisplacements
+ss.SurfaceArray = SurfaceArray
 for i, s in ipairs(SurfaceArray) do
     ss.AreaBound = ss.AreaBound + s.Area
     ss.AspectSum = ss.AspectSum + s.Bound.y / s.Bound.x
