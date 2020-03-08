@@ -5,8 +5,9 @@ local ss = SplatoonSWEPs
 if not ss then return end
 local CVarWireframe = GetConVar "mat_wireframe"
 local CVarMinecraft = GetConVar "mat_showlowresimage"
+local IsHDREnabled = GetConVar "mat_hdr_level":GetInt() > 0
 local lightmapbrush = Material "splatoonsweps/lightmapbrush"
-local inkhdrscale = ss.vector_one * .05
+local inkhdrscale = ss.vector_one * 0.5^2.2
 local inkmaterials = {}
 local rt = ss.RenderTarget
 local LightmapQueue = {}
@@ -149,7 +150,6 @@ end
 
 local function ProcessLightmapSampling()
 	while not rt.Ready do coroutine.yield() end
-
 	local Lightmap = rt.Lightmap
 	local SysTime = SysTime
 	local Vector = Vector
@@ -208,7 +208,6 @@ local function ProcessLightmapSampling()
 					for y = start.y, endpos.y, LIGHTMAP_SIZE do
 						local pixel2d = Vector(x + LIGHTMAP_RADIUS - start.x, y + LIGHTMAP_RADIUS - start.y)
 						local pos3d = To3D(pixel2d * ss.PixelsToUnits, s.Origin, angle)
-						debugoverlay.Cross(pos3d, 5, 10, Color(0, 255, 0), true)
 						SetDrawColor(LightmapSample(pos3d, s.Normal))
 						DrawTexturedRect(x, y, LIGHTMAP_SIZE, LIGHTMAP_SIZE)
 						if SysTime() - Benchmark > 0.1 then ContinueYield() end
@@ -226,6 +225,8 @@ end
 
 local process = coroutine.create(ProcessPaintQueue)
 local lightmapsampling = coroutine.create(ProcessLightmapSampling)
+local gamma_recip = 1 / 2.2
+local rgb_mul = 255^(-gamma_recip - 1)
 function ss.ClearAllInk()
 	local function SampleLightmap()
 		util.TimerCycle()
@@ -236,9 +237,36 @@ function ss.ClearAllInk()
 		render.Clear(amb.r, amb.g, amb.b, 255)
 		cam.Start2D()
 		surface.SetMaterial(lightmapbrush)
-		local gamma_recip, overbrightFactor = 1 / 2.2, 1
-		local rgb_mul = (1 / 255)^gamma_recip * overbrightFactor
+
+		local brightness_max = 1
 		local bsp = file.Open(("maps/%s.bsp"):format(game.GetMap()), "rb", "GAME")
+		bsp:Seek(8)
+		local ents_lump_offset = bsp:ReadLong()
+		local ents_lump_size = bsp:ReadLong()
+		bsp:Seek(IsHDREnabled and 0x358 or 0x88)
+		local lighting_lump_offset = bsp:ReadLong()
+		bsp:Seek(ents_lump_offset)
+		for ent in bsp:Read(ents_lump_size):gmatch "{\n.-\n}" do
+			local t = util.KeyValuesToTable("@" .. ent)
+			if t.classname == "light_environment" then
+				brightness_max = tonumber(t._light:Split " "[4])
+				break
+			end
+		end
+
+		local overbrightFactor = brightness_max * rgb_mul
+		local function GetRGB(r, g, b, e)
+			if e > 127 then e = e - 256 end
+			local mul = 2^(e * gamma_recip) * overbrightFactor
+			local vrgb = Vector(
+				math.min(r ^ gamma_recip * mul, 1),
+				math.min(g ^ gamma_recip * mul, 1),
+				math.min(b ^ gamma_recip * mul, 1))
+			local max_comp_recip = math.max(vrgb.x, vrgb.y, vrgb.z)
+			if max_comp_recip > 1 then vrgb:Mul(1 / max_comp_recip) end
+			return vrgb:ToColor()
+		end
+
 		for _, s in ipairs(ss.SurfaceArray) do
 			local li = s.LightmapInfo
 			if li and not s.Displacement then
@@ -283,7 +311,8 @@ function ss.ClearAllInk()
 				local draw_offset = Vector(w, h) * size / 2
 				w, h = math.ceil(w) * size, math.ceil(h) * size
 				t1, t2 = t1 * t1_unit, t2 * t2_unit
-				bsp:Seek(ss.LightmapTableOffset + li.Offset)
+
+				bsp:Seek(lighting_lump_offset + li.Offset)
 				render.SetScissorRect(start.x, start.y, endpos.x, endpos.y, true)
 				for v = 0, li.Size.y do
 					for u = 0, li.Size.x do
@@ -291,23 +320,20 @@ function ss.ClearAllInk()
 						local g = bsp:ReadByte()
 						local b = bsp:ReadByte()
 						local e = bsp:ReadByte()
-						if e > 127 then e = e - 256 end
+						local c = GetRGB(r, g, b, e)
 						local dxy = t1 * u + t2 * v
 						local pos3d = lightmap_org + dxy - tn * n:Dot(dxy) / n:Dot(tn)
-						r = math.min(1, (r * 2^e)^gamma_recip * rgb_mul) * 255
-						g = math.min(1, (g * 2^e)^gamma_recip * rgb_mul) * 255
-						b = math.min(1, (b * 2^e)^gamma_recip * rgb_mul) * 255
-						
 						local pos2d = ss.To2D(pos3d, s.Origin, angle) * ss.UnitsToPixels
 						if s.Moved then pos2d = bound_offset - pos2d end
 						local p = start + pos2d - draw_offset
-						surface.SetDrawColor(r, g, b)
+						surface.SetDrawColor(c)
 						surface.DrawTexturedRect(p.x, p.y, w, h)
 					end
 				end
 				render.SetScissorRect(0, 0, 0, 0, false)
 			end
 		end
+
 		bsp:Close()
 		cam.End2D()
 		render.PopRenderTarget()

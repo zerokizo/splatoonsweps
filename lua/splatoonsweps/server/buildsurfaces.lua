@@ -811,7 +811,6 @@ ConstructAABBTree(AABBTree, SurfIndicesRoot, 1)
 print("MAKE", util.TimerCycle())
 
 ss.AABBTree = AABBTree
-ss.LightmapTableOffset = BSP.Header[LUMP.LIGHTING].offset
 ss.NumDisplacements = NumDisplacements
 ss.SurfaceArray = SurfaceArray
 for i, s in ipairs(SurfaceArray) do

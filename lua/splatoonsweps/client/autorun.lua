@@ -50,7 +50,6 @@ local MAX_TRIANGLES = math.floor(32768 / 3) -- mesh library limitation
 local INK_SURFACE_DELTA_NORMAL = .8 -- Distance between map surface and ink mesh
 function ss.PrepareInkSurface(data)
 	ss.AABBTree = ss.RestoreJSONLimit(data.AABBTree)
-	ss.LightmapTableOffset = data.LightmapTableOffset
 	ss.SurfaceArray = ss.RestoreJSONLimit(data.SurfaceArray)
 	ss.AreaBound  = data.UVInfo.AreaBound
 	ss.AspectSum  = data.UVInfo.AspectSum
@@ -263,6 +262,7 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Clientside initialization", function(
 			["$alpha"] = "0.9",
 			["$alphatest"] = "1",
 			["$alphatestreference"] = "0.0625",
+			["$color"] = tostring(ss.vector_one * 0.5^2.2),
 		}
 	)
 	rt.InkSplashMaterial = CreateMaterial(
