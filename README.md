@@ -12,7 +12,7 @@ The aim of this rework is the following:
     * Aim down sight
     * And so on...
 
-# Important thing - read before you're testing
+# Important thing - read before testing
 ***
 **I don't intend to let you enjoy the new SWEPs.  Actually I want you to test it to help me fix bugs.**  
 **So, I think something like "The addon isn't working for me" isn't worth reading.**  
@@ -41,6 +41,7 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
 * All Rollers/Brushes in Splatoon.
 
 ## Currently working on
+* _Optimizations!!_ Really important thing because it's almost unplayable due to the lag right now.
 * Make Slosher and Tri-Slosher
     * [x] Almost done
 * Make Sloshing Machine
