@@ -181,6 +181,81 @@ local function ProcessPaintQueue()
 	end
 end
 
+local function ProcessLightmapSampling()
+	while not rt.Ready do coroutine.yield() end
+	local Lightmap = rt.Lightmap
+	local SysTime = SysTime
+	local Vector = Vector
+	local Angle = Angle
+	local RotateAroundAxis = Angle().RotateAroundAxis
+	local yield = coroutine.yield
+	local PushRenderTarget = render.PushRenderTarget
+	local PopRenderTarget = render.PopRenderTarget
+	local SetScissorRect = render.SetScissorRect
+	local SetMaterial = surface.SetMaterial
+	local SetDrawColor = surface.SetDrawColor
+	local DrawTexturedRect = surface.DrawTexturedRect
+	local NoTexture = draw.NoTexture
+	local Start2D = cam.Start2D
+	local End2D = cam.End2D
+	local ceil = math.ceil
+	local floor = math.floor
+	local ipairs = ipairs
+	local next = next
+	local To3D = ss.To3D
+	local UnitsToPixels = ss.UnitsToPixels
+	local UVToPixels = ss.UVToPixels
+	local Benchmark = SysTime()
+	local LIGHTMAP_RADIUS = 512 -- Pixels
+	while LIGHTMAP_RADIUS > 16 do
+		local LIGHTMAP_SIZE = LIGHTMAP_RADIUS * 2
+		for _, i in ipairs(ss.SortedSurfaceIDs) do
+			local s = ss.SurfaceArray[i]
+			if s.Displacement then
+				local angle = Angle(s.Angles)
+				local b = s.Bound * UnitsToPixels
+				local bound_offset = Vector(0, b.x, 0)
+				if s.Moved then
+					RotateAroundAxis(angle, s.Normal, -90)
+					b.x, b.y = b.y, b.x
+				end
+
+				local start = Vector(floor(s.u * ss.UVToPixels) - 1, floor(s.v * ss.UVToPixels) - 1)
+				local endpos = Vector(ceil(start.x + b.x) + 1, ceil(start.y + b.y) + 1)
+				local function ContinueYield()
+					SetScissorRect(0, 0, 0, 0, false)
+					End2D()
+					PopRenderTarget()
+					yield()
+					PushRenderTarget(Lightmap)
+					Start2D()
+					SetScissorRect(start.x, start.y, endpos.x, endpos.y, true)
+					NoTexture()
+				end
+
+				PushRenderTarget(Lightmap)
+				Start2D()
+				SetScissorRect(start.x, start.y, endpos.x, endpos.y, true)
+				NoTexture()
+				for x = start.x, endpos.x, LIGHTMAP_SIZE do
+					for y = start.y, endpos.y, LIGHTMAP_SIZE do
+						local pixel2d = Vector(x + LIGHTMAP_RADIUS - start.x, y + LIGHTMAP_RADIUS - start.y)
+						local pos3d = To3D(pixel2d * ss.PixelsToUnits, s.Origin, angle)
+						SetDrawColor(LightmapSample(pos3d, s.Normal))
+						DrawTexturedRect(x, y, LIGHTMAP_SIZE, LIGHTMAP_SIZE)
+						if SysTime() - Benchmark > 0.1 then ContinueYield() end
+					end
+				end
+				SetScissorRect(0, 0, 0, 0, false)
+				End2D()
+				PopRenderTarget()
+			end
+		end
+
+		LIGHTMAP_RADIUS = LIGHTMAP_RADIUS / 2
+	end
+end
+
 local process = coroutine.create(ProcessPaintQueue)
 function ss.ClearAllInk()
 	table.Empty(ss.InkQueue)
