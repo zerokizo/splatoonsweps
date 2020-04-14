@@ -202,7 +202,7 @@ do -- Ink distribution map
 		local f, mask = path:format(i), {}
 		local w, h, data = include(f)
 		mask.width, mask.height = w, h
-		data = string.Explode("\n", data)
+		data = data:Split "\n"
 		for y = 1, h do
 			for x, d in ipairs {data[y]:byte(1, #data[y])} do
 				mask[x] = mask[x] or {}

@@ -50,7 +50,10 @@ net.Receive("SplatoonSWEPs: Send an error message", function()
 	notification.AddLegacy(msg, icon, duration)
 end)
 
-net.Receive("SplatoonSWEPs: Send ink cleanup", ss.ClearAllInk)
+net.Receive("SplatoonSWEPs: Send ink cleanup", function()
+	ss.ClearAllInk() -- Wrap function for auto-refresh
+end)
+
 net.Receive("SplatoonSWEPs: Send player data", function()
 	local size = net.ReadUInt(16)
 	local record = util.Decompress(net.ReadData(size))
@@ -66,7 +69,6 @@ end)
 net.Receive("SplatoonSWEPs: Send an ink queue", function(len)
 	local index = net.ReadUInt(ss.SURFACE_ID_BITS)
 	local color = net.ReadUInt(ss.COLOR_BITS)
-	local ply = Entity(net.ReadUInt(13))
 	local inktype = net.ReadUInt(ss.INK_TYPE_BITS)
 	local radius = net.ReadUInt(8)
 	local ratio = net.ReadVector().x
@@ -77,5 +79,5 @@ net.Receive("SplatoonSWEPs: Send an ink queue", function(len)
 	local order = net.ReadUInt(8)
 	local time = net.ReadFloat()
 	local pos = Vector(x, y, z) / 2
-	ss.ReceiveInkQueue(index, radius, ang, ratio, color, ply, inktype, pos, order, time)
+	ss.ReceiveInkQueue(index, radius, ang, ratio, color, inktype, pos, order, time)
 end)

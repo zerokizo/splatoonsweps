@@ -111,7 +111,6 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 			net.Start "SplatoonSWEPs: Send an ink queue"
 			net.WriteUInt(s.Index, ss.SURFACE_ID_BITS)
 			net.WriteUInt(color, ss.COLOR_BITS)
-			net.WriteUInt(ply:EntIndex(), 13)
 			net.WriteUInt(inktype, ss.INK_TYPE_BITS)
 			net.WriteUInt(radius, 8)
 			net.WriteVector(Vector(ratio))
@@ -123,7 +122,7 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 			net.WriteFloat(OrderTick)
 			net.Send(ss.PlayersReady)
 		else
-			ss.ReceiveInkQueue(s.Index, radius, localang, ratio, color, ply, inktype, pos, Order - 256, OrderTick)
+			ss.ReceiveInkQueue(s.Index, radius, localang, ratio, color, inktype, pos, Order - 256, OrderTick)
 		end
 	end
 

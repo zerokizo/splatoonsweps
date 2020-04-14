@@ -115,6 +115,13 @@ function ss.PrepareInkSurface(data)
 	end
 
 	print("SplatoonSWEPs: Total mesh triangles = ", NumMeshTriangles)
+	ss.PixelsToUnits = arearatio
+	ss.UVToUnits = convertunit
+	ss.UVToPixels = rtsize
+	ss.UnitsToPixels = 1 / ss.PixelsToUnits
+	ss.UnitsToUV = 1 / ss.UVToUnits
+	ss.PixelsToUV = 1 / ss.UVToPixels
+	ss.SortedSurfaceIDs = sortedsurfs
 
 	for i = 1, math.ceil(NumMeshTriangles / MAX_TRIANGLES) do
 		ss.IMesh[#ss.IMesh + 1] = Mesh(ss.RenderTarget.Material)
@@ -131,7 +138,7 @@ function ss.PrepareInkSurface(data)
 			nummeshes = nummeshes + 1
 		end
 
-		for sortedID, k in ipairs(sortedsurfs) do
+		for sortedID, k in ipairs(ss.SortedSurfaceIDs) do
 			local s = ss.SurfaceArray[k]
 			if half and sortedID >= half.id then -- If current polygon is moved
 				local bu = s.Bound.x / convertunit * divuv
@@ -199,60 +206,8 @@ function ss.PrepareInkSurface(data)
 		Recent = {},
 	}
 
-	ss.PixelsToUnits = arearatio
-	ss.UVToUnits = convertunit
-	ss.UVToPixels = rtsize
-	ss.UnitsToPixels = 1 / ss.PixelsToUnits
-	ss.UnitsToUV = 1 / ss.UVToUnits
-	ss.PixelsToUV = 1 / ss.UVToPixels
 	ss.RenderTarget.Ready = true
 	collectgarbage "collect"
-
-	timer.Simple(0, function()
-		local lightmapmaterial = Material "splatoonsweps/lightmapbrush"
-		local amb = render.GetAmbientLightColor()
-		local ambcolor = amb:ToColor()
-		local function GetLight(p, n)
-			local lightcolor = render.GetLightColor(p + n)
-			local light = render.ComputeLighting(p + n, n)
-			if lightcolor:LengthSqr() > 1 then lightcolor:Normalize() end
-			if light:LengthSqr() > 1 then light:Normalize() end
-			return ((light + lightcolor + amb) / 2.3):ToColor()
-		end
-	
-		render.PushRenderTarget(rt.Lightmap)
-		render.ClearDepth()
-		render.ClearStencil()
-		render.Clear(ambcolor.r, ambcolor.g, ambcolor.b, 255)
-		cam.Start2D()
-		draw.NoTexture()
-
-		local step = 8
-		for _, s in ipairs(ss.SurfaceArray) do
-			local angle = Angle(s.Angles)
-			local xs, ys = math.floor(s.u * rtsize), math.floor(s.v * rtsize) -- in pixels
-			local xb, yb = s.Bound.x / arearatio, s.Bound.y / arearatio -- in pixels
-			if s.Moved then
-				angle:RotateAroundAxis(s.Normal, -90)
-				xb, yb = yb, xb
-			end
-
-			local xe, ye = math.ceil(xs + xb), math.ceil(ys + yb)
-			render.SetScissorRect(xs, ys, xe, ye, true)
-			for x = xs, xe, step do
-				for y = ys, ye, step do
-					local pixel2d = Vector(x + step / 2 - xs, y + step / 2 - ys)
-					local pos3d = ss.To3D(pixel2d * arearatio, s.Origin, angle)
-					surface.SetDrawColor(GetLight(pos3d, s.Normal))
-					surface.DrawTexturedRect(x, y, step, step)
-				end
-			end
-			render.SetScissorRect(0, 0, 0, 0, false)
-		end
-
-		cam.End2D()
-		render.PopRenderTarget()
-	end)
 end
 
 local IMAGE_FORMAT_BGRA5551 = 21
@@ -307,6 +262,7 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Clientside initialization", function(
 			["$alpha"] = "0.9",
 			["$alphatest"] = "1",
 			["$alphatestreference"] = "0.0625",
+			["$color"] = tostring(ss.vector_one * 0.5^2.2),
 		}
 	)
 	rt.InkSplashMaterial = CreateMaterial(

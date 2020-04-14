@@ -90,7 +90,7 @@ end
 function SWEP:FireAnimationEvent(pos, ang, event, options)
 	if 5000 <= event and event < 6000 then
 		event = event - 5000
-		local vararg = string.Explode(" ", options)
+		local vararg = options:Split " "
 		ss.tablepush(vararg, math.floor(event / 100))
 		ss.ProtectedCall(ss.DispatchEffect[event % 100], self, vararg, pos, ang)
 	end

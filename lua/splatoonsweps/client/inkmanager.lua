@@ -5,14 +5,31 @@ local ss = SplatoonSWEPs
 if not ss then return end
 local CVarWireframe = GetConVar "mat_wireframe"
 local CVarMinecraft = GetConVar "mat_showlowresimage"
-local inkhdrscale = ss.vector_one * .05
+local IsHDREnabled = GetConVar "mat_hdr_level":GetInt() > 0
+local lightmapbrush = Material "splatoonsweps/lightmapbrush"
+local inkhdrscale = ss.vector_one * 0.5^2.2
 local inkmaterials = {}
 local rt = ss.RenderTarget
+local LightmapQueue = {}
+local MAX_QUEUE_TIME = ss.FrameToSec / 4
+local MAX_QUEUES_TOLERANCE = 5 -- Possible number of queues to be processed at once without losing FPS.
 for i = 1, 12 do
 	inkmaterials[i] = {}
 	for j = 1, 4 do
 		inkmaterials[i][j] = Material(("splatoonsweps/inkshot/%d/%d.vmt"):format(i, j))
 	end
+end
+
+local amb = render.GetAmbientLightColor() * 0.25
+local function LightmapSample(pos, normal)
+	local p = pos + normal * 0.5
+	local c = render.ComputeLighting(p, normal)
+	- render.ComputeDynamicLighting(p, normal)
+	local gamma_recip = 1 / 2.2
+	c.x = c.x ^ gamma_recip
+	c.y = c.y ^ gamma_recip
+	c.z = c.z ^ gamma_recip
+	return c:ToColor()
 end
 
 local function DrawMeshes(bDrawingDepth, bDrawingSkybox)
@@ -34,39 +51,26 @@ local function DrawMeshes(bDrawingDepth, bDrawingSkybox)
 	render.PopFlashlightMode() -- Back to default
 end
 
-function ss.ClearAllInk()
-	table.Empty(ss.InkQueue)
-	table.Empty(ss.PaintSchedule)
-	if rt.Ready then table.Empty(ss.PaintQueue) end
-	for _, s in ipairs(ss.SurfaceArray) do table.Empty(s.InkSurfaces) end
-
-	render.PushRenderTarget(rt.BaseTexture)
-	render.OverrideAlphaWriteEnable(true, true)
-	render.ClearDepth()
-	render.ClearStencil()
-	render.Clear(0, 0, 0, 0)
-	render.OverrideAlphaWriteEnable(false)
-	render.PopRenderTarget()
-end
-
-function ss.ReceiveInkQueue(index, radius, ang, ratio, color, ply, inktype, pos, order, tick)
+function ss.ReceiveInkQueue(index, radius, ang, ratio, color, inktype, pos, order, tick)
 	local s = ss.SurfaceArray[index]
 	local angle = Angle(s.Angles)
 	if s.Moved then angle:RotateAroundAxis(s.Normal, -90) end
 	local pos2d = ss.To2D(pos, s.Origin, angle) * ss.UnitsToPixels
 	local b = s.Bound * ss.UnitsToPixels
+	local bound_offset = Vector(0, b.x, 0)
 	if s.Moved then
 		b.x, b.y = b.y, b.x
-		pos2d.x, pos2d.y = -pos2d.x, b.y - pos2d.y
+		pos2d = bound_offset - pos2d
 	end
-
-	local r = math.Round(radius * ss.UnitsToPixels)
-	local uv = Vector(s.u, s.v) * ss.UVToPixels
-	local center = Vector(math.Round(pos2d.x + uv.x), math.Round(pos2d.y + uv.y))
-	local start = Vector(math.floor(uv.x) - 1, math.floor(uv.y) - 1)
-	local endpos = Vector(math.ceil(uv.x + b.x) + 1, math.ceil(uv.y + b.y) + 1)
+	
+	local start = Vector(s.u, s.v) * ss.UVToPixels
+	local center = Vector(math.Round(pos2d.x + start.x), math.Round(pos2d.y + start.y))
+	local endpos = Vector(math.ceil(start.x + b.x) + 1, math.ceil(start.y + b.y) + 1)
+	start = Vector(math.floor(start.x) - 1, math.floor(start.y) - 1)
+	local r = radius * ss.UnitsToPixels
 	local vr = ss.vector_one * r
 	if not ss.CollisionAABB2D(start, endpos, center - vr, center + vr) then return end
+	local lightmapoffset = r / 2
 	ss.PaintQueue[tick * 512 + order + 256] = {
 		angle = ang,
 		center = center,
@@ -74,14 +78,17 @@ function ss.ReceiveInkQueue(index, radius, ang, ratio, color, ply, inktype, pos,
 		colorid = color,
 		done = 0,
 		endpos = endpos,
-		ply = ply,
+		height = 2 * r,
+		lightmapradius = r,
+		lightmapx = center.x - lightmapoffset,
+		lightmapy = center.y - lightmapoffset,
 		pos = pos,
 		radius = radius,
 		ratio = ratio,
-		size = 2 * r,
 		start = start,
 		surf = s,
 		t = inktype,
+		width = 2 * r * ratio,
 	}
 end
 
@@ -91,6 +98,7 @@ local function ProcessPaintQueue()
 	local Painted = 0
 	local Benchmark = SysTime()
 	local BaseTexture = rt.BaseTexture
+	local Lightmap = rt.Lightmap
 	local ceil = math.ceil
 	local Clamp = math.Clamp
 	local Lerp = Lerp
@@ -106,11 +114,13 @@ local function ProcessPaintQueue()
 	local PushRenderTarget = render.PushRenderTarget
 	local PopRenderTarget = render.PopRenderTarget
 	local SetScissorRect = render.SetScissorRect
+	local DrawTexturedRect = surface.DrawTexturedRect
 	local DrawTexturedRectRotated = surface.DrawTexturedRectRotated
 	local SetDrawColor = surface.SetDrawColor
 	local SetMaterial = surface.SetMaterial
-	local MAX_QUEUE_TIME = ss.FrameToSec / 2
-	local MAX_QUEUES_TOLERANCE = 5 -- Possible number of queues to be processed at once without losing FPS.
+	local IsNotSplatoonPortedMap = not ss.SplatoonMapPorts[game.GetMap()]
+	local LightmapSampleNum = 7 -- Used to sample lightmap
+	local RadianFraction = math.rad(360 / LightmapSampleNum)
 	while true do
 		Benchmark = SysTime()
 		NumRepetition = ceil(Lerp(Painted / MAX_QUEUES_TOLERANCE, 4, 0))
@@ -125,11 +135,35 @@ local function ProcessPaintQueue()
 			SetMaterial(inkmaterial)
 			SetScissorRect(q.start.x, q.start.y, q.endpos.x, q.endpos.y, true)
 			OverrideBlend(true, BLEND_ONE, BLEND_ZERO, BLENDFUNC_ADD, BLEND_ONE, BLEND_ONE, BLENDFUNC_ADD)
-			DrawTexturedRectRotated(q.center.x, q.center.y, q.size * q.ratio, q.size, q.angle)
+			DrawTexturedRectRotated(q.center.x, q.center.y, q.width, q.height, q.angle)
 			OverrideBlend(false)
 			SetScissorRect(0, 0, 0, 0, false)
 			End2D()
 			PopRenderTarget()
+			
+			--Draw on lightmap
+			if IsNotSplatoonPortedMap then
+				PushRenderTarget(Lightmap)
+				SetScissorRect(q.start.x, q.start.y, q.endpos.x, q.endpos.y, true)
+				Start2D()
+				SetDrawColor(LightmapSample(q.pos, q.surf.Normal))
+				OverrideBlend(true, BLEND_ONE_MINUS_DST_ALPHA, BLEND_DST_ALPHA, BLENDFUNC_ADD, BLEND_ONE, BLEND_ONE, BLENDFUNC_ADD)
+				DrawTexturedRectRotated(q.center.x, q.center.y, q.width, q.height, q.angle)
+				OverrideBlend(false)
+				-- SetMaterial(lightmapbrush)
+				-- local offset = q.lightmapradius / 2
+				-- local sign = q.surf.Moved and -1 or 1
+				-- for i = 1, LightmapSampleNum do
+				-- 	local rx = math.cos(RadianFraction * i) * offset * sign
+				-- 	local ry = math.sin(RadianFraction * i) * offset
+				-- 	local rv = Vector(rx, ry) * ss.PixelsToUnits
+				-- 	SetDrawColor(LightmapSample(ss.To3D(rv, q.pos, q.surf.Angles), q.surf.Normal))
+				-- 	DrawTexturedRectRotated(rx + q.center.x, ry + q.center.y, q.lightmapradius, q.lightmapradius, 0)
+				-- end
+				End2D()
+				SetScissorRect(0, 0, 0, 0, false)
+				PopRenderTarget()
+			end
 
 			q.done = q.done + 1
 			Painted = Painted + 1
@@ -148,6 +182,34 @@ local function ProcessPaintQueue()
 end
 
 local process = coroutine.create(ProcessPaintQueue)
+function ss.ClearAllInk()
+	table.Empty(ss.InkQueue)
+	table.Empty(ss.PaintSchedule)
+	if rt.Ready then table.Empty(ss.PaintQueue) end
+	for _, s in ipairs(ss.SurfaceArray) do table.Empty(s.InkSurfaces) end
+	local amb = ss.AmbientColor
+	if not amb then
+		amb = render.GetAmbientLightColor():ToColor()
+		ss.AmbientColor = amb
+	end
+
+	render.PushRenderTarget(rt.BaseTexture)
+	render.OverrideAlphaWriteEnable(true, true)
+	render.ClearDepth()
+	render.ClearStencil()
+	render.Clear(0, 0, 0, 0)
+	render.OverrideAlphaWriteEnable(false)
+	render.PopRenderTarget()
+	
+	render.PushRenderTarget(rt.Lightmap)
+	render.OverrideAlphaWriteEnable(true, true)
+	render.ClearDepth()
+	render.ClearStencil()
+	render.Clear(amb.r, amb.g, amb.b, 0)
+	render.OverrideAlphaWriteEnable(false)
+	render.PopRenderTarget()
+end
+
 hook.Add("Tick", "SplatoonSWEPs: Register ink clientside", function()
 	if coroutine.status(process) == "dead" then return end
 	local ok, msg = coroutine.resume(process)
