@@ -34,6 +34,7 @@ function ss.AddInkRectangle(color, inktype, localang, pos, radius, ratio, s)
 	local sind, cosd = sin(ang), cos(ang)
 	local pointcount = {}
 	local area = 0
+	local paint_threshold = math.floor(gridarea / (dx * dy)) + 1
 	for x = 0, w - 1, 0.5 do
 		local tx = t[floor(x)]
 		if tx then
@@ -46,7 +47,7 @@ function ss.AddInkRectangle(color, inktype, localang, pos, radius, ratio, s)
 					if 0 <= i and i <= sw and 0 <= k and k <= sh then
 						pointcount[i] = pointcount[i] or {}
 						pointcount[i][k] = (pointcount[i][k] or 0) + 1
-						if pointcount[i][k] > 18 then
+						if pointcount[i][k] > paint_threshold then
 							ink[i] = ink[i] or {}
 							if ink[i][k] ~= color then area = area + 1 end
 							ink[i][k] = color
