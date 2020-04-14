@@ -63,9 +63,10 @@ function ss.ReceiveInkQueue(index, radius, ang, ratio, color, inktype, pos, orde
 		pos2d = bound_offset - pos2d
 	end
 	
-	local start = Vector(math.floor(s.u * ss.UVToPixels) - 1, math.floor(s.v * ss.UVToPixels) - 1)
-	local center = Vector(math.Round(pos2d.x + start.x), math.Round(pos2d.y + start.y))
+	local start = Vector(s.u, s.v) * ss.UVToPixels
 	local endpos = Vector(math.ceil(start.x + b.x) + 1, math.ceil(start.y + b.y) + 1)
+	start = Vector(math.floor(start.x) - 1, math.floor(start.y) - 1)
+	local center = Vector(math.Round(pos2d.x + start.x), math.Round(pos2d.y + start.y))
 	local r = radius * ss.UnitsToPixels
 	local vr = ss.vector_one * r
 	if not ss.CollisionAABB2D(start, endpos, center - vr, center + vr) then return end
@@ -327,7 +328,7 @@ function ss.ClearAllInk()
 						if s.Moved then pos2d = bound_offset - pos2d end
 						local p = start + pos2d - draw_offset
 						surface.SetDrawColor(c)
-						surface.DrawTexturedRect(p.x, p.y, w, h)
+						surface.DrawTexturedRect(p.x - 1, p.y - 1, w + 2, h + 2)
 					end
 				end
 				render.SetScissorRect(0, 0, 0, 0, false)
@@ -337,7 +338,7 @@ function ss.ClearAllInk()
 		bsp:Close()
 		cam.End2D()
 		render.PopRenderTarget()
-		print("Time to build mesh and sample lightmap[sec]:", util.TimerCycle() / 1000)
+		print("Time to sample lightmap[sec]:", util.TimerCycle() / 1000)
 		lightmapsampling = coroutine.create(ProcessLightmapSampling)
 	end
 
