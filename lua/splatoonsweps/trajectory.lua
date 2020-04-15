@@ -4,12 +4,69 @@ if not ss then return end
 
 local MAX_INK_SIM_AT_ONCE = 60 -- Calculating ink trajectory at once
 local DropGravity = 1 * ss.ToHammerUnitsPerSec2
+local function DoScatterSplash(ink)
+	local data, p = ink.Data, ink.Parameters
+	if CurTime() < data.ScatterSplashTime then return end
+	if data.ScatterSplashCount >= p.mScatterSplashMaxNum then return end
+	local t = ink.Trace.LifeTime
+	local tmin = p.mScatterSplashMinSpanBulletCounter
+	local tmax = p.mScatterSplashMaxSpanBulletCounter
+	local tfrac = math.TimeFraction(tmin, tmax, t)
+	local delaymin = p.mScatterSplashMinSpanFrame
+	local delaymax = p.mScatterSplashMaxSpanFrame
+	local delay = Lerp(tfrac, delaymin, delaymax)
+	local dropdata = ss.MakeProjectileStructure()
+	data.ScatterSplashTime = CurTime() + delay
+	data.ScatterSplashCount = data.ScatterSplashCount + 1
+	table.Merge(dropdata, {
+		AirResist = 1e-8,
+		Color = data.Color,
+		ColRadiusEntity = p.mScatterSplashColRadius,
+		ColRadiusWorld = p.mScatterSplashColRadius,
+		DoDamage = false,
+		Gravity = DropGravity,
+		InitPos = ink.Trace.endpos,
+		PaintFarRadius = p.mScatterSplashPaintRadius,
+		PaintFarRatio = 1,
+		PaintNearRadius = p.mScatterSplashPaintRadius,
+		PaintNearRatio = 1,
+		StraightFrame = ss.FrameToSec,
+		Type = ss.GetDropType(),
+		Weapon = data.Weapon,
+		Yaw = data.Yaw,
+	})
+
+	local rand = "SplatoonSWEPs: Scatter offset"
+	local ang = data.InitDir:Angle()
+	local offsetdir = ang:Right()
+	local offsetmin = p.mScatterSplashInitPosMinOffset
+	local offsetmax = p.mScatterSplashInitPosMaxOffset
+	local offsetsign = math.Round(util.SharedRandom(rand, 0, 1, CurTime())) * 2 - 1
+	local offsetamount = util.SharedRandom(rand, offsetmin, offsetmax, CurTime() * 2)
+	local offsetvec = offsetdir * offsetsign * offsetamount
+	
+	local initspeed = p.mScatterSplashInitSpeed
+	local initang = Angle(ang)
+	local rotmax = util.SharedRandom(rand, 0, 1, CurTime() * 3) > 0.5
+		and -p.mScatterSplashUpDegree or p.mScatterSplashDownDegree
+	local bias = p.mScatterSplashDegreeBias
+	local selectbias = bias > util.SharedRandom(rand, 0, 1, CurTime() * 4)
+	local frac = util.SharedRandom(rand,
+		selectbias and bias or 0, selectbias and 1 or bias, CurTime() * 5)
+	
+	initang:RotateAroundAxis(initang:Forward(), frac * rotmax * offsetsign)
+	dropdata.InitPos = dropdata.InitPos + offsetvec
+	dropdata.InitVel = initang:Right() * offsetsign * initspeed
+	ss.AddInk(p, dropdata)
+end
+
 local function Simulate(ink)
 	ink.CurrentSpeed = ink.Trace.start:Distance(ink.Trace.endpos) / FrameTime()
 	ss.AdvanceBullet(ink)
 	if not IsFirstTimePredicted() then return end
 	ss.DoDropSplashes(ink)
 
+	if ink.Data.ScatterSplashCount then DoScatterSplash(ink) end
 	if not ink.Data.Weapon.IsBlaster then return end
 	if not ink.Data.DoDamage then return end
 
@@ -252,7 +309,7 @@ function ss.CreateHitEffect(color, flags, pos, normal)
 end
 
 function ss.GetDropType() -- math.floor(1 <= x < 4) -> 1, 2, 3
-	return util.SharedRandom("SplatoonSWEPs: Drop ink type", 1, 4, CurTime())
+	return math.floor(util.SharedRandom("SplatoonSWEPs: Drop ink type", 1, 4, CurTime()))
 end
 
 function ss.DoDropSplashes(ink, iseffect)

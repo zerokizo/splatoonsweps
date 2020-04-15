@@ -190,7 +190,7 @@ function SWEP:CreateInk(number, spawncount) -- Group #, spawncount-th bullet(0, 
 		if initvelocity.x == 0 and initvelocity.y == 0 then yaw = ang.yaw end
 		table.Merge(self.Projectile, {
 			InitVel = initvelocity,
-			Type = util.SharedRandom(randink, 1, 4, CurTime() * spawncount),
+			Type = ss.GetDropType(),
 			Yaw = yaw,
 		})
 		
@@ -229,6 +229,14 @@ function SWEP:CreateInk(number, spawncount) -- Group #, spawncount-th bullet(0, 
 		WallPaintRadius = p.mHitWallSplashBetweenLength, -- WORKAROUND!!
 		WallPaintUseSplashNum = true,
 	})
+
+	if number == p.mScatterSplashGroup and spawncount + 1 == p.mScatterSplashBulletNumInGroup then
+		self.Projectile.ScatterSplashTime = CurTime() + p.mScatterSplashMinSpanFrame
+		self.Projectile.ScatterSplashCount = 0
+	else
+		self.Projectile.ScatterSplashTime = nil
+		self.Projectile.ScatterSplashCount = nil
+	end
 	
 	ss.SetEffectColor(e, self.Projectile.Color)
 	ss.SetEffectColRadius(e, self.Projectile.ColRadiusWorld)
