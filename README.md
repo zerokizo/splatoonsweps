@@ -33,26 +33,26 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
 * Inkling base system.
     You can become inkling as well.
 * Basic GUI to change playermodel, ink color, and other settings.
-    GUI menu is in the weapon tab.
-* All Shooters in Splatoon(WiiU).
-* All Chargers in Splatoon.
-* All Splatlings in Splatoon.
-* All Blasters in Splatoon.
-* All Rollers/Brushes in Splatoon.
+    GUI menu is in the weapon tab and Utility -> Splatoon SWEPs.
+* All main weapons in Splatoon (Wii U).
 
 ## Currently working on
-* _Optimizations!!_ Really important thing because it's almost unplayable due to the lag right now.
-* Make Slosher and Tri-Slosher
-    * [x] Almost done
-* Make Sloshing Machine
-    * [x] View model
-    * [x] World model
-    * [x] Unique projectile that deals critical damage
-    * [ ] Effects
-    * [ ] Test and fix bugs
-    
-## Upcoming features
-* Sub weapons
+* Sub weapons!
+    * [ ] Explosive effect for bombs
+    * [ ] Guide marker
+    * [ ] Explosive sub weapons
+        * [ ] Burst Bomb
+        * [ ] Ink Mine
+        * [ ] Seeker
+        * [ ] Splat Bomb
+        * [ ] Suction Bomb
+    * [ ] Non-explosive sub weapons
+        * [ ] Disruptor
+        * [ ] Point Sensor
+        * [ ] Sprinkler
+        * [ ] Splash Wall
+        * [ ] Squid Beakon
+        * [ ] Toxic Mist
 
 ## I want to make the following, too
 * Special weapons in Splatoon and Splatoon 2
