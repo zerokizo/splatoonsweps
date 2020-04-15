@@ -4,6 +4,7 @@ return {Options = {
     AvoidWalls_help = "インクが壁に吸われないようにする。",
     BecomeSquid = "イカになる",
     BecomeSquid_help = "しゃがみ時にイカになるか、屈んだヒトになるか。",
+    CanDrown = "水没時に死ぬ",
     CanHealInk = "インク内でHP回復",
     CanHealInk_help = false,
     CanHealStand = "インク外でHP回復",

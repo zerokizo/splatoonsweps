@@ -2,6 +2,7 @@ AddCSLuaFile()
 return {CVars = {
     AvoidWalls = "Prevent SWEPs from shooting at wall wastfully. (1: enabled, 0: disabled)",
     BecomeSquid = "Become squid on crouching. (1: enabled, 0: disabled)",
+    CanDrown = "Whether or not inklings can drown. (1: enabled, 0: disabled)",
     CanHealInk = "Heal yourself when you are in ink. (1: enabled, 0: disabled)",
     CanHealStand = "Heal yourself when you are out of ink. (1: enabled, 0: disabled)",
     CanReloadInk = "Reload your ink when you are in ink. (1: enabled, 0: disabled)",

@@ -4,6 +4,7 @@ return {Options = {
     AvoidWalls_help = "If checked, the weapons try not to waste ink by hitting walls.",
     BecomeSquid = "Become squid",
     BecomeSquid_help = "If checked, you will become squid on crouching.",
+    CanDrown = "Enable drowning",
     CanHealInk = "Heal in ink",
     CanHealInk_help = "If checked, you can heal yourself when you're in ink.",
     CanHealStand = "Heal when standing",

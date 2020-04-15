@@ -2,6 +2,7 @@ AddCSLuaFile()
 return {
 	AvoidWalls = true,
 	BecomeSquid = true,
+	CanDrown = {true, order = 4, serverside = true},
 	CanHealInk = true,
 	CanHealStand = true,
 	CanReloadInk = true,
