@@ -318,6 +318,18 @@ function SWEP:Think()
 	self:UpdateInkState()
 	self:SharedThinkBase()
 	ss.ProtectedCall(self.ServerThink, self)
+	if ss.GetOption "candrown" and self.Owner:WaterLevel() > 1 then
+		local d = DamageInfo()
+		d:SetAttacker(game.GetWorld())
+		d:SetDamage(self.Owner:GetMaxHealth() * 10000)
+		d:SetDamageForce(vector_origin)
+		d:SetDamagePosition(self.Owner:GetPos())
+		d:SetDamageType(DMG_DROWN)
+		d:SetInflictor(game.GetWorld())
+		d:SetMaxDamage(d:GetDamage())
+		d:SetReportedPosition(self.Owner:GetPos())
+		self.Owner:TakeDamageInfo(d)
+	end
 
 	if not self.Owner:IsPlayer() then
 		self:SetAimVector(ss.ProtectedCall(self.Owner.GetAimVector, self.Owner) or self.Owner:GetForward())

@@ -501,9 +501,6 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 
 	w.OnOutofInk = w:GetInWallInk()
 	w:SetOldCrouching(crouching or infence)
-	if CLIENT then return end
-	if not ss.GetOption "candrown" then return end
-	if ply:WaterLevel() > 1 then ply:Kill() end
 end
 
 -- Short for Entity:NetworkVar().
