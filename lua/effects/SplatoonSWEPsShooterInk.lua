@@ -11,6 +11,7 @@ local filter1 = Material "splatoonsweps/effects/roller_ink"
 local filter2 = Material "splatoonsweps/effects/roller_ink_filter"
 local inksplash = Material "splatoonsweps/effects/muzzlesplash"
 local inkring = Material "splatoonsweps/effects/inkring"
+local OrdinalNumbers = {"First", "Second", "Third"}
 local RenderFuncs = {
 	weapon_splatoonsweps_blaster_base = "RenderBlaster",
 	weapon_splatoonsweps_roller = "RenderSplash",
@@ -18,8 +19,37 @@ local RenderFuncs = {
 	weapon_splatoonsweps_sloshingmachine = "RenderSloshingMachine",
 	weapon_splatoonsweps_sloshingmachine_neo = "RenderSloshingMachine",
 }
+local function CreateSpiralEffects(self)
+	if self.IsDrop then return end
+	if self.DrawRadius == 0 then return end
+	local p = self.Ink.Parameters
+	local spiralgroup = p.mSpiralSplashGroup
+	if not spiralgroup or spiralgroup == 0 then return end
+	local delaymin = p.mSpiralSplashMinSpanFrame
+	local delaymax = p.mSpiralSplashMaxSpanFrame
+	local timemin = p.mSpiralSplashMinSpanBulletCounter
+	local timemax = p.mSpiralSplashMaxSpanBulletCounter
+	local timefrac = math.TimeFraction(timemin, timemax, CurTime() - self.Ink.InitTime)
+	local delay = Lerp(timefrac, delaymin, delaymax)
+	if CurTime() - self.SpiralTime < delay then return end
+	local e = EffectData()
+	local offset = self.SpiralCount * 360 / p.mSpiralSplashRoundSplitNum
+	local num = p.mSpiralSplashSameTimeBulletNum
+	e:SetAngles((self:GetPos() - self.TrailPos):Angle())
+	e:SetColor(self.Ink.Data.Color)
+	e:SetOrigin(self:GetPos())
+	e:SetRadius(p.mSpiralSplashLifeFrame)
+	e:SetEntity(self)
+	for i = 0, num - 1 do
+		local step = i * 360 / num
+		e:SetScale(step + offset)
+		util.Effect("SplatoonSWEPsSloshingSpiral", e)
+	end
+	
+	self.SpiralTime = CurTime()
+	self.SpiralCount = self.SpiralCount + 1
+end
 
-local OrdinalNumbers = {"First", "Second", "Third"}
 function EFFECT:Init(e)
 	self:SetModel(mdl)
 	self:SetMaterial(invisiblemat)
@@ -59,13 +89,17 @@ function EFFECT:Init(e)
 	local StraightFrame = ss.GetEffectStraightFrame(e)
 	local DrawRadius = ss.GetEffectDrawRadius(e)
 	local RenderFunc = RenderFuncs[Weapon.ClassName] or RenderFuncs[Weapon.Base] or "RenderGeneral"
-	if IsSlosher then DrawRadius = DrawRadius / 3 end
+	if DrawRadius == 0 then return end
 	if IsCharger then SplashNum = math.huge end
 	if IsDrop then
 		AirResist = 1
 		ApparentPos = InitPos
 		Gravity = 1 * ss.ToHammerUnitsPerSec2
 		RenderFunc = "RenderGeneral"
+	end
+	if IsSlosher then
+		self.SpiralTime = CurTime() - 5 * ss.FrameToSec
+		self.SpiralCount = 0
 	end
 	
 	self.Ink = ss.MakeInkQueueStructure()
@@ -98,7 +132,7 @@ function EFFECT:Init(e)
 
 	self.Color = ColorValue
 	self.ColorVector = ColorValue:ToVector()
-	self.DrawRadius = DrawRadius
+	self.DrawRadius = math.max(6, DrawRadius)
 	self.IsBlaster = not IsDrop and IsBlaster
 	self.IsCharger = IsCharger
 	self.IsDrop = IsDrop
@@ -161,7 +195,8 @@ function EFFECT:Think()
 	self:SetPos(LerpVector(math.min(t / ApparentMergeTime, 1), self.ApparentInitPos + offset, endpos))
 	self:DrawModel()
 	ss.DoDropSplashes(self.Ink, true)
-	
+	CreateSpiralEffects(self)
+
 	if self.IsBlaster then
 		local p = self.Ink.Parameters
 		return t < p.mExplosionFrame or not p.mExplosionSleep
@@ -257,6 +292,6 @@ function EFFECT:RenderSloshingMachine()
 	ang:RotateAroundAxis(ang:Right(), 45)
 	mat:SetVector("$color", self.ColorVector)
 	render.SetMaterial(mat)
-	render.DrawBox(self:GetPos(), ang, ss.vector_one * -10, ss.vector_one * 10, self.Color)
+	render.DrawBox(self:GetPos(), ang, ss.vector_one * -12, ss.vector_one * 12, self.Color)
 	self:RenderGeneral()
 end
