@@ -185,10 +185,8 @@ function EFFECT:Think()
 	local trlp = Weapon.Owner ~= LocalPlayer()
 	local start, endpos = self.Ink.Trace.start, self.Ink.Trace.endpos
 	if trlp then trlp = ss.TraceLocalPlayer(start, endpos - start) end
-	if self.Ink.Trace.LifeTime > ss.FrameToSec then
-		if tr.HitWorld then self:HitEffect(tr) end
-		if tr.Hit or trlp then return false end
-	end
+	if tr.HitWorld and self.Ink.Trace.LifeTime > ss.FrameToSec then self:HitEffect(tr) end
+	if tr.Hit or trlp then return false end
 
 	local t0 = self.Ink.InitTime
 	local t = math.max(CurTime() - t0, 0)
