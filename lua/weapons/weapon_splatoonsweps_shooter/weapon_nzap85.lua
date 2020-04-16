@@ -74,7 +74,7 @@ local function RefreshViewModel(self)
     vm:SendViewModelMatchingSequence(seq)
     vm:SetPlaybackRate(rate)
     vm:SetCycle(cycle)
-    self.ViewModel = mdl
+	self.ViewModel = mdl
 end
 
 function SWEP:SharedDeploy()
@@ -82,8 +82,8 @@ function SWEP:SharedDeploy()
 	RefreshViewModel(self)
 end
 
-function SWEP:Move(ply)
-    ss.ProtectedCall(self.BaseClass.Move, self, ply)
+function SWEP:Think()
+    ss.ProtectedCall(self.BaseClass.Think, self)
     RefreshViewModel(self)
 end
 
