@@ -97,7 +97,9 @@ function EFFECT:Init(e)
 		Gravity = 1 * ss.ToHammerUnitsPerSec2
 		RenderFunc = "RenderGeneral"
 	end
+
 	if IsSlosher then
+		DrawRadius = DrawRadius / 3
 		self.SpiralTime = CurTime() - 5 * ss.FrameToSec
 		self.SpiralCount = 0
 	end
