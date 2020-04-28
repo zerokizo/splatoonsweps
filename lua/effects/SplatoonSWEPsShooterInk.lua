@@ -7,8 +7,8 @@ local ApparentMergeTime = 10 * ss.FrameToSec
 local invisiblemat = ss.Materials.Effects.Invisible
 local mat = ss.Materials.Effects.Ink
 local mdl = Model "models/props_junk/PopCan01a.mdl"
-local filter1 = Material "splatoonsweps/effects/roller_ink"
-local filter2 = Material "splatoonsweps/effects/roller_ink_filter"
+local rollerink1 = Material "splatoonsweps/effects/rollerink1"
+local rollerink2 = Material "splatoonsweps/effects/rollerink2"
 local inksplash = Material "splatoonsweps/effects/muzzlesplash"
 local inkring = Material "splatoonsweps/effects/inkring"
 local OrdinalNumbers = {"First", "Second", "Third"}
@@ -89,6 +89,13 @@ function EFFECT:Init(e)
 	local StraightFrame = ss.GetEffectStraightFrame(e)
 	local DrawRadius = ss.GetEffectDrawRadius(e)
 	local RenderFunc = RenderFuncs[Weapon.ClassName] or RenderFuncs[Weapon.Base] or "RenderGeneral"
+	local mat1 = math.random() > 0.5 and inkspla
+	local material = math.random() > 0.5 and inksplash or inkring
+	if IsSlosher or IsRoller then
+		material = math.random() > 0.5 and rollerink1 or rollerink2
+		self.Frame = 0
+	end
+
 	if DrawRadius == 0 then return end
 	if IsCharger then SplashNum = math.huge end
 	if IsDrop then
@@ -148,11 +155,7 @@ function EFFECT:Init(e)
 
 	if not (IsRoller or IsSlosher) then return end
 	local viewang = -LocalPlayer():GetViewEntity():GetAngles():Forward()
-	self.FilterDU = math.random()
-	self.FilterDV = math.random()
-	self.FilterDU2 = math.random()
-	self.FilterDV2 = math.random()
-	self.Material = math.random() > 0.5 and inksplash or inkring
+	self.Material = material
 	self.Normal = (viewang + VectorRand() / 4):GetNormalized()
 end
 
@@ -191,7 +194,7 @@ function EFFECT:Think()
 	if tr.Hit or trlp then return false end
 
 	local t0 = self.Ink.InitTime
-	local t = math.max(CurTime() - t0, 0)
+	local t = self.Ink.Trace.LifeTime
 	local initpos = self.Ink.Data.InitPos
 	local offset = endpos - initpos
 	self:SetPos(LerpVector(math.min(t / ApparentMergeTime, 1), self.ApparentInitPos + offset, endpos))
@@ -206,7 +209,7 @@ function EFFECT:Think()
 
 	if Weapon.IsRoller then return true end
 	
-	local tt = math.max(CurTime() - t0 - ss.ShooterTrailDelay, 0)
+	local tt = math.max(t - ss.ShooterTrailDelay, 0)
 	if self.IsDrop or tt > 0 then
 		local tmax = self.Ink.Data.StraightFrame
 		local d = self.Ink.Data
@@ -241,32 +244,10 @@ end
 -- A render function for roller, slosher, etc.
 local duration = 60 * ss.FrameToSec
 function EFFECT:RenderSplash()
+	self.Frame = math.min(math.floor(self.Ink.Trace.LifeTime * 30), 15)
+	self.Material:SetInt("$frame", self.Frame)
 	local radius = self.DrawRadius * 5
-	local rendertarget = ss.RenderTarget.InkSplash
-	local rendermaterial = ss.RenderTarget.InkSplashMaterial
-	local t = math.max(CurTime() - self.Ink.InitTime, 0) * (self.IsSlosher and 0 or 1)
-	local alpha = Lerp(math.EaseInOut(math.Clamp(t / duration, 0, 1), 0, 1), 0.01, 0.5)
-	render.PushRenderTarget(rendertarget)
-	render.OverrideAlphaWriteEnable(true, true)
-	render.ClearDepth()
-	render.ClearStencil()
-	render.Clear(0, 0, 0, 0)
-	cam.Start2D()
-	surface.SetDrawColor(255, 255, 255, 255)
-	surface.SetMaterial(self.Material)
-	surface.DrawTexturedRect(0, 0, 128, 128)
-	render.OverrideBlend(true, BLEND_ONE, BLEND_ONE, BLENDFUNC_ADD, BLEND_DST_ALPHA, BLEND_SRC_ALPHA, BLENDFUNC_ADD)
-	surface.SetMaterial(filter1)
-	surface.DrawTexturedRectUV(0, 0, 128, 128, self.FilterDU, self.FilterDV, 1 + self.FilterDU, 1 + self.FilterDV)
-	surface.SetMaterial(filter2)
-	surface.DrawTexturedRectUV(0, 0, 128, 128, self.FilterDU2, self.FilterDV2, 1 + self.FilterDU2, 1 + self.FilterDV2)
-	render.OverrideBlend(false)
-	cam.End2D()
-	render.OverrideAlphaWriteEnable(false)
-	render.PopRenderTarget()
-	rendermaterial:SetFloat("$alphatestreference", alpha)
-	rendermaterial:Recompute()
-	render.SetMaterial(rendermaterial)
+	render.SetMaterial(self.Material)
 	render.DrawQuadEasy(self:GetPos(), self.Normal, radius, radius, self.Color)
 end
 
