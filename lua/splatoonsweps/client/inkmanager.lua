@@ -13,7 +13,7 @@ local rt = ss.RenderTarget
 local LightmapQueue = {}
 local MAX_QUEUE_TIME = ss.FrameToSec / 4
 local MAX_QUEUES_TOLERANCE = 5 -- Possible number of queues to be processed at once without losing FPS.
-for i = 1, 12 do
+for i = 1, 14 do
 	inkmaterials[i] = {}
 	for j = 1, 4 do
 		inkmaterials[i][j] = Material(("splatoonsweps/inkshot/%d/%d.vmt"):format(i, j))
@@ -52,6 +52,7 @@ local function DrawMeshes(bDrawingDepth, bDrawingSkybox)
 end
 
 function ss.ReceiveInkQueue(index, radius, ang, ratio, color, inktype, pos, order, tick)
+	if color == 0 or inktype == 0 then return end
 	local s = ss.SurfaceArray[index]
 	local angle = Angle(s.Angles)
 	if s.Moved then angle:RotateAroundAxis(s.Normal, -90) end
@@ -126,7 +127,7 @@ local function ProcessPaintQueue()
 		NumRepetition = ceil(Lerp(Painted / MAX_QUEUES_TOLERANCE, 4, 0))
 		for order, q in SortedPairs(PaintQueue) do
 			local alpha = Clamp(NumRepetition - q.done, 1, 4)
-			if 10 <= q.t and q.t <= 12 then alpha = 1 end
+			if q.t > 12 then alpha = 1 end
 			local inkmaterial = inkmaterials[q.t][alpha]
 			
 			PushRenderTarget(BaseTexture)

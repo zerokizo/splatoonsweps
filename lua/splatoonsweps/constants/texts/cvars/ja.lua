@@ -12,6 +12,7 @@ return {CVars = {
     DrawCrosshair = "スプラトゥーン風の照準を描画する。 (1: 有効, 0: 無効)",
     DrawInkOverlay = "一人称視点でインクのオーバーレイを描画する。 (1: 有効, 0: 無効)",
     Enabled = "Splatoon SWEPsを有効化する。 (1: 有効, 0: 無効)",
+    ExplodeOnlySquids = "Splatoon SWEPsを持っている敵を撃破した時のみ爆発する。 (1: 有効, 0: 無効)",
     FF = "同士討ちを有効にする。 (1: 有効, 0: 無効)",
     Gain = {
         HealSpeedInk = "インク内における体力回復速度の倍率。 例えば200を設定すると体力回復にかかる時間が半分になる。",

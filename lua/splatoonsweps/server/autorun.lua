@@ -162,6 +162,13 @@ end
 -- Parse the map and store the result to txt, then send it to the client.
 hook.Add("PostCleanupMap", "SplatoonSWEPs: Cleanup all ink", ss.ClearAllInk)
 hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function()
+	-- If the local server has crashed before, RT shrinks.
+	if ss.sp and file.Exists("splatoonsweps/crashdump.txt", "DATA") then
+		local res = ss.GetConVar "rtresolution"
+		if res then res:SetInt(0) end
+		ss.SendError(ss.Text.Error.CrashDetected, nil, nil, 15)
+	end
+
 	local path = ("splatoonsweps/%s.txt"):format(game.GetMap())
 	local pathbsp = ("maps/%s.bsp"):format(game.GetMap())
 	local data = util.JSONToTable(util.Decompress(file.Read(path) or "") or "") or {}
@@ -242,3 +249,13 @@ hook.Add("EntityTakeDamage", "SplatoonSWEPs: Ink damage manager", function(ent, 
 	net.Start "SplatoonSWEPs: Play damage sound"
 	net.Send(ent)
 end)
+
+local function DeathExplosion(ply, attacker)
+	local w = ss.IsValidInkling(attacker)
+	if not w then return end
+	if ss.GetOption "explodeonlysquids" and not ss.IsValidInkling(ply) then return end
+	ss.MakeDeathExplosion(ply:WorldSpaceCenter(), attacker, w:GetNWInt "inkcolor")
+end
+
+hook.Add("DoPlayerDeath", "SplatoonSWEPs: Make a death explosion", DeathExplosion)
+hook.Add("OnNPCKilled", "SplatoonSWEPs: Make a death explosion", DeathExplosion)

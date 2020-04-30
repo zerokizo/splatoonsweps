@@ -17,8 +17,11 @@ return {Options = {
     DoomStyle_help = "If checked, the view model will be placed at the center of the screen.",
     DrawCrosshair = "Draw crosshair",
     DrawInkOverlay = "Draw ink overlay",
-    DrawInkOverlay_help = "If checked, an water effect will be drawn when you're in ink and first person mode.",
+    DrawInkOverlay_help = "If checked, a water effect will be drawn when you're in ink and first person mode.",
     Enabled = "Enable Splatoon SWEPs",
+    ExplodeOnlySquids = "Only inklings explode",
+    ExplodeOnlySquids_help = [[If checked, victims splatted by the SWEPs will explode only if they also have the SWEPs.
+Otherwise, all victims splatted by the SWEPs will.]],
     FF = "Enable friendly fire",
     Gain = {
         __printname = "Parameters",
@@ -50,11 +53,13 @@ return {Options = {
     },
     TakeFallDamage = "Enable fall damage",
     ToggleADS = "Toggle ADS instead of holding",
+    ToggleADS_help = "Checked: Toggle ADS, Unchecked: Hold to ADS",
 	weapon_splatoonsweps_blaster_base = {
 		HurtOwner = "Explosion hurts its owner",
 	},
     weapon_splatoonsweps_charger = {
         UseRTScope = "Use realistic scope",
+        UseRTScope_help = "If checked, you will look into the scope in first person.  You won't look into the scope in third person.",
         weapon_splatoonsweps_herocharger = {
             Level = "Hero Charger Level",
         },
@@ -67,6 +72,7 @@ return {Options = {
         },
         weapon_splatoonsweps_octoshot = {
             Advanced = "Elite Octoshot",
+            Advanced_help = "Part of Octoshot Replica's color is slightly changed by this option."
         },
     },
     weapon_splatoonsweps_slosher_base = {
@@ -74,6 +80,7 @@ return {Options = {
     },
 	weapon_splatoonsweps_roller = {
         AutomaticBrush = "Brushes: Fully-automatic",
+        AutomaticBrush_help = "If checked, you will automatically swing your brush repeatedly.  You can't run by holding it as usual.",
         DropAtFeet = "Brushes: Paint where the player stands",
         DropAtFeet_help = "When repeatedly using swinging attacks, ink will also be painted where the player is standing.",
 		weapon_splatoonsweps_heroroller = {

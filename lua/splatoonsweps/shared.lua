@@ -503,6 +503,284 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 	w:SetOldCrouching(crouching or infence)
 end
 
+function ss.MakeExplosionStructure()
+	return {
+		Origin = Vector(),
+		Radius = 0,
+		Owner = NULL,
+		HurtOwner = false,
+		IsCarriedByLocalPlayer = false,
+		InkColor = 1,
+		ProjectileID = 0,
+		EffectFlags = 0,
+		EffectName = "SplatoonSWEPsExplosion",
+		IsPredicted = nil,
+		IgnorePrediction = nil,
+		SplashInitAng = Angle(),
+		TraceLength = 0,
+		TraceYaw = 0,
+		ClassName = "",
+		DoDamage = false,
+		DoGroundPaint = false,
+		GroundPaintRadius = 0,
+		GroundPaintType = 13,
+		GetDamage = function(dist) return 0 end,
+		GetPaintRadius = function(dist) return 0 end,
+	}
+end
+
+function ss.MakeExplosion(data)
+	local origin = data.Origin
+	local radius = data.Radius
+	local owner = data.Owner
+	local hurtowner = data.HurtOwner
+	local IsCarriedByLocalPlayer = data.IsCarriedByLocalPlayer
+	local inkcolor = data.InkColor
+	local projectileID = data.ProjectileID
+	local splashinitang = data.SplashInitAng
+	local effectflags = data.EffectFlags
+	local effectname = data.EffectName
+	local IgnorePrediction = data.IgnorePrediction
+	local splashinitang = data.SplashInitAng
+	local classname = data.ClassName
+	local GetDamage = data.GetDamage
+	local GetPaintRadius = data.GetPaintRadius
+	local d = DamageInfo()
+	local damagedealt = false
+	local attacker = IsValid(owner) and owner or game.GetWorld()
+	local inflictor = ss.IsValidInkling(owner) or game.GetWorld()
+	if data.DoDamage then -- Find entities within explosion and deal damage
+		for _, e in ipairs(ents.FindInSphere(origin, radius)) do
+			local target_weapon = ss.IsValidInkling(e)
+			if IsValid(e) and e:Health() > 0 and ss.LastHitID[e] ~= projectileID
+			and (not ss.IsAlly(target_weapon, inkcolor) or hurtowner and e == owner) then
+				local dist = Vector()
+				local maxs, mins = e:OBBMaxs(), e:OBBMins()
+				local center = e:LocalToWorld(e:OBBCenter())
+				local size = (maxs - mins) / 2
+				for i, dir in pairs {
+					x = e:GetForward(), y = e:GetRight(), z = e:GetUp()
+				} do
+					local segment = dir:Dot(origin - center)
+					local sign = segment == 0 and 0 or segment > 0 and 1 or -1
+					segment = math.abs(segment)
+					if segment > size[i] then
+						dist = dist + sign * (size[i] - segment) * dir
+					end
+				end
+
+				local t = ss.SquidTrace
+				t.start = origin
+				t.endpos = origin + dist
+				t.filter = not hurtowner and owner or nil
+				t = util.TraceLine(t)
+				if not t.Hit or t.Entity == e then
+					if IsCarriedByLocalPlayer then
+						ss.CreateHitEffect(inkcolor, damagedealt and 6 or 2, origin + dist, -dist)
+						if CLIENT and e ~= owner then damagedealt = true break end
+					end
+
+					ss.LastHitID[e] = projectileID -- Avoid multiple damages at once
+					damagedealt = damagedealt or ss.sp or e == owner
+					local dmg = GetDamage(dist:Length())
+					
+					d:SetDamage(dmg)
+					d:SetDamageForce((e:WorldSpaceCenter() - origin):GetNormalized() * dmg)
+					d:SetDamagePosition(origin)
+					d:SetDamageType(DMG_GENERIC)
+					d:SetMaxDamage(dmg)
+					d:SetReportedPosition(origin)
+					d:SetAttacker(attacker)
+					d:SetInflictor(inflictor)
+					d:ScaleDamage(ss.ToHammerHealth)
+					ss.ProtectedCall(e.TakeDamageInfo, e, d)
+				end
+			end
+		end
+	end
+	
+	if ss.mp and not IsFirstTimePredicted() then return end
+
+	-- Explosion effect
+	local e = EffectData()
+	e:SetOrigin(origin)
+	e:SetColor(inkcolor)
+	e:SetFlags(effectflags)
+	e:SetRadius(radius)
+	if data.IsPredicted then
+		ss.UtilEffectPredicted(owner, effectname, e, true, data.IgnorePrediction)
+	else
+		util.Effect(effectname, e, true, true)
+	end
+
+	-- Trace around and paint
+	local a = splashinitang
+	local a2, a3 = Angle(a), Angle(a)
+	a2:RotateAroundAxis(a:Right(), 45)
+	a2:RotateAroundAxis(a:Up(), 45)
+	a3:RotateAroundAxis(a:Right(), 45)
+	a3:RotateAroundAxis(a:Up(), -45)
+	for _, d in ipairs {
+		a:Forward(), -a:Forward(), a:Right(), -a:Right(), a:Up(),
+		a2:Forward(), a2:Right(), -a2:Right(), a2:Up(),
+		a3:Forward(), a3:Right(), -a3:Right(), a3:Up(),
+	} do
+		local t = util.TraceLine {
+			collisiongroup = COLLISION_GROUP_DEBRIS,
+			start = origin,
+			endpos = origin + d * data.TraceLength,
+			filter = owner,
+			mask = ss.SquidSolidMaskBrushOnly,
+		}
+
+		if t.Hit and not t.StartSolid then
+			local dist = (t.HitPos - t.StartPos):Length2D()
+			ss.Paint(t.HitPos, t.HitNormal, GetPaintRadius(dist),
+			inkcolor, data.TraceYaw, ss.GetDropType(), 1, owner, classname)
+		end
+	end
+
+	if not data.DoGroundPaint then return end
+	local t = util.TraceLine {
+		collisiongroup = COLLISION_GROUP_DEBRIS,
+		start = origin,
+		endpos = origin - vector_up * data.GroundPaintRadius / 2,
+		filter = owner,
+		mask = ss.SquidSolidMaskBrushOnly,
+	}
+
+	if not t.Hit or t.StartSolid then return end
+	ss.Paint(t.HitPos, t.HitNormal, data.GroundPaintRadius,
+	inkcolor, data.TraceYaw, data.GroundPaintType, 1, owner, classname)
+end
+
+function ss.MakeBombExplosion(org, owner, color)
+	sound.Play("SplatoonSWEPs.BombExplosion", org) -- TODO: Burst bomb sound
+	ss.MakeExplosion(table.Merge(ss.MakeExplosionStructure(), {
+		Origin = org,
+		Radius = 300,
+		Owner = owner,
+		HurtOwner = false,
+		InkColor = color,
+		ProjectileID = CurTime(),
+		EffectName = "SplatoonSWEPsExplosion",
+		TraceLength = 150,
+		ClassName = "weapon_splatoonsweps_splattershotjr",
+		DoDamage = true,
+		GetDamage = function(dist)
+			local rnear = 100
+			local dnear = 1.8
+			local dfar = 0.3
+			return dist < rnear and dnear or dfar
+		end,
+		GetPaintRadius = function(dist) return 50 end,
+		DoGroundPaint = true,
+		GroundPaintRadius = 150,
+	}))
+end
+
+function ss.MakeDeathExplosion(org, attacker, color)
+	sound.Play("SplatoonSWEPs.PlayerDeathExplosion", org)
+	ss.MakeExplosion(table.Merge(ss.MakeExplosionStructure(), {
+		Origin = org,
+		Radius = 300,
+		Owner = attacker,
+		InkColor = color,
+		ProjectileID = CurTime(),
+		EffectName = "SplatoonSWEPsExplosion",
+		TraceLength = 150,
+		ClassName = ss.IsValidInkling(attacker).ClassName,
+		GetPaintRadius = function(dist) return 50 end,
+		DoGroundPaint = true,
+		GroundPaintRadius = 150,
+		GroundPaintType = 14,
+	}))
+end
+
+function ss.MakeBlasterExplosion(ink)
+	local data, p = ink.Data, ink.Parameters
+	local dmul = ink.BlasterHitWall and p.mShotCollisionHitDamageRate or 1
+	local dnear = p.mDamageNear * dmul
+	local dmid = p.mDamageMiddle * dmul
+	local dfar = p.mDamageFar * dmul
+	local rmul = ink.BlasterHitWall and p.mShotCollisionRadiusRate or 1
+	local rnear = p.mCollisionRadiusNear * rmul
+	local rmid = p.mCollisionRadiusMiddle * rmul
+	local rfar = p.mCollisionRadiusFar * rmul
+	local e = table.Merge(ss.MakeExplosionStructure(), {
+		Origin = ink.Trace.endpos,
+		Radius = p.mCollisionRadiusFar * rmul,
+		Owner = ink.Trace.filter,
+		HurtOwner = ss.GetOption "weapon_splatoonsweps_blaster_base" "hurtowner",
+		IsCarriedByLocalPlayer = ink.IsCarriedByLocalPlayer,
+		InkColor = data.Color,
+		ProjectileID = data.ID,
+		EffectFlags = ink.BlasterHitWall and 1 or 0,
+		EffectName = "SplatoonSWEPsBlasterExplosion",
+		IsPredicted = true,
+		IgnorePrediction = data.Weapon.IgnorePrediction,
+		SplashInitAng = data.InitDir:Angle(),
+		TraceLength = p.mMoveLength,
+		TraceYaw = data.Yaw,
+		ClassName = data.Weapon.ClassName,
+		DoDamage = true,
+		GetDamage = function(dist)
+			if dist > rmid then
+				return math.Remap(dist, rmid, rfar, dmid, dfar)
+			elseif dist > rnear then
+				return math.Remap(dist, rnear, rmid, dnear, dmid)
+			end
+	
+			return dnear
+		end,
+		GetPaintRadius = function(dist)
+			local frac = dist / p.mBoundPaintMinDistanceXZ
+			return Lerp(frac, p.mBoundPaintMaxRadius, p.mBoundPaintMinRadius)
+		end,
+	})
+
+	if ink.BlasterHitWall then
+		e.SplashInitAng:RotateAroundAxis(e.SplashInitAng:Right(), -90)
+	end
+
+	ss.MakeExplosion(e)
+	if not p.mSphereSplashDropOn then return end
+
+	-- Create a blaster's drop
+	local dropdata = ss.MakeProjectileStructure()
+	table.Merge(dropdata, {
+		Color = data.Color,
+		ColRadiusEntity = p.mSphereSplashDropCollisionRadius,
+		ColRadiusWorld = p.mSphereSplashDropCollisionRadius,
+		DoDamage = false,
+		Gravity = ss.ToHammerUnitsPerSec2,
+		InitPos = ink.Trace.endpos,
+		InitVel = vector_up * p.mSphereSplashDropInitSpeed,
+		PaintFarDistance = p.mPaintFarDistance,
+		PaintFarRadius = p.mSphereSplashDropPaintRadius,
+		PaintNearDistance = p.mPaintNearDistance,
+		PaintNearRadius = p.mSphereSplashDropPaintRadius,
+		Weapon = data.Weapon,
+		Yaw = data.Yaw,
+	})
+	
+	local e = EffectData()
+	ss.SetEffectColor(e, dropdata.Color)
+	ss.SetEffectColRadius(e, dropdata.ColRadiusWorld)
+	ss.SetEffectDrawRadius(e, p.mSphereSplashDropDrawRadius)
+	ss.SetEffectEntity(e, dropdata.Weapon)
+	ss.SetEffectFlags(e, dropdata.Weapon, 3)
+	ss.SetEffectInitPos(e, dropdata.InitPos)
+	ss.SetEffectInitVel(e, dropdata.InitVel)
+	ss.SetEffectSplash(e, Angle(0, 0, 0))
+	ss.SetEffectSplashInitRate(e, Vector(0))
+	ss.SetEffectSplashNum(e, 0)
+	ss.SetEffectStraightFrame(e, 0)
+	ss.UtilEffectPredicted(ink.Trace.filter,
+	"SplatoonSWEPsShooterInk", e, true, data.Weapon.IgnorePrediction)
+	ss.AddInk(p, dropdata)
+end
+
 -- Short for Entity:NetworkVar().
 -- A new function Entity:AddNetworkVar() is created to the given entity.
 -- Argument:

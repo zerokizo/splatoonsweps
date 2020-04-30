@@ -214,7 +214,7 @@ local IMAGE_FORMAT_BGRA5551 = 21
 local IMAGE_FORMAT_BGRA4444 = 19
 hook.Add("InitPostEntity", "SplatoonSWEPs: Clientside initialization", function()
 	if not file.Exists("splatoonsweps", "DATA") then file.CreateDir "splatoonsweps" end
-	if file.Exists(crashpath, "DATA") then -- If the client has crashed before, RT shrinks.
+	if ss.mp and file.Exists(crashpath, "DATA") then -- If the client has crashed before, RT shrinks.
 		local res = ss.GetConVar "rtresolution"
 		if res then res:SetInt(rt.RESOLUTION.MINIMUM) end
 		notification.AddLegacy(ss.Text.Error.CrashDetected, NOTIFY_GENERIC, 15)

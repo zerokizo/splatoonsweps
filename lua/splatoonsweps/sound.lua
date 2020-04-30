@@ -115,6 +115,15 @@ sound.Add {
 	pitch = WeaponSoundPitch,
 }
 
+sound.Add {
+	channel = CHAN_AUTO,
+	name = "SplatoonSWEPs.PlayerDeathExplosion",
+	level = 85,
+	sound = "splatoonsweps/explosion/playerdeath.wav",
+	volume = 1,
+	pitch = WeaponSoundPitch,
+}
+
 --------------------------------------------------------------------------------
 -- Shooter
 --------------------------------------------------------------------------------
@@ -565,3 +574,25 @@ for _, soundData in ipairs {
 	soundData.sound = soundtable
 	sound.Add(soundData)
 end
+
+--------------------------------------------------------------------------------
+-- Sub weapons
+--------------------------------------------------------------------------------
+
+sound.Add {
+	channel = CHAN_WEAPON,
+	name = "SplatoonSWEPs.BombExplosion",
+	level = WeaponSoundLevel,
+	sound = "splatoonsweps/explosion/bomb.mp3",
+	volume = WeaponSoundVolume,
+	pitch = 100,
+}
+
+sound.Add {
+	channel = CHAN_WEAPON,
+	name = "SplatoonSWEPs.BurstBombExplosion",
+	level = WeaponSoundLevel,
+	sound = "splatoonsweps/explosion/burstbomb.mp3",
+	volume = WeaponSoundVolume,
+	pitch = 100,
+}

@@ -115,7 +115,7 @@ ss.PLAYER_BITS = 3 -- unsigned enum
 ss.SEND_ERROR_DURATION_BITS = 4 -- unsgined
 ss.SEND_ERROR_NOTIFY_BITS = 3 -- unsigned NOTIFY_ enum 0 to 4
 ss.SQUID_BITS = 2 -- unsigned enum
-ss.SURFACE_ID_BITS = 16 -- signed, for surface ID
+-- ss.SURFACE_ID_BITS = nil -- For surface ID, determined in InitPostEntity
 ss.WEAPON_CLASSNAMES_BITS = 8 -- unsigned, number of weapon classname array
 ss.MAX_DEGREES_DIFFERENCE = 45 -- Maximum angle difference between two surfaces to paint
 ss.MAX_DEGREES_DIFF_DISP = 60
@@ -199,7 +199,7 @@ end
 do -- Ink distribution map
 	local one = string.byte "1"
 	local path = "splatoonsweps/constants/inkdistributions/shot%d.lua"
-	for i = 1, 12 do
+	for i = 1, 14 do
 		local f, mask = path:format(i), {}
 		local w, h, data = include(f)
 		mask.width, mask.height = w, h

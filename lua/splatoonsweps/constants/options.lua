@@ -11,6 +11,7 @@ return {
 	DrawCrosshair = true,
 	DrawInkOverlay = true,
 	Enabled = {true, order = 1, serverside = true},
+	ExplodeOnlySquids = {false, order = 4, serverside = true},
 	FF = {false, order = 3, serverside = true},
 	Gain = {
 		HealSpeedInk = {100, min = 1, max = 500, decimals = 0, order = 4, serverside = true},

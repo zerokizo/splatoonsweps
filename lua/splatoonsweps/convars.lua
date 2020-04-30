@@ -126,7 +126,6 @@ function ss.GetConVarName(name, serverside)
 end
 
 function ss.GetConVar(name, serverside)
-	if name ~= "norefract" then print(name, serverside) end
 	local prefix = serverside == nil and "cl" or ""
 	return GetConVar(prefix .. ss.GetConVarName(name, serverside))
 end

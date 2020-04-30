@@ -19,6 +19,9 @@ return {Options = {
     DrawInkOverlay = "インクオーバーレイの描画",
     DrawInkOverlay_help = "一人称視点でインクに潜った時、画面に水のエフェクトがかかる。",
     Enabled = "Splatoon SWEPsの有効化",
+    ExplodeOnlySquids = "インクリングの撃破時に限り爆発する",
+    ExplodeOnlySquids_help = [[チェックを入れると、スプラトゥーンのブキを持っている相手のみ撃破時に爆発するようになる。
+チェックを外すと、スプラトゥーンのブキで倒した相手は必ず爆発する。]],
     FF = "同士討ちの有効化",
     Gain = {
         __printname = "各種パラメータ",
@@ -30,7 +33,7 @@ return {Options = {
         ReloadSpeedStand = "インク回復速度[%] (インク外)",
     },
     HideInk = "マップ上のインクを非表示にする",
-    HideInk_help = "チェックすると、マップ上に塗られたインクが非表示になる。",
+    HideInk_help = "チェックを入れると、マップ上に塗られたインクが非表示になる。",
     InkColor = "インクの色",
     LeftHand = "左利き",
     LeftHand_help = "一人称視点でブキが左側に表示される。",
@@ -50,11 +53,13 @@ return {Options = {
     },
     TakeFallDamage = "落下ダメージを有効化",
     ToggleADS = "アイアンサイト切り替え",
+    ToggleADS_help = "アイアンサイトを長押しで覗くか、切り替えて覗くか。",
 	weapon_splatoonsweps_blaster_base = {
 		HurtOwner = "自爆を有効化",
 	},
     weapon_splatoonsweps_charger = {
         UseRTScope = "リアルなスコープを使う",
+        UseRTScope_help = "チェックを入れると、スコープ付きチャージャーのスコープを実際に覗いているかのような見た目になる。三人称視点ではスコープを覗かなくなる。",
         weapon_splatoonsweps_herocharger = {
             Level = "ヒーローチャージャーのレベル",
         },
@@ -67,6 +72,7 @@ return {Options = {
         },
         weapon_splatoonsweps_octoshot = {
             Advanced = "オクタシューター: 上級タコゾネス仕様",
+            Advanced_help = "オクタシューターレプリカの一部の色が少し変わる。"
         },
     },
     weapon_splatoonsweps_slosher_base = {
@@ -74,6 +80,7 @@ return {Options = {
     },
 	weapon_splatoonsweps_roller = {
         AutomaticBrush = "フデ: フルオート連打",
+        AutomaticBrush_help = "攻撃キーを押し続けると自動で連打する。塗り進みはできなくなる。",
         DropAtFeet = "フデ: 足元を塗る",
         DropAtFeet_help = "連続で振り攻撃をした場合に、足元にもインクが塗られるようにする。",
 		weapon_splatoonsweps_heroroller = {

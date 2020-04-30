@@ -12,6 +12,7 @@ return {CVars = {
     DrawCrosshair = "Draw Splatoon-like crosshair. (1: enabled, 0: disabled)",
     DrawInkOverlay = "Draw ink overlay in firstperson. (1: enabled, 0: disabled)",
     Enabled = "Enable or disable Splatoon SWEPs. (1: enabled, 0: disabled)",
+    ExplodeOnlySquids = "Victims splatter by the SWEPs will explode only if they also have the SWEPs. (1: enabled, 0: disabled)",
     FF = "Enable friendly fire. (1: enabled, 0: disabled)",
     Gain = {
         HealSpeedInk = "A multiplier of healing speed when you're in ink.  200 means 200%, twice faster healing speed.",
