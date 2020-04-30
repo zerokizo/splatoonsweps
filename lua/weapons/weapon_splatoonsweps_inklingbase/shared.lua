@@ -4,6 +4,13 @@ include "sh_anim.lua"
 local ss = SplatoonSWEPs
 if not ss then return end
 
+SWEP.RestrictedFieldsToCopy = {
+	FunctionQueue = true,
+	NetworkSlot = true,
+	Projectile = true,
+	HealSchedule = true,
+	ReloadSchedule = true,
+}
 ss.AddTimerFramework(SWEP)
 function SWEP:PlayLoopSound()
 	local playlist = {self.SwimSound, self.EnemyInkSound}
@@ -251,7 +258,7 @@ function SWEP:SharedDeployBase()
 	self.JumpPower = ss.InklingJumpPower
 	self.OnEnemyInkJumpPower = ss.OnEnemyInkJumpPower
 	self.IgnorePrediction = SERVER and ss.mp and not self.Owner:IsPlayer() or nil
-	self.Owner:SetHealth(self.Owner:Health() * self:GetNWInt "MaxHealth" / self:GetNWInt "BackupMaxHealth")
+	self.Owner:SetHealth(self.Owner:Health() * self:GetNWInt "BackupInklingMaxHealth" / self:GetNWInt "BackupHumanMaxHealth")
 	if self.Owner:IsPlayer() then
 		self.Owner:SetJumpPower(self.JumpPower)
 		self.Owner:SetCrouchedWalkSpeed(.5)

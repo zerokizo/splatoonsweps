@@ -59,6 +59,10 @@ function SWEP:CreateRagdoll()
 	ragdoll:DeleteOnRemove(self)
 	ragdoll:Spawn()
 	ragdoll:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+	function ragdoll.OnEntityCopyTableFinish(_, data)
+		table.Empty(data)
+		table.Merge(data, duplicator.CopyEntTable(self))
+	end
 
 	self:PhysicsDestroy()
 	self:DrawShadow(false)
@@ -77,8 +81,7 @@ function SWEP:CreateRagdoll()
 		end
 
 		if not IsValid(ply) then return end
-		ply:Give(self.ClassName)
-		self:Remove()
+		self:RemoveRagdoll()
 		timer.Remove(n)
 	end)
 end
@@ -138,8 +141,10 @@ function SWEP:Initialize()
 end
 
 function SWEP:BackupInfo()
-	self:SetNWInt("MaxHealth", ss.GetMaxHealth())
-	self:SetNWInt("BackupMaxHealth", self.Owner:GetMaxHealth())
+	self.BackupInklingMaxHealth = ss.GetMaxHealth()
+	self.BackupHumanMaxHealth = self.Owner:GetMaxHealth()
+	self:SetNWInt("BackupInklingMaxHealth", self.BackupInklingMaxHealth)
+	self:SetNWInt("BackupHumanMaxHealth", self.BackupHumanMaxHealth)
 	if not self.Owner:IsPlayer() then return end
 	self.BackupPlayerInfo = {
 		Color = self.Owner:GetColor(),
@@ -178,10 +183,8 @@ function SWEP:BackupInfo()
 end
 
 function SWEP:RestoreInfo()
-	if not self:GetHolstering() then
-		self.Owner:SetMaxHealth(self:GetNWInt "BackupMaxHealth")
-		self.Owner:SetHealth(self.Owner:Health() * self:GetNWInt "BackupMaxHealth" / self:GetNWInt "MaxHealth")
-	end
+	self.Owner:SetMaxHealth(self.BackupHumanMaxHealth)
+	self.Owner:SetHealth(self.Owner:Health() * self.BackupHumanMaxHealth / self.BackupInklingMaxHealth)
 
 	if not self.Owner:IsPlayer() then return end
 	self.Owner:SetDSP(1)
@@ -259,7 +262,7 @@ function SWEP:Deploy()
 	self:SetOnEnemyInk(false)
 	self:BackupInfo()
 	self.SafeOwner = self.Owner
-	self.Owner:SetMaxHealth(self:GetNWInt "MaxHealth") -- NPCs also have inkling's standard health.
+	self.Owner:SetMaxHealth(self:GetNWInt "BackupInklingMaxHealth") -- NPCs also have inkling's standard health.
 	if self.Owner:IsPlayer() then
 		local PMPath = ss.Playermodel[self:GetNWInt "playermodel"]
 		if PMPath then
@@ -291,6 +294,8 @@ function SWEP:OnRemove()
 	self:StopLoopSound()
 	self:EndRecording()
 	ss.ProtectedCall(self.ServerOnRemove, self)
+	if self:GetHolstering() then return end
+	self:Holster()
 end
 
 function SWEP:OnDrop()
@@ -300,6 +305,15 @@ function SWEP:OnDrop()
 	ss.ProtectedCall(self.ServerHolster, self)
 	self:SharedHolsterBase()
 	self:CreateRagdoll()
+end
+
+function SWEP:OnEntityCopyTableFinish(data)
+	table.Empty(data.DT)
+	for key, value in pairs(data) do
+		if self.RestrictedFieldsToCopy[key] then data[key] = nil end
+		if TypeID(value) == TYPE_SOUND then data[key] = nil end
+		if TypeID(value) == TYPE_ENTITY then data[key] = nil end
+	end
 end
 
 function SWEP:Holster()

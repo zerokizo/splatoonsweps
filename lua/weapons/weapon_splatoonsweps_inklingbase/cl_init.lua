@@ -133,7 +133,7 @@ function SWEP:Holster()
 		end
 	end
 
-	self.Owner:SetHealth(self.Owner:Health() * self:GetNWInt "BackupMaxHealth" / self:GetNWInt "MaxHealth")
+	self.Owner:SetHealth(self.Owner:Health() * self:GetNWInt "BackupHumanMaxHealth" / self:GetNWInt "BackupInklingMaxHealth")
 	ss.ProtectedCall(self.ClientHolster, self)
 	return self:SharedHolsterBase()
 end
