@@ -256,18 +256,6 @@ function SWEP:SharedDeployBase()
 		self.Owner:SetJumpPower(self.JumpPower)
 		self.Owner:SetCrouchedWalkSpeed(.5)
 	end
-	
-	local vm = self:GetViewModel()
-	if IsValid(vm) then
-		local id, duration = vm:LookupSequence "draw"
-		if duration > 0 then
-			self:AddSchedule(duration, 1, function(self, schedule)
-				if not IsValid(vm) then return end
-				if vm:GetSequence() ~= id then return end
-				self:SetWeaponAnim(ACT_VM_IDLE)
-			end)
-		end
-	end
 
 	ss.ProtectedCall(self.SharedDeploy, self)
 	return true
@@ -282,6 +270,12 @@ function SWEP:SharedHolsterBase()
 end
 
 function SWEP:SharedThinkBase()
+	local vm = self:GetViewModel()
+	if IsValid(vm) and vm:IsSequenceFinished()
+	and vm:GetSequenceActivity(vm:GetSequence()) == ACT_VM_DRAW then
+		self:SetWeaponAnim(ACT_VM_IDLE)
+	end
+	
 	local ShouldNoDraw = Either(self:GetNWBool "becomesquid", self:Crouching(), self:GetInInk())
 	self.Owner:DrawShadow(not ShouldNoDraw)
 	self:DrawShadow(not ShouldNoDraw)

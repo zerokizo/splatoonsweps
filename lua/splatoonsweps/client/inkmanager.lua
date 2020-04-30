@@ -119,9 +119,6 @@ local function ProcessPaintQueue()
 	local DrawTexturedRectRotated = surface.DrawTexturedRectRotated
 	local SetDrawColor = surface.SetDrawColor
 	local SetMaterial = surface.SetMaterial
-	local IsNotSplatoonPortedMap = not ss.SplatoonMapPorts[game.GetMap()]
-	local LightmapSampleNum = 7 -- Used to sample lightmap
-	local RadianFraction = math.rad(360 / LightmapSampleNum)
 	while true do
 		Benchmark = SysTime()
 		NumRepetition = ceil(Lerp(Painted / MAX_QUEUES_TOLERANCE, 4, 0))
@@ -143,28 +140,16 @@ local function ProcessPaintQueue()
 			PopRenderTarget()
 			
 			--Draw on lightmap
-			if IsNotSplatoonPortedMap then
-				PushRenderTarget(Lightmap)
-				SetScissorRect(q.start.x, q.start.y, q.endpos.x, q.endpos.y, true)
-				Start2D()
-				SetDrawColor(LightmapSample(q.pos, q.surf.Normal))
-				OverrideBlend(true, BLEND_ONE_MINUS_DST_ALPHA, BLEND_DST_ALPHA, BLENDFUNC_ADD, BLEND_ONE, BLEND_ONE, BLENDFUNC_ADD)
-				DrawTexturedRectRotated(q.center.x, q.center.y, q.width, q.height, q.angle)
-				OverrideBlend(false)
-				-- SetMaterial(lightmapbrush)
-				-- local offset = q.lightmapradius / 2
-				-- local sign = q.surf.Moved and -1 or 1
-				-- for i = 1, LightmapSampleNum do
-				-- 	local rx = math.cos(RadianFraction * i) * offset * sign
-				-- 	local ry = math.sin(RadianFraction * i) * offset
-				-- 	local rv = Vector(rx, ry) * ss.PixelsToUnits
-				-- 	SetDrawColor(LightmapSample(ss.To3D(rv, q.pos, q.surf.Angles), q.surf.Normal))
-				-- 	DrawTexturedRectRotated(rx + q.center.x, ry + q.center.y, q.lightmapradius, q.lightmapradius, 0)
-				-- end
-				End2D()
-				SetScissorRect(0, 0, 0, 0, false)
-				PopRenderTarget()
-			end
+			PushRenderTarget(Lightmap)
+			SetScissorRect(q.start.x, q.start.y, q.endpos.x, q.endpos.y, true)
+			Start2D()
+			SetDrawColor(LightmapSample(q.pos, q.surf.Normal))
+			OverrideBlend(true, BLEND_ONE_MINUS_DST_ALPHA, BLEND_DST_ALPHA, BLENDFUNC_ADD, BLEND_ONE, BLEND_ONE, BLENDFUNC_ADD)
+			DrawTexturedRectRotated(q.center.x, q.center.y, q.width, q.height, q.angle)
+			OverrideBlend(false)
+			End2D()
+			SetScissorRect(0, 0, 0, 0, false)
+			PopRenderTarget()
 
 			q.done = q.done + 1
 			Painted = Painted + 1
