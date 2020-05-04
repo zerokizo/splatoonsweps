@@ -38,7 +38,7 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
 
 ## Currently working on
 * Sub weapons!
-    * [ ] Explosive effect for bombs
+    * [x] Explosive effect for bombs
     * [ ] Guide marker
     * [ ] Explosive sub weapons
         * [ ] Burst Bomb
