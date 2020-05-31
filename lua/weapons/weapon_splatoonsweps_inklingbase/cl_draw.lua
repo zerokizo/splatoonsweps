@@ -210,6 +210,10 @@ end
 function SWEP:ViewModelDrawn(vm)
 	if self.SurpressDrawingVM or self:GetHolstering() or
 	not (IsValid(self) and IsValid(self.Owner)) then return end
+	if self:GetThrowing() and CurTime() > self:GetNextSecondaryFire() then
+		ss.ProtectedCall(self.DrawOnSubTriggerDown, self)
+	end
+
 	for k, name in ipairs(self.vRenderOrder) do
 		local v = self.VElements[name]
 		if not v then self.vRenderOrder = nil break end
@@ -319,6 +323,10 @@ function SWEP:DrawWorldModel()
 
 	if ss.ProtectedCall(self.PreDrawWorldModel, self) then return end
 	if not self:IsCarriedByLocalPlayer() then self:Think() end
+	if self:GetThrowing() and CurTime() > self:GetNextSecondaryFire() then
+		ss.ProtectedCall(self.DrawOnSubTriggerDown, self)
+	end
+
 	self:SetupBones()
 	self:DrawModel()
 end

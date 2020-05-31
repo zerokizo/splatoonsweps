@@ -207,6 +207,11 @@ function SWEP:SetWeaponAnim(act, index)
 end
 
 function SWEP:SharedInitBase()
+	local SubWeaponPath = ("splatoonsweps/sub/%s.lua"):format(self.Sub)
+	if file.Exists(SubWeaponPath, "LUA") then
+		table.Merge(self, include(SubWeaponPath))
+	end
+
 	self:SetCooldown(CurTime())
 	self:ApplySkinAndBodygroups()
 	self.SwimSound = CreateSound(self, ss.SwimSound)
@@ -336,12 +341,18 @@ function SWEP:SecondaryAttack() -- Use sub weapon
 	if self:GetKey() ~= IN_ATTACK2 then return end
 	if CurTime() < self:GetCooldown() then return end
 	if not self:CheckCanStandup() then return end
-	self:SetThrowing(true)
-	self:SetWeaponAnim(ss.ViewModel.Throwing)
-	if not self:IsFirstTimePredicted() then return end
-	if self.ThrowSchedule then return end
-	if self.HoldType ~= "grenade" then
-		self.Owner:AnimResetGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD)
+	if self.Owner:IsPlayer() then
+		self:SetThrowing(true)
+		self:SetWeaponAnim(ss.ViewModel.Throwing)
+		if not self:IsFirstTimePredicted() then return end
+		if self.HoldType ~= "grenade" then
+			self.Owner:AnimResetGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD)
+		end
+	else
+		local hasink = self:GetInk() > 0
+		local able = hasink and self:CheckCanStandup()
+		ss.ProtectedCall(self.SharedSecondaryAttack, self, able)
+		ss.ProtectedCall(self.ServerSecondaryAttack, self, able)
 	end
 end
 -- End of predicted hooks
