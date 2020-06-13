@@ -1038,13 +1038,13 @@ function ss.KeyRelease(self, ply, key)
 
 	local time = CurTime() + ss.SubWeaponThrowTime
 	self:SetCooldown(time)
-	self:SetThrowAnimTime(CurTime())
 	self:SetNextPrimaryFire(time)
 	self:SetNextSecondaryFire(time)
-	self:SetWeaponAnim(ss.ViewModel.Throw)
 
-	local hasink = self:GetInk() > 0
-	local able = hasink and self:CheckCanStandup()
+	local able = self:GetInk() > 0 and self:CheckCanStandup() and self:CanSecondaryAttack()
+	if not able then return end
+	self:SetThrowAnimTime(CurTime())
+	self:SetWeaponAnim(ss.ViewModel.Throw)
 	ss.ProtectedCall(self.SharedSecondaryAttack, self, able)
 	ss.ProtectedCall(Either(SERVER, self.ServerSecondaryAttack, self.ClientSecondaryAttack), self, able)
 end

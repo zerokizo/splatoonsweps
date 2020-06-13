@@ -328,8 +328,7 @@ function SWEP:PrimaryAttack(auto) -- Shoot ink.  bool auto | is a scheduled shot
 	if auto and ss.sp and CLIENT then return end
 	if not auto and CurTime() < self:GetCooldown() then return end
 	if not auto and self.Owner:IsPlayer() and self:GetKey() ~= IN_ATTACK then return end
-	local hasink = self:GetInk() > 0
-	local able = hasink and self:CheckCanStandup()
+	local able = self:GetInk() > 0 and self:CheckCanStandup()
 	ss.SuppressHostEventsMP(self.Owner)
 	ss.ProtectedCall(self.SharedPrimaryAttack, self, able, auto)
 	ss.ProtectedCall(Either(SERVER, self.ServerPrimaryAttack, self.ClientPrimaryAttack), self, able, auto)
@@ -349,8 +348,7 @@ function SWEP:SecondaryAttack() -- Use sub weapon
 			self.Owner:AnimResetGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD)
 		end
 	else
-		local hasink = self:GetInk() > 0
-		local able = hasink and self:CheckCanStandup()
+		local able = self:GetInk() > 0 and self:CheckCanStandup() and self:CanSecondaryAttack()
 		ss.ProtectedCall(self.SharedSecondaryAttack, self, able)
 		ss.ProtectedCall(self.ServerSecondaryAttack, self, able)
 	end
@@ -365,6 +363,7 @@ function SWEP:ChangeThrowing(name, old, new)
 
 	-- Changes the world model on serverside and local player
 	self.WorldModel = self.ModelPath .. (start and "w_left.mdl" or "w_right.mdl")
+	if stop then self:SetWeaponAnim(ss.ViewModel.Standing) end
 	if CLIENT then return end
 	net.Start "SplatoonSWEPs: Change throwing"
 	net.WriteEntity(self)
