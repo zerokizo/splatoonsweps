@@ -222,6 +222,7 @@ function SWEP:Move(ply)
 	local ratio = Lerp(prog, minratio, maxratio)
 	local range = self:GetRange()
 	local _, splashrate = math.modf(self:GetSplashInitMul() / p.mSplashSplitNum)
+	local splashlength = Lerp(prog, maxrate, minrate) * paintradius * ratio
 	local wallpaintradius = paintradius / p.mPaintRateLastSplash
 	local wallfrac = prog / p.mMaxHitSplashNumChargeRate
 	
@@ -242,8 +243,8 @@ function SWEP:Move(ply)
 		PaintNearRatio = ratio,
 		Range = range,
 		SplashInitRate = splashrate,
-		SplashLength = Lerp(prog, maxrate, minrate) * paintradius * ratio,
-		SplashNum = math.huge,
+		SplashLength = splashlength,
+		SplashNum = math.floor(range / splashlength),
 		SplashPaintRadius = paintradius,
 		SplashRatio = ratio,
 		StraightFrame = range / initspeed,

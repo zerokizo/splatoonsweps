@@ -184,7 +184,7 @@ local function HitEntity(ink, t)
 	local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
 	local time = math.max(CurTime() - ink.InitTime, 0)
 	local d, e, o = DamageInfo(), t.Entity, tr.filter
-	if weapon.IsCharger and time > data.StraightFrame then return end
+	if weapon.IsCharger and time > data.StraightFrame + ss.FrameToSec then return end
 	if ss.LastHitID[e] == data.ID then return end
 	ss.LastHitID[e] = data.ID -- Avoid multiple damages at once
 	
@@ -386,20 +386,6 @@ function ss.DoDropSplashes(ink, iseffect)
 			ss.SetEffectStraightFrame(e, 0)
 			ss.UtilEffectPredicted(tr.filter, "SplatoonSWEPsShooterInk", e)
 		else
-			if IsCharger and data.SplashCount == 0 then
-				local paintlastmul = p.mPaintRateLastSplash
-				local paintradius = data.PaintNearRadius / paintlastmul
-				local footpaintcharge = p.mSplashNearFootOccurChargeRate
-				local footpaint = IsBamboozler or data.Charge > footpaintcharge
-				mul = (footpaint and 1 or 0) / paintlastmul
-				dropdata.InitPos = dropdata.InitPos + data.InitDir * (1 - mul) * paintradius
-				HitPaint(ink, {
-					FractionPaintWall = .8,
-					HitPos = data.InitPos + data.InitDir * data.Range,
-					HitNormal = -data.InitDir,
-				})
-			end
-
 			if mul > 0 then
 				dropdata.PaintFarRadius = data.SplashPaintRadius * mul
 				dropdata.PaintNearRadius = data.SplashPaintRadius * mul
