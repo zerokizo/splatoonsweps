@@ -91,11 +91,12 @@ if SERVER then
         local ph = e:GetPhysicsObject()
         if IsValid(ph) then
             local dir = self:GetAimVector()
-            local speed_amount = p.BombThrow_VelZ_Low * ss.ToHammerUnitsPerSec * ph:GetMass()
-            local speed_mul = 1.6 -- WORKAROUND: This should be 1, but it's too slow
+            local speed_amount = 11.2 * ss.ToHammerUnitsPerSec -- From Splatoon 2 ability effect database
+            local speed_mul = 2 / 3 -- Distance unit between Splatoon 2 and Splatoon seems to be difficult.
             speed_amount = speed_amount * speed_mul
-            ph:ApplyForceCenter(dir * speed_amount + vector_up * speed_amount * 0.2)
-            ph:ApplyTorqueCenter(self:GetRight() * -540)
+            ph:AddVelocity(dir * speed_amount + vector_up * speed_amount * 0.2 + self:GetVelocity())
+            ph:AddAngleVelocity(Vector(-math.deg(p.Fly_InitRol), math.deg(p.Fly_InitPit), 0) * ss.SecToFrame)
+            ph:SetAngles(dir:Angle())
         end
 
         self:SetInk(math.max(0, self:GetInk() - p.InkConsume * ss.MaxInkAmount))
