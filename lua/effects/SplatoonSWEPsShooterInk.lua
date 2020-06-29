@@ -59,6 +59,7 @@ function EFFECT:Init(e)
 	local Owner = Weapon.Owner
 	local AirResist = Weapon.Projectile.AirResist
 	local ApparentPos, ApparentAng = Weapon:GetMuzzlePosition()
+	if not (ApparentPos and ApparentAng) then return end
 	local p = Weapon.Parameters
 	local f = ss.GetEffectFlags(e)
 	local AirResist = Weapon.Projectile.AirResist
@@ -228,6 +229,14 @@ function EFFECT:Think()
 	return true
 end
 
+local MaxTranslucentDistSqr = 120
+MaxTranslucentDistSqr = 1 / MaxTranslucentDistSqr^2
+function EFFECT:GetRenderColor()
+	local frac = EyePos():DistToSqr(self:GetPos()) * MaxTranslucentDistSqr
+	local alpha = Lerp(frac, 0, 255)
+	return ColorAlpha(self.Color, alpha)
+end
+
 local cable = Material "splatoonsweps/crosshair/line"
 local cabletip = Material "splatoonsweps/crosshair/dot"
 function EFFECT:RenderGeneral()
@@ -248,17 +257,18 @@ function EFFECT:RenderSplash()
 	self.Material:SetInt("$frame", self.Frame)
 	local radius = self.DrawRadius * 5
 	render.SetMaterial(self.Material)
-	render.DrawQuadEasy(self:GetPos(), self.Normal, radius, radius, self.Color)
+	render.DrawQuadEasy(self:GetPos(), self.Normal, radius, radius, self:GetRenderColor())
 end
 
 function EFFECT:RenderBlaster() -- Blaster bullet
 	local t = math.max(CurTime() - self.Ink.InitTime, 0)
+	local color = self:GetRenderColor()
 	render.SetMaterial(mat)
 	mat:SetVector("$color", self.ColorVector)
-	render.DrawSphere(self:GetPos(), self.DrawRadius, 8, 8, self.Color)
+	render.DrawSphere(self:GetPos(), self.DrawRadius, 8, 8, color)
 	if LocalPlayer():FlashlightIsOn() or #ents.FindByClass "*projectedtexture*" > 0 then
 		render.PushFlashlightMode(true) -- Ink lit by player's flashlight or a projected texture
-		render.DrawSphere(self:GetPos(), self.DrawRadius, 8, 8, self.Color)
+		render.DrawSphere(self:GetPos(), self.DrawRadius, 8, 8, color)
 		render.PopFlashlightMode()
 	end
 end

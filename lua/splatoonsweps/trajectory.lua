@@ -235,7 +235,13 @@ local function ProcessInkQueue(ply)
 				local removal = not ink
 				if ink then
 					local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
-					removal = removal or not (IsValid(tr.filter) and IsValid(data.Weapon))
+					if not removal then
+						removal = not IsValid(tr.filter)
+						or not IsValid(data.Weapon)
+						or not IsValid(data.Weapon.Owner)
+						or data.Weapon.Owner:GetActiveWeapon() ~= data.Weapon
+					end
+
 					if not removal and (not tr.filter:IsPlayer() or tr.filter == ply) then
 						Simulate(ink)
 						tr.maxs = ss.vector_one * data.ColRadiusWorld
@@ -252,7 +258,7 @@ local function ProcessInkQueue(ply)
 							local w = ss.IsValidInkling(trent.Entity) -- If ink hits someone
 							if not (w and ss.IsAlly(w, data.Color)) then HitEntity(ink, trent) end
 							removal = true
-						elseif trworld.Hit and tr.LifeTime > ss.FrameToSec then
+						elseif trworld.Hit and not (trworld.StartSolid and tr.LifeTime < ss.FrameToSec) then
 							tr.endpos = trworld.HitPos - trworld.HitNormal * data.ColRadiusWorld * 2
 							HitPaint(ink, util.TraceLine(tr))
 							removal = true
