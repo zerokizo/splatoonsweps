@@ -317,11 +317,23 @@ function ss.GetWaterMaterial()
 	return render.GetDXLevel() < 90 and Water80 or Water90
 end
 
-function ss.PostPlayerDraw(w, ply) render.SetBlend(1) end
+local function ShouldHidePlayer(w, ply)
+	return Either(w:GetNWBool "becomesquid" and IsValid(w.Squid), ply:Crouching(), w:GetInInk())
+end
+
+local function ShouldChangePlayerAlpha(w, ply)
+	return w:IsCarriedByLocalPlayer() and not (vrmod and vrmod.IsPlayerInVR(ply))
+end
+
+function ss.PostPlayerDraw(w, ply)
+	if ShouldHidePlayer(w, ply) then return end
+	if not ShouldChangePlayerAlpha(w, ply) then return end
+	render.SetBlend(1)
+end
+
 function ss.PrePlayerDraw(w, ply)
-	if Either(w:GetNWBool "becomesquid" and IsValid(w.Squid),
-	   ply:Crouching(), w:GetInInk()) then return true end
-	if not w:IsCarriedByLocalPlayer() then return end
+	if ShouldHidePlayer(w, ply) then return true end
+	if not ShouldChangePlayerAlpha(w, ply) then return end
 	render.SetBlend(w:GetCameraFade() * ply:GetColor().a / 255)
 end
 
