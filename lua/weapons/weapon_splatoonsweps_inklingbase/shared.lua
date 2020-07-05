@@ -132,6 +132,17 @@ function SWEP:ApplySkinAndBodygroups()
 	for k, v in pairs(self.Bodygroup or {}) do
 		self:SetBodygroup(k, v)
 	end
+
+	if not IsValid(self.Owner) or not self.Owner:IsPlayer() then return end
+	for i = 0, 2 do
+		local vm = self.Owner:GetViewModel(i)
+		if IsValid(vm) then
+			vm:SetSkin(self.Skin or 0)
+			for k, v in pairs(self.Bodygroup or {}) do
+				vm:SetBodygroup(k, v)
+			end
+		end
+	end
 end
 
 local InkTraceLength = 24

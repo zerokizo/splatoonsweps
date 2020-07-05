@@ -1,6 +1,5 @@
 
 print "SplatoonSWEPs: Splat bomb is loading"
-AddCSLuaFile()
 local ss = SplatoonSWEPs
 if not ss then return {} end
 

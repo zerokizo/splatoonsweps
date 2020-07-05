@@ -3,6 +3,13 @@ AddCSLuaFile()
 local ss = SplatoonSWEPs
 if not ss then return end
 
+if SERVER then
+	local subs = "splatoonsweps/subs/"
+	for _, filename in ipairs(file.Find(subs .. "*.lua", "LUA")) do
+		AddCSLuaFile(subs .. filename)
+	end
+end
+
 local weaponslot = {
 	weapon_splatoonsweps_roller = 0,
 	weapon_splatoonsweps_shooter = 1,

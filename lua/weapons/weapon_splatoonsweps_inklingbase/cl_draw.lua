@@ -201,17 +201,22 @@ function SWEP:MakeSquidModel(id)
 end
 
 function SWEP:PreDrawViewModel(vm, weapon, ply)
-	for k, v in pairs(self.Bodygroup or {}) do vm:SetBodygroup(k, v) end
-	vm:SetSkin(self.Skin or 0)
 	ss.ProtectedCall(self.PreViewModelDrawn, self, vm, weapon, ply)
 	vm:SetupBones()
 end
 
+local HasVRModFixedPreDrawViewModel = false
 function SWEP:ViewModelDrawn(vm)
 	if self.SurpressDrawingVM or self:GetHolstering() or
 	not (IsValid(self) and IsValid(self.Owner)) then return end
 	if self:GetThrowing() and CurTime() > self:GetNextSecondaryFire() then
 		ss.ProtectedCall(self.DrawOnSubTriggerDown, self)
+	end
+
+	if vrmod and vrmod.IsPlayerInVR() then
+		if not HasVRModFixedPreDrawViewModel then
+			self:PreDrawViewModel(vm, self, self.Owner)
+		end
 	end
 
 	for k, name in ipairs(self.vRenderOrder) do
