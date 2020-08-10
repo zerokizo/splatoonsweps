@@ -401,14 +401,20 @@ function SWEP:SharedPrimaryAttack(able, auto)
 		local count = self:GetSwingCount() + 1
 		if count >= p.mPaintBrushNearestBulletLoopNum then
 			local dropdata = ss.MakeProjectileStructure()
+			local colent, colworld = self:GetCollisionRadii(issub)
 			table.Merge(dropdata, {
 				Color = self:GetNWInt "inkcolor",
+				ColRadiusEntity = colent,
+				ColRadiusWorld = colworld,
 				DoDamage = false,
+				Gravity = ss.ToHammerUnitsPerSec2,
 				InitPos = self:GetShootPos(),
 				PaintFarDistance = 0,
 				PaintFarRadius = p.mPaintBrushNearestBulletRadius,
+				PaintFarRatio = 1,
 				PaintNearDistance = 0,
 				PaintNearRadius = p.mPaintBrushNearestBulletRadius,
+				PaintNearRatio = 1,
 				Weapon = self,
 				Yaw = self:GetAimVector():Angle().yaw,
 			})

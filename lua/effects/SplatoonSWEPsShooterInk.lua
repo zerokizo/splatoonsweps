@@ -190,12 +190,12 @@ function EFFECT:Think()
 	local la = Angle(0, lp:GetAngles().yaw, 0)
 	local trlp = Weapon.Owner ~= LocalPlayer()
 	local start, endpos = self.Ink.Trace.start, self.Ink.Trace.endpos
+	local t = self.Ink.Trace.LifeTime
 	if trlp then trlp = ss.TraceLocalPlayer(start, endpos - start) end
 	if tr.HitWorld and self.Ink.Trace.LifeTime > ss.FrameToSec then self:HitEffect(tr) end
-	if tr.Hit or trlp then return false end
+	if (tr.Hit or trlp) and not (tr.StartSolid and t < ss.FrameToSec) then return false end
 
 	local t0 = self.Ink.InitTime
-	local t = self.Ink.Trace.LifeTime
 	local initpos = self.Ink.Data.InitPos
 	local offset = endpos - initpos
 	self:SetPos(LerpVector(math.min(t / ApparentMergeTime, 1), self.ApparentInitPos + offset, endpos))
