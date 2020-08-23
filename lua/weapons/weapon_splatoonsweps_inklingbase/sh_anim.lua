@@ -71,6 +71,7 @@ function SWEP:TranslateActivity(act)
 	if self:Crouching() then holdtype = "melee2" end
 	if self:GetThrowing() then holdtype = "grenade" end
 	self.HoldType = holdtype
+	self:SetHoldType(holdtype)
 
 	local translate = self.Translate[holdtype]
 	return translate and translate[act] or -1

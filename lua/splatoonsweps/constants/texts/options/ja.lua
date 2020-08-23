@@ -1,5 +1,6 @@
 AddCSLuaFile()
 return {Options = {
+    AllowSprint = "ダッシュを許可する",
     AvoidWalls = "壁を避けて狙う",
     AvoidWalls_help = "インクが壁に吸われないようにする。",
     BecomeSquid = "イカになる",

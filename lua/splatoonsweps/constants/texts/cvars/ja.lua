@@ -1,5 +1,6 @@
 AddCSLuaFile()
 return {CVars = {
+    AllowSprint = "走れるようにする。 (1: 有効, 0: 無効)",
     AvoidWalls = "インクが壁に吸い付かないようにする。 (1: 有効, 0: 無効)",
     BecomeSquid = "しゃがんだ時にイカになる。 (1: 有効, 0: 無効)",
     CanDrown = "水没した時に死ぬかどうか。 (1: 有効, 0: 無効)",

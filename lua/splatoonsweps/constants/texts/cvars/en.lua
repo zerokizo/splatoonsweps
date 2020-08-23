@@ -1,5 +1,6 @@
 AddCSLuaFile()
 return {CVars = {
+    AllowSprint = "Allow players to run. (1: enabled, 0: disabled)",
     AvoidWalls = "Prevent SWEPs from shooting at wall wastfully. (1: enabled, 0: disabled)",
     BecomeSquid = "Become squid on crouching. (1: enabled, 0: disabled)",
     CanDrown = "Whether or not inklings can drown. (1: enabled, 0: disabled)",

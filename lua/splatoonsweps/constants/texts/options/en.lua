@@ -1,5 +1,6 @@
 AddCSLuaFile()
 return {Options = {
+    AllowSprint = "Allow sprint",
     AvoidWalls = "Avoid walls",
     AvoidWalls_help = "If checked, the weapons try not to waste ink by hitting walls.",
     BecomeSquid = "Become squid",

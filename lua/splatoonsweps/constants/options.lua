@@ -1,5 +1,6 @@
 AddCSLuaFile()
 return {
+	AllowSprint = false,
 	AvoidWalls = true,
 	BecomeSquid = true,
 	CanDrown = {true, order = 4, serverside = true},
