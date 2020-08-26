@@ -145,8 +145,10 @@ function SWEP:ApplySkinAndBodygroups()
 	end
 end
 
-local InkTraceLength = 24
+local InkTraceLength = 3
 local InkTraceDown = -vector_up * InkTraceLength
+local InkTraceZSteps = 10
+local InkTraceXYSteps = 2
 function SWEP:UpdateInkState() -- Set if player is in ink
 	local ang = Angle(0, self.Owner:GetAngles().yaw)
 	local c = self:GetNWInt "inkcolor"
@@ -155,21 +157,45 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	local center = self.Owner:WorldSpaceCenter()
 	local mean = (center + org) / 2
 	local fw, right = ang:Forward() * InkTraceLength, ang:Right() * InkTraceLength
-	local ink_t = {start = org, endpos = org + InkTraceDown, filter = filter, mask = MASK_SHOT}
-	local groundcolor = ss.GetSurfaceColor(util.TraceLine(ink_t)) or -1
+	local mins, maxs = self.Owner:GetCollisionBounds()
+	local ink_t = {filter = filter, mask = MASK_SHOT, maxs = maxs, mins = mins}
+	local groundcolors = {}
+	for dx = -InkTraceXYSteps, InkTraceXYSteps do
+		for dy = -InkTraceXYSteps, InkTraceXYSteps do
+			ink_t.start = org + Vector(maxs.x * dx, maxs.y * dy) / InkTraceXYSteps
+			ink_t.endpos = ink_t.start + InkTraceDown
+			local color = ss.GetSurfaceColor(util.TraceLine(ink_t)) or -1
+			if color >= 0 then
+				groundcolors[color] = (groundcolors[color] or 0) + 1
+			end
+		end
+	end
+
+	local groundcolor = table.GetWinningKey(groundcolors) or -1
 	local onink = groundcolor >= 0
 	local onourink = groundcolor == c
 	local onenemyink = onink and not onourink
 	
-	ink_t.start = center
-	ink_t.endpos = mean + fw - right
-	local onwallink = ss.GetSurfaceColor(util.TraceLine(ink_t)) == c
-	ink_t.endpos = mean + fw + right
-	onwallink = onwallink or ss.GetSurfaceColor(util.TraceLine(ink_t)) == c
-	ink_t.endpos = center - fw - right
-	onwallink = onwallink or ss.GetSurfaceColor(util.TraceLine(ink_t)) == c
-	ink_t.endpos = center - fw + right
-	onwallink = onwallink or ss.GetSurfaceColor(util.TraceLine(ink_t)) == c
+	ink_t.start = org
+	local dz = vector_up * maxs.z / InkTraceZSteps
+	local normal, onwallink = Vector(), false
+	for _, p in ipairs {org + fw, org - fw, org + right, org - right} do
+		if onwallink then break end
+		ink_t.endpos = p
+		local tr = util.TraceHull(ink_t)
+		if tr.HitNormal.z < ss.MAX_COS_DIFF then
+			tr.HitPos:Add(tr.HitNormal * ink_t.mins.x)
+			for i = 1, InkTraceZSteps + 1 do
+				if i > InkTraceZSteps / 3 and ss.GetSurfaceColor(tr) == c then
+					normal = tr.HitNormal
+					onwallink = true
+					break
+				end
+
+				tr.HitPos:Add(dz)
+			end
+		end
+	end
 	
 	local inwallink = self:Crouching() and onwallink
 	local inink = self:Crouching() and (onink and onourink or self:GetInWallInk())
@@ -187,6 +213,7 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	self:SetInWallInk(inwallink)
 	self:SetInInk(inink)
 	self:SetOnEnemyInk(onenemyink)
+	self:SetWallNormal(normal)
 
 	self:GetOptions()
 	self:SetInkColorProxy(self:GetInkColor():ToVector())
@@ -402,6 +429,7 @@ function SWEP:SetupDataTables()
 	self:AddNetworkVar("Vector", "InkColorProxy") -- For material proxy.
 	self:AddNetworkVar("Vector", "AimVector") -- NPC:GetAimVector() doesn't exist in clientside.
 	self:AddNetworkVar("Vector", "ShootPos") -- NPC:GetShootPos() doesn't, either.
+	self:AddNetworkVar("Vector", "WallNormal") -- The normal vector of a wall when climbing.
 	local getaimvector = self.GetAimVector
 	local getshootpos = self.GetShootPos
 	function self:GetAimVector()

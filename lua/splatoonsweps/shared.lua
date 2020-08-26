@@ -467,6 +467,18 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 						end
 					end
 				end
+
+				t.start = mv:GetOrigin()
+				t.endpos = t.start + vector_up * ss.WALLCLIMB_STEP_CHECK_LENGTH
+				t.mins, t.maxs = ply:GetCollisionBounds()
+				local tr = util.TraceHull(t)
+				if tr.HitWorld then
+					t.start = t.endpos + w:GetWallNormal() * ss.MAX_WALLCLIMB_STEP
+					tr = util.TraceHull(t)
+					if not tr.StartSolid and math.abs(tr.HitNormal.z) < ss.MAX_COS_DIFF then
+						mv:SetOrigin(tr.HitPos)
+					end
+				end
 			end
 
 			if not (crouching and ply:OnGround()) and speed > maxspeed then -- Limits horizontal speed
