@@ -3,7 +3,6 @@ local ss = SplatoonSWEPs
 if not ss then return end
 
 local MAX_INK_SIM_AT_ONCE = 60 -- Calculating ink trajectory at once
-local DropGravity = 1 * ss.ToHammerUnitsPerSec2
 local function DoScatterSplash(ink)
 	local data, p = ink.Data, ink.Parameters
 	if CurTime() < data.ScatterSplashTime then return end
@@ -24,7 +23,7 @@ local function DoScatterSplash(ink)
 		ColRadiusEntity = p.mScatterSplashColRadius,
 		ColRadiusWorld = p.mScatterSplashColRadius,
 		DoDamage = false,
-		Gravity = DropGravity,
+		Gravity = ss.InkDropGravity,
 		InitPos = ink.Trace.endpos,
 		PaintFarRadius = p.mScatterSplashPaintRadius,
 		PaintFarRatio = 1,
@@ -61,11 +60,11 @@ local function DoScatterSplash(ink)
 end
 
 local function Simulate(ink)
+	if IsFirstTimePredicted() then ss.DoDropSplashes(ink) end
 	ink.CurrentSpeed = ink.Trace.start:Distance(ink.Trace.endpos) / FrameTime()
 	ss.AdvanceBullet(ink)
-	if not IsFirstTimePredicted() then return end
-	ss.DoDropSplashes(ink)
 
+	if not IsFirstTimePredicted() then return end
 	if ink.Data.ScatterSplashCount then DoScatterSplash(ink) end
 	if not ink.Data.Weapon.IsBlaster then return end
 	if not ink.Data.DoDamage then return end
@@ -114,12 +113,14 @@ local function HitPaint(ink, t)
 	if length2d == lmin_ratio then data.Type = ss.GetDropType() end
 	if data.DoDamage then
 		if weapon.IsCharger then
-			HitSmoke(ink, t)
+			-- HitSmoke(ink, t) -- Add smoke if the surface is not paintable
 			local radiusmul = ink.Parameters.mPaintRateLastSplash
-			if hitfloor then radius = radius * radiusmul end
+			if not hitfloor then radius = radius * Lerp(data.Charge, radiusmul, 1) end
 			if tr.LengthSum < data.Range then
 				local cos = math.Clamp(-data.InitDir.z, ss.MAX_COS_DIFF, 1)
 				ratio = math.Remap(cos, ss.MAX_COS_DIFF, 1, ratio, 1)
+			elseif hitfloor then
+				radius = radius * radiusmul
 			end
 		elseif weapon.IsBlaster then
 			data.DoDamage = false
@@ -318,6 +319,28 @@ function ss.GetDropType() -- math.floor(1 <= x < 4) -> 1, 2, 3
 	return math.floor(util.SharedRandom("SplatoonSWEPs: Drop ink type", 1, 4, CurTime()))
 end
 
+function ss.CreateDrop(params, pos, color, weapon, colradius, paintradius, paintratio, yaw)
+	local dropdata = ss.MakeProjectileStructure()
+	table.Merge(dropdata, {
+		Color = color,
+		ColRadiusEntity = colradius,
+		ColRadiusWorld = colradius,
+		DoDamage = false,
+		Gravity = ss.InkDropGravity,
+		InitPos = pos,
+		PaintFarRadius = paintradius,
+		PaintFarRatio = paintratio or 1,
+		PaintNearRadius = paintradius,
+		PaintNearRatio = paintratio or 1,
+		Range = 0,
+		Type = ss.GetDropType(),
+		Weapon = weapon,
+		Yaw = yaw or 0,
+	})
+
+	ss.AddInk(params, dropdata)
+end
+
 function ss.DoDropSplashes(ink, iseffect)
 	local data, tr, p = ink.Data, ink.Trace, ink.Parameters
 	if not data.DoDamage then return end
@@ -328,21 +351,6 @@ function ss.DoDropSplashes(ink, iseffect)
 	local DropDir = data.InitDir
 	local Length = tr.endpos:Distance(data.InitPos)
 	local NextLength = (data.SplashCount + data.SplashInitRate) * data.SplashLength
-	local dropdata = ss.MakeProjectileStructure()
-	table.Merge(dropdata, {
-		Charge = data.Charge,
-		Color = data.Color,
-		ColRadiusEntity = data.SplashColRadius,
-		ColRadiusWorld = data.SplashColRadius,
-		DoDamage = false,
-		Gravity = DropGravity,
-		PaintFarRatio = data.SplashRatio,
-		PaintNearRatio = data.SplashRatio,
-		Range = 0,
-		Weapon = data.Weapon,
-		Yaw = data.Yaw,
-	})
-
 	if not IsCharger then
 		Length = (tr.endpos - data.InitPos):Length2D()
 		DropDir = Vector(data.InitDir.x, data.InitDir.y, 0):GetNormalized()
@@ -352,7 +360,7 @@ function ss.DoDropSplashes(ink, iseffect)
 		local droppos = data.InitPos + DropDir * NextLength
 		if not IsCharger then
 			local frac = NextLength / Length
-			if frac ~= frac then frac = 0 end
+			if frac ~= frac then frac = 0 end -- In case of NaN
 			droppos.z = Lerp(frac, data.InitPos.z, tr.endpos.z)
 		end
 
@@ -366,15 +374,12 @@ function ss.DoDropSplashes(ink, iseffect)
 			mins = tr.mins,
 		}
 		local t = util.TraceHull(hull)
-		local mul = 1
-		dropdata.InitPos = t.HitPos
-		
 		if iseffect then
 			local e = EffectData()
 			if IsBlaster then
 				e:SetColor(data.Color)
 				e:SetNormal(data.InitDir)
-				e:SetOrigin(dropdata.InitPos)
+				e:SetOrigin(t.HitPos)
 				e:SetRadius(p.mCollisionRadiusNear / 2)
 				ss.UtilEffectPredicted(tr.filter, "SplatoonSWEPsBlasterTrail", e)
 			end
@@ -392,15 +397,10 @@ function ss.DoDropSplashes(ink, iseffect)
 			ss.SetEffectStraightFrame(e, 0)
 			ss.UtilEffectPredicted(tr.filter, "SplatoonSWEPsShooterInk", e)
 		else
-			if mul > 0 then
-				dropdata.PaintFarRadius = data.SplashPaintRadius * mul
-				dropdata.PaintNearRadius = data.SplashPaintRadius * mul
-				dropdata.Type = ss.GetDropType()
-				ss.AddInk(p, dropdata)
-			end
-
 			hull.start = droppos
 			hull.endpos = droppos + data.InitDir * data.SplashLength
+			ss.CreateDrop(p, t.HitPos, data.Color, data.Weapon,
+			data.SplashColRadius, data.SplashPaintRadius, data.SplashRatio, data.Yaw)
 			if util.TraceHull(hull).Hit then break end
 		end
 

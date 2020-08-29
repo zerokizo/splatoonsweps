@@ -149,6 +149,7 @@ local InkTraceLength = 3
 local InkTraceDown = -vector_up * InkTraceLength
 local InkTraceZSteps = 10
 local InkTraceXYSteps = 2
+local InkTraceXYTolerance = (InkTraceXYSteps * 2 + 1)^2 / 2
 function SWEP:UpdateInkState() -- Set if player is in ink
 	local ang = Angle(0, self.Owner:GetAngles().yaw)
 	local c = self:GetNWInt "inkcolor"
@@ -159,21 +160,24 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	local fw, right = ang:Forward() * InkTraceLength, ang:Right() * InkTraceLength
 	local mins, maxs = self.Owner:GetCollisionBounds()
 	local ink_t = {filter = filter, mask = MASK_SHOT, maxs = maxs, mins = mins}
-	local groundcolors = {}
+	local gcoloravailable = 0 -- number of points whose color is not -1
+	local gcolorlist = {} -- Ground color list
 	for dx = -InkTraceXYSteps, InkTraceXYSteps do
 		for dy = -InkTraceXYSteps, InkTraceXYSteps do
 			ink_t.start = org + Vector(maxs.x * dx, maxs.y * dy) / InkTraceXYSteps
 			ink_t.endpos = ink_t.start + InkTraceDown
 			local color = ss.GetSurfaceColor(util.TraceLine(ink_t)) or -1
 			if color >= 0 then
-				groundcolors[color] = (groundcolors[color] or 0) + 1
+				gcoloravailable = gcoloravailable + 1
+				gcolorlist[color] = (gcolorlist[color] or 0) + 1
 			end
 		end
 	end
 
-	local groundcolor = table.GetWinningKey(groundcolors) or -1
-	local onink = groundcolor >= 0
-	local onourink = groundcolor == c
+	local gcolorkey = table.GetWinningKey(gcolorlist)
+	local gcolor = gcoloravailable > InkTraceXYTolerance and gcolorkey or -1
+	local onink = gcolor >= 0
+	local onourink = gcolor == c
 	local onenemyink = onink and not onourink
 	
 	ink_t.start = org
@@ -209,7 +213,7 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 		end
 	end
 
-	self:SetGroundColor(groundcolor)
+	self:SetGroundColor(gcolor)
 	self:SetInWallInk(inwallink)
 	self:SetInInk(inink)
 	self:SetOnEnemyInk(onenemyink)

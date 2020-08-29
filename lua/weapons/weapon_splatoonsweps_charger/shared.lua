@@ -4,6 +4,7 @@ if not ss then return end
 SWEP.Base = "weapon_splatoonsweps_shooter"
 SWEP.IsCharger = true
 SWEP.FlashDuration = .25
+SWEP.DelayAfterShot = 7 * ss.FrameToSec -- Hotfix: Chargers can shoot too often
 
 function SWEP:GetColRadius()
 	return Lerp(self:GetChargeProgress(CLIENT),
@@ -44,10 +45,12 @@ function SWEP:GetInkVelocity()
 end
 
 function SWEP:GetChargeProgress(ping)
-	local ts = ss.GetTimeScale(self.Owner)
-	local frac = CurTime() - self:GetCharge() - self.Parameters.mMinChargeFrame / ts
-	if ping then frac = frac + self:Ping() end
-	return math.Clamp(frac / self.Parameters.mMaxChargeFrame * ts, 0, 1)
+	local p = self.Parameters
+	local max = p.mMaxChargeFrame
+	local min = p.mMinChargeFrame
+	local dt = CurTime() - self:GetCharge() - min -- Time difference ranges from -min to (max - min)
+	if ping then dt = dt + self:Ping() end
+	return math.Clamp(dt / (max - min), 0, 1)
 end
 
 function SWEP:GetScopedProgress(ping)
@@ -203,6 +206,7 @@ function SWEP:Move(ply)
 	if CurTime() - self:GetCharge() < p.mMinChargeFrame then return end
 
 	local prog = self:GetChargeProgress()
+	local proj = self.Projectile
 	local inkconsume = math.max(p.mMinChargeFrame / p.mMaxChargeFrame, prog) * p.mInkConsume
 	local ShootSound = prog > .75 and self.ShootSound2 or self.ShootSound
 	local pitch = (prog > .75 and 115 or 100) - prog * 20
@@ -221,12 +225,14 @@ function SWEP:Move(ply)
 	local paintradius = paintratio * paintmaxradius
 	local ratio = Lerp(prog, minratio, maxratio)
 	local range = self:GetRange()
+	local splashlength_ratio = Lerp(prog, maxrate, minrate)
+	local splashlength = splashlength_ratio * paintradius * ratio
+	local splashrate_add = 1 / splashlength_ratio
+	if self.IsBamboozler then splashrate_add = splashrate_add * 0.5 end
 	local _, splashrate = math.modf(self:GetSplashInitMul() / p.mSplashSplitNum)
-	local splashlength = Lerp(prog, maxrate, minrate) * paintradius * ratio
 	local wallpaintradius = paintradius / p.mPaintRateLastSplash
 	local wallfrac = prog / p.mMaxHitSplashNumChargeRate
-	
-	table.Merge(self.Projectile, {
+	table.Merge(proj, {
 		Charge = prog,
 		Color = self:GetNWInt "inkcolor",
 		ColRadiusEntity = colradius,
@@ -242,7 +248,7 @@ function SWEP:Move(ply)
 		PaintNearRadius = paintradius,
 		PaintNearRatio = ratio,
 		Range = range,
-		SplashInitRate = splashrate,
+		SplashInitRate = splashrate + splashrate_add,
 		SplashLength = splashlength,
 		SplashNum = math.floor(range / splashlength),
 		SplashPaintRadius = paintradius,
@@ -264,23 +270,29 @@ function SWEP:Move(ply)
 		self.ModifyWeaponSize = SysTime()
 
 		local e = EffectData()
-		ss.SetEffectColor(e, self.Projectile.Color)
-		ss.SetEffectColRadius(e, self.Projectile.ColRadiusWorld)
+		ss.SetEffectColor(e, proj.Color)
+		ss.SetEffectColRadius(e, proj.ColRadiusWorld)
 		ss.SetEffectDrawRadius(e, p.mDrawRadius) -- Shooter's default value
 		ss.SetEffectEntity(e, self)
 		ss.SetEffectFlags(e, self)
-		ss.SetEffectInitPos(e, self.Projectile.InitPos)
-		ss.SetEffectInitVel(e, self.Projectile.InitVel)
-		ss.SetEffectSplash(e, Angle(self.Projectile.SplashColRadius, p.mSplashDrawRadius, self.Projectile.SplashLength))
-		ss.SetEffectSplashInitRate(e, Vector(self.Projectile.SplashInitRate))
-		ss.SetEffectSplashNum(e, self.Projectile.SplashNum)
-		ss.SetEffectStraightFrame(e, self.Projectile.StraightFrame)
+		ss.SetEffectInitPos(e, proj.InitPos)
+		ss.SetEffectInitVel(e, proj.InitVel)
+		ss.SetEffectSplash(e, Angle(proj.SplashColRadius, p.mSplashDrawRadius, proj.SplashLength))
+		ss.SetEffectSplashInitRate(e, Vector(proj.SplashInitRate))
+		ss.SetEffectSplashNum(e, proj.SplashNum)
+		ss.SetEffectStraightFrame(e, proj.StraightFrame)
 		ss.UtilEffectPredicted(ply, "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
-		ss.AddInk(p, self.Projectile)
+		ss.AddInk(p, proj)
+
+		if prog > p.mSplashNearFootOccurChargeRate then
+			ss.CreateDrop(p, pos, proj.Color, self, proj.SplashColRadius,
+			proj.SplashPaintRadius / math.max(p.mPaintRateLastSplash, proj.SplashRatio),
+			proj.SplashRatio, proj.Yaw + 90)
+		end
 	end
 
 	ss.EmitSoundPredicted(ply, self, ShootSound, 80, pitch)
-	self:SetCooldown(CurTime())
+	self:SetCooldown(CurTime() + self.DelayAfterShot)
 	self:SetFireAt(prog)
 	self:SetInk(math.max(0, self:GetInk() - inkconsume))
 	self:SetSplashInitMul(self:GetSplashInitMul() + 1)

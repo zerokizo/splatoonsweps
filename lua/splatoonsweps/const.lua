@@ -253,6 +253,7 @@ ss.SecToFrame = framepersec -- = 60, Constants for time conversion
 ss.mDegRandomY = .5 -- Shooter spread angle, yaw (need to be validated)
 ss.SquidSpeedOutofInk = .45 -- Squid speed coefficient when it goes out of ink.
 ss.CameraFadeDistance = 100^2 -- Thirdperson model fade distance[Hammer units^2]
+ss.InkDropGravity = 1 * ss.ToHammerUnitsPerSec2 -- The gravity acceleration that ink drops have[Hammer units^2]
 ss.SquidTrace = {
 	start = vector_origin, endpos = vector_origin,
 	filter = {}, mask = ss.SquidSolidMask,

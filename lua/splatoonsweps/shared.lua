@@ -391,10 +391,10 @@ end
 include "debug.lua"
 include "text.lua"
 include "convars.lua"
-include "inkmanager.lua"
+include "inkballistic.lua"
+include "inkpainting.lua"
 include "movement.lua"
 include "sound.lua"
-include "trajectory.lua"
 include "weapons.lua"
 include "weaponregistration.lua"
 

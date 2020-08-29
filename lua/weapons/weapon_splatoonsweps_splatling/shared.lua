@@ -244,7 +244,6 @@ function SWEP:Move(ply)
 		self:ResetCharge()
 		self:SetFireInk(math.floor(duration / p.mRepeatFrame) + 1)
 		self.TakeAmmo = p.mInkConsume * prog / self:GetFireInk()
-		self.Projectile.Charge = prog
 		self.Projectile.DamageMax = prog == 1 and p.mDamageMaxMaxCharge or p.mDamageMax
 	end
 end
