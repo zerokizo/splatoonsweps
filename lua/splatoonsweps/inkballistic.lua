@@ -95,7 +95,8 @@ end
 
 local function HitPaint(ink, t)
 	local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
-	local hitfloor = t.HitNormal.z > ss.MAX_COS_DIFF
+	local g_dir = ss.GetGravityDirection()
+	local hitfloor = -t.HitNormal:Dot(g_dir) > ss.MAX_COS_DIFF
 	local lmin = data.PaintNearDistance
 	local lmin_ratio = data.PaintRatioNearDistance
 	local lmax = data.PaintFarDistance
@@ -152,8 +153,8 @@ local function HitPaint(ink, t)
 	if data.WallPaintUseSplashNum then n = data.SplashNum - data.SplashCount end
 	if not t.FractionPaintWall then t.FractionPaintWall = 0 end
 	for i = 1, n do
-		local pos = t.HitPos - vector_up * data.WallPaintFirstLength
-		if i > 1 then pos.z = pos.z - (i - 1) * data.WallPaintLength end
+		local pos = t.HitPos + g_dir * data.WallPaintFirstLength
+		if i > 1 then pos:Add(g_dir * (i - 1) * data.WallPaintLength) end
 		local tn = util.TraceLine {
 			collisiongroup = COLLISION_GROUP_INTERACTIVE_DEBRIS,
 			endpos = pos - t.HitNormal,
@@ -162,7 +163,7 @@ local function HitPaint(ink, t)
 			start = data.InitPos,
 		}
 
-		if math.abs(tn.HitNormal.z) < ss.MAX_COS_DIFF
+		if math.abs(tn.HitNormal:Dot(g_dir)) < ss.MAX_COS_DIFF
 		and t.FractionPaintWall < tn.Fraction
 		and not tn.StartSolid and tn.HitWorld then
 			ss.PaintSchedule[{
@@ -394,7 +395,7 @@ function ss.DoDropSplashes(ink, iseffect)
 			ss.SetEffectDrawRadius(e, data.SplashDrawRadius)
 			ss.SetEffectEntity(e, data.Weapon)
 			ss.SetEffectFlags(e, 1)
-			ss.SetEffectInitPos(e, droppos - vector_up * data.SplashDrawRadius)
+			ss.SetEffectInitPos(e, droppos + ss.GetGravityDirection() * data.SplashDrawRadius)
 			ss.SetEffectInitVel(e, data.InitVel)
 			ss.SetEffectSplash(e, Angle(0, 0, data.SplashLength))
 			ss.SetEffectSplashInitRate(e, Vector(0))
@@ -467,7 +468,7 @@ end)
 function ss.GetBulletPos(InitVel, StraightFrame, AirResist, Gravity, t)
 	local tf = math.max(t - StraightFrame, 0) -- Time for being "free state"
 	local tg = tf^2 / 2 -- Time for applying gravity
-	local g = -vector_up * Gravity -- Gravity accelerator
+	local g = ss.GetGravityDirection() * Gravity -- Gravity accelerator
 	local tlim = math.min(t, StraightFrame) -- Time limited to go straight
 	local f = tf * ss.SecToFrame -- Frames for air resistance
 	local ratio = 1 - AirResist

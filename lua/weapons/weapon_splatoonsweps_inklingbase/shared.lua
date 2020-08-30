@@ -228,6 +228,13 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	self:SetInkColorProxy(self:GetInkColor():ToVector())
 end
 
+function SWEP:GetHandPos()
+	if not self.Owner:IsPlayer() then return self:GetShootPos() end
+
+	local e = (SERVER or self:IsTPS()) and self.Owner or self:GetViewModel()
+	return e:GetBoneMatrix(e:LookupBone "ValveBiped.Bip01_R_Hand"):GetTranslation()
+end
+
 function SWEP:GetViewModel(index)
 	if not (IsValid(self.Owner) and self.Owner:IsPlayer()) then return end
 	return self.Owner:GetViewModel(index)
@@ -383,13 +390,17 @@ end
 
 function SWEP:SecondaryAttack() -- Use sub weapon
 	if self:GetHolstering() then return end
+	if self:GetKey() ~= IN_ATTACK2 then self:SetThrowing(false) return end
 	if self:GetThrowing() then return end
-	if self:GetKey() ~= IN_ATTACK2 then return end
 	if CurTime() < self:GetCooldown() then return end
 	if not self:CheckCanStandup() then return end
 	if self.Owner:IsPlayer() then
 		self:SetThrowing(true)
 		self:SetWeaponAnim(ss.ViewModel.Throwing)
+		local e = EffectData()
+		e:SetEntity(self)
+		e:SetScale(1.5)
+		ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsLandingPoint", e, true, self.IgnorePrediction)
 		if not self:IsFirstTimePredicted() then return end
 		if self.HoldType ~= "grenade" then
 			self.Owner:AnimResetGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD)

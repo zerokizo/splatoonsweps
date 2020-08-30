@@ -143,7 +143,7 @@ function ss.MakeExplosion(data)
 	local t = util.TraceLine {
 		collisiongroup = COLLISION_GROUP_DEBRIS,
 		start = origin,
-		endpos = origin - vector_up * data.GroundPaintRadius / 2,
+		endpos = origin + ss.GetGravityDirection() * data.GroundPaintRadius / 2,
 		filter = owner,
 		mask = ss.SquidSolidMaskBrushOnly,
 	}

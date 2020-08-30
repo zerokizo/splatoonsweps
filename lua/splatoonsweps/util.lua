@@ -325,3 +325,9 @@ function ss.EndSuppressHostEventsMP(ply)
 		SuppressHostEvents(NULL)
 	end
 end
+
+function ss.GetGravityDirection()
+	local g = physenv.GetGravity()
+	if not g then return -vector_up end
+	return g:GetNormalized()
+end

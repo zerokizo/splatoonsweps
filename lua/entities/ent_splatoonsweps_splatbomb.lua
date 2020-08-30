@@ -13,7 +13,6 @@ function ENT:Initialize()
     self.BurstTotalFrame = p.Burst_WaitFrm + p.Burst_WarnFrm
     self.DragCoeffChangeTime = CurTime() + p.Fly_AirFrm
     self.Parameters = p
-    self.TraceVector = -vector_up * self:BoundingRadius() / 2
     if CLIENT then return end
     self:PhysicsInit(SOLID_VPHYSICS)
     self:PhysWake()
@@ -68,25 +67,27 @@ function ENT:Think()
 end
 
 function ENT:PhysicsUpdate(p)
+    local fix = FrameTime() * ss.SecToFrame
+    
     -- Linear drag for X/Y axis
     local v = p:GetVelocity()
     if v.z < 0 then v.z = 0 end
-    p:AddVelocity(v * (self.Parameters.Fly_VelKd - 1))
+    p:AddVelocity(v * (self.Parameters.Fly_VelKd - 1) * fix)
 
     -- Angular drag
     local a = p:GetAngleVelocity()
-    p:AddAngleVelocity(a * (self.Parameters.Fly_RotKd - 1))
+    p:AddAngleVelocity(a * (self.Parameters.Fly_RotKd - 1) * fix)
 
     if CurTime() < self.DragCoeffChangeTime then return end
 
     -- Gravity
-    local g_dir = physenv.GetGravity():GetNormalized()
-    p:AddVelocity(g_dir * self.Parameters.Fly_Gravity * FrameTime())
+    local g_dir = ss.GetGravityDirection()
+    p:AddVelocity(g_dir * self.Parameters.Fly_Gravity * FrameTime() * fix)
 end
 
 function ENT:PhysicsCollide(data, collider)
     if self.RemoveFlag then return end
     if self.ContactStartTime then return end
-    if -data.HitNormal.z < ss.MAX_COS_DIFF then return end
+    if data.HitNormal:Dot(ss.GetGravityDirection()) < ss.MAX_COS_DIFF then return end
     self.ContactStartTime = CurTime()
 end

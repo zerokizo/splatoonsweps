@@ -491,11 +491,11 @@ function ss.KeyRelease(self, ply, key)
 	end
 
 	ss.ProtectedCall(self.KeyRelease, self, ply, key)
-
 	if not ss.KeyMaskFind[key] then return end
 	if CurTime() < self:GetNextSecondaryFire() then return end
 	if not (self:GetThrowing() and key == IN_ATTACK2) then return end
 	self:AddSchedule(ss.SubWeaponThrowTime, 1, function() self:SetThrowing(false) end)
+	if self:Crouching() then return end
 
 	local time = CurTime() + ss.SubWeaponThrowTime
 	self:SetCooldown(time)

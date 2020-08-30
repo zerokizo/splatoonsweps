@@ -86,7 +86,8 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 	local ang = normal:Angle()
 	local ignoreprediction = not ply:IsPlayer() and SERVER and mp or nil
 	local AABB = {mins = ss.vector_one * math.huge, maxs = -ss.vector_one * math.huge}
-	ang.roll = math.abs(normal.z) > ss.MAX_COS_DIFF and angle * normal.z or ang.yaw
+	local dot = -normal:Dot(ss.GetGravityDirection())
+	ang.roll = math.abs(dot) > ss.MAX_COS_DIFF and angle * dot or ang.yaw
 	for i, v in ipairs(reference_polys) do
 		local vertex = ss.To3D(v * radius, pos, ang)
 		AABB.mins = ss.MinVector(AABB.mins, vertex)

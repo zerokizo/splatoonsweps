@@ -66,7 +66,8 @@ ss.splatbomb = {
         BombThrow_VelZ_Mid = 3.5,
         BombThrow_VelZ_High = 4.2,
 
-        Fly_InitVel_Estimated = 9.5, -- FIXME: This is idle; it's estimated by some experiments
+        -- FIXME: This is idle; it's estimated by some experiments
+        Fly_InitVel_Estimated = 9.5, 
     },
     Units = {
         BringCloseRateCrossVec = "ratio",
@@ -151,6 +152,11 @@ function module:GetSubWeaponInkConsume()
     return p.InkConsume
 end
 
+function module:GetSubWeaponInitVelocity()
+    local initspeed = p.Fly_InitVel_Estimated
+    return self:GetAimVector() * initspeed - ss.GetGravityDirection() * initspeed * 0.25
+end
+
 if SERVER then
     function module:ServerSecondaryAttack(throwable)
         local tr = util.QuickTrace(self:GetShootPos(), self:GetAimVector() * self.Range, self.Owner)
@@ -164,8 +170,7 @@ if SERVER then
         local ph = e:GetPhysicsObject()
         if IsValid(ph) then
             local dir = self:GetAimVector()
-            local speed_amount = p.Fly_InitVel_Estimated
-            ph:AddVelocity(dir * speed_amount + vector_up * speed_amount * 0.25 + self:GetVelocity())
+            ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())
             ph:AddAngleVelocity(Vector(-math.deg(p.Fly_InitRol), math.deg(p.Fly_InitPit), 0) * ss.SecToFrame)
             ph:SetAngles(dir:Angle())
         end
@@ -175,11 +180,7 @@ if SERVER then
     end
 else
     function module:DrawOnSubTriggerDown()
-        local start = self:GetShootPos()
-        local endpos = start + self:GetAimVector() * self.Range
-        local color = ss.GetColor(self:GetNWInt "inkcolor")
-        render.SetColorMaterial()
-        render.DrawBeam(start + self:GetRight() * 2 - vector_up, endpos, 1, 0, 1, color)
+
     end
 
     function module:ClientSecondaryAttack(throwable)
