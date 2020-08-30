@@ -245,24 +245,29 @@ local function ProcessInkQueue(ply)
 
 					if not removal and (not tr.filter:IsPlayer() or tr.filter == ply) then
 						Simulate(ink)
-						tr.maxs = ss.vector_one * data.ColRadiusWorld
-						tr.mins = -tr.maxs
-						tr.mask = ss.SquidSolidMaskBrushOnly
-						local trworld = util.TraceHull(tr)
-						tr.maxs = ss.vector_one * data.ColRadiusEntity
-						tr.mins = -tr.maxs
-						tr.mask = ss.SquidSolidMask
-						local trent = util.TraceHull(tr)
-						if ink.BlasterRemoval or not (trworld.Hit or ss.IsInWorld(trworld.HitPos)) then
-							removal = true
-						elseif data.DoDamage and IsValid(trent.Entity) and trent.Entity:Health() > 0 then
-							local w = ss.IsValidInkling(trent.Entity) -- If ink hits someone
-							if not (w and ss.IsAlly(w, data.Color)) then HitEntity(ink, trent) end
-							removal = true
-						elseif trworld.Hit and not (trworld.StartSolid and tr.LifeTime < ss.FrameToSec) then
-							tr.endpos = trworld.HitPos - trworld.HitNormal * data.ColRadiusWorld * 2
-							HitPaint(ink, util.TraceLine(tr))
-							removal = true
+						if tr.start:DistToSqr(tr.endpos) > 0 then
+							tr.maxs = ss.vector_one * data.ColRadiusWorld
+							tr.mins = -tr.maxs
+							tr.mask = ss.SquidSolidMaskBrushOnly
+							local trworld = util.TraceHull(tr)
+							tr.maxs = ss.vector_one * data.ColRadiusEntity
+							tr.mins = -tr.maxs
+							tr.mask = ss.SquidSolidMask
+							local trent = util.TraceHull(tr)
+							if ink.BlasterRemoval or not (trworld.Hit or ss.IsInWorld(trworld.HitPos)) then
+								removal = true
+							elseif data.DoDamage and IsValid(trent.Entity) and trent.Entity:Health() > 0 then
+								local w = ss.IsValidInkling(trent.Entity) -- If ink hits someone
+								if not (w and ss.IsAlly(w, data.Color)) then HitEntity(ink, trent) end
+								removal = true
+							elseif trworld.Hit then
+								if trworld.StartSolid and tr.LifeTime < ss.FrameToSec then trworld = util.TraceLine(tr) end
+								if trworld.Hit and not (trworld.StartSolid and tr.LifeTime < ss.FrameToSec) then
+									tr.endpos = trworld.HitPos - trworld.HitNormal * data.ColRadiusWorld * 2
+									HitPaint(ink, util.TraceLine(tr))
+									removal = true
+								end
+							end
 						end
 
 						if SysTime() - Benchmark > ss.FrameToSec then
