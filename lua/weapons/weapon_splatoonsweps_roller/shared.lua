@@ -504,7 +504,6 @@ function SWEP:Move(ply, mv)
 	end
 
 	if mode == self.MODE.READY then return end
-	self:SetReloadDelay(p.mInkRecoverSplashStop)
 
 	if mode == self.MODE.ATTACK then
 		self:SetCooldown(CurTime() + FrameTime())
@@ -523,10 +522,12 @@ function SWEP:Move(ply, mv)
 			self:SetIsSecondSwing(not self:GetIsSecondSwing())
 		else
 			self:SetMode(self.MODE.PAINT)
+			self:SetCooldown(CurTime() + self.SwingBackWait)
 			self:SetWeaponAnim(ACT_VM_SECONDARYATTACK)
 			self:ResetSequence "fire2" -- This is needed in multiplayer to predict muzzle effects.
 		end
 
+		self:SetReloadDelay(p.mInkRecoverSplashStop)
 		if not self:IsFirstTimePredicted() then return end
 		PlaySwingSound(self, enoughink)
 		if not enoughink and splashnum == 0 then return end

@@ -125,14 +125,7 @@ function ss.SetPrimary(weapon, parameters)
 	}
 
 	table.Merge(weapon.Parameters, parameters or {})
-	for name, value in pairs(weapon.Parameters) do
-		if isnumber(value) then
-			local units = ss.Units[name]
-			local converter = units and ss.UnitsConverter[units] or 1
-			weapon.Parameters[name] = value * converter
-		end
-	end
-
+	ss.ConvertUnits(weapon.Parameters, ss.Units)
 	ss.ProtectedCall(ss.CustomPrimary[weapon.Base], weapon)
 end
 

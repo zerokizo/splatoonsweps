@@ -92,7 +92,7 @@ local function DrawVCrosshair(self, isfirstperson)
 	self.Mode = self:GetMode()
 end
 
-SWEP.CrosshairDrawDelay = 20 * ss.FrameToSec
+SWEP.CrosshairDrawDelay = 8 * ss.FrameToSec
 SWEP.CrosshairSpawnDelay = 20 * ss.FrameToSec
 SWEP.SwayTime = 12 * ss.FrameToSec
 SWEP.IronSightsAng = {

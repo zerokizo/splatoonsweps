@@ -348,8 +348,9 @@ function SWEP:DrawWorldModelTranslucent()
 		if name == "subweaponusable" then
 			local fraction = math.Clamp(self.JustUsableTime + 0.15 - CurTime(), 0, 0.15)
 			local size = -1600 * (fraction - 0.075)^2 + 20
+			local inkconsume = self:GetSubWeaponInkConsume()
 			v.size = {x = size, y = size}
-			v.hide = not IsValid(self.WElements["inktank"].modelEnt) or self:GetInk() < self.Secondary.TakeAmmo * 100
+			v.hide = not IsValid(self.WElements["inktank"].modelEnt) or self:GetInk() < inkconsume
 		elseif name == "inktank" and IsValid(self.Owner) then
 			bone_ent = self.Owner
 		end
@@ -404,7 +405,8 @@ function SWEP:DrawWorldModelTranslucent()
 
 			if v.inktank then
 				-- Sub weapon usable meter
-				local BombPos = Vector(math.min(-11.9 + self.Secondary.TakeAmmo * 17 * ss.MaxInkAmount / ss.GetMaxInkAmount(), 5.1))
+				local inkconsume = self:GetSubWeaponInkConsume()
+				local BombPos = Vector(math.min(-11.9 + inkconsume * 17 / ss.GetMaxInkAmount(), 5.1))
 				model:ManipulateBonePosition(model:LookupBone "bip_inktank_bombmeter", BombPos)
 				-- Ink remaining
 				local ink = -17 + .17 * self:GetInk() * ss.MaxInkAmount / ss.GetMaxInkAmount()

@@ -32,4 +32,4 @@ SWEP.IsSplatoonWeapon = true
 SWEP.m_WeaponDeploySpeed = 2
 
 SWEP.Secondary = SWEP.Secondary or {}
-SWEP.Secondary.TakeAmmo = 0.7
+SWEP.Secondary.Automatic = true

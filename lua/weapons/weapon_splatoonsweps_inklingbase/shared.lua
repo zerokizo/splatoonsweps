@@ -58,6 +58,11 @@ function SWEP:GetBase(BaseClassName)
 	return base
 end
 
+-- Fallback function; this should be overriden in SWEP:SharedInit()
+function SWEP:GetSubWeaponInkConsume()
+	return 0
+end
+
 -- Speed on humanoid form = base speed * ability factor
 function SWEP:GetInklingSpeed()
 	return ss.InklingBaseSpeed
@@ -145,7 +150,7 @@ function SWEP:ApplySkinAndBodygroups()
 	end
 end
 
-local InkTraceLength = 3
+local InkTraceLength = 15
 local InkTraceDown = -vector_up * InkTraceLength
 local InkTraceZSteps = 10
 local InkTraceXYSteps = 2
@@ -249,19 +254,13 @@ function SWEP:SetWeaponAnim(act, index)
 end
 
 function SWEP:SharedInitBase()
-	local SubWeaponPath = ("splatoonsweps/sub/%s.lua"):format(self.Sub)
-	if file.Exists(SubWeaponPath, "LUA") then
-		table.Merge(self, include(SubWeaponPath))
-	end
+	if ss[self.Sub] then table.Merge(self, ss[self.Sub].Functions) end -- Load fields related to sub weapon
 
 	self:SetCooldown(CurTime())
 	self:ApplySkinAndBodygroups()
 	self.SwimSound = CreateSound(self, ss.SwimSound)
 	self.EnemyInkSound = CreateSound(self, ss.EnemyInkSound)
-	self.LastKeyDown = {}
-	for _, k in ipairs(ss.KeyMask) do
-		self.LastKeyDown[k] = CurTime()
-	end
+	self.KeyPressedOrder = {} -- Pressed keys are added here, most recent key will go last
 
 	local translate = {}
 	for _, t in ipairs {
@@ -298,7 +297,7 @@ function SWEP:SharedDeployBase()
 	self:SetCooldown(CurTime())
 	self:StartRecording()
 	self:SetKey(0)
-	self.LastKeyDown = {}
+	self.KeyPressedOrder = {}
 	self.InklingSpeed = self:GetInklingSpeed()
 	self.SquidSpeed = self:GetSquidSpeed()
 	self.OnEnemyInkSpeed = ss.OnEnemyInkSpeed
@@ -309,6 +308,11 @@ function SWEP:SharedDeployBase()
 	if self.Owner:IsPlayer() then
 		self.Owner:SetJumpPower(self.JumpPower)
 		self.Owner:SetCrouchedWalkSpeed(.5)
+		for _, k in ipairs(ss.KeyMask) do
+			if self.Owner:KeyDown(k) then
+				ss.KeyPress(self, self,Owner, k)
+			end
+		end
 	end
 
 	ss.ProtectedCall(self.SharedDeploy, self)
@@ -379,6 +383,7 @@ end
 
 function SWEP:SecondaryAttack() -- Use sub weapon
 	if self:GetHolstering() then return end
+	if self:GetThrowing() then return end
 	if self:GetKey() ~= IN_ATTACK2 then return end
 	if CurTime() < self:GetCooldown() then return end
 	if not self:CheckCanStandup() then return end

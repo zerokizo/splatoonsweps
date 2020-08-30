@@ -15,8 +15,8 @@ if SERVER then -- Finds all Lua files used on client and AddCSLuaFile() them.
 		client[i] = ClientDirectory .. filename
 	end
 	
-	for _, filename in ipairs(table.Add(shared, client)) do
-		AddCSLuaFile(filename)
+	for _, filepath in ipairs(table.Add(shared, client)) do
+		AddCSLuaFile(filepath)
 	end
 	
 	include(ServerDirectory .. "autorun.lua")

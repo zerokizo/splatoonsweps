@@ -277,6 +277,7 @@ end
 for key, value in pairs {
 	AimDuration = 20, -- Change hold type
 	CrouchDelay = 6, -- Cannot crouch for some frames after firing.
+	EnemyInkCrouchEndurance = 20, -- Time to force inklings to stand up when they're on enemy ink.
 	HealDelay = 60, -- Time to heal again after taking damage.
 	RollerRunoverStopFrame = 30, -- Stopping time when inkling tries to run over.
 	RollerDecreaseFrame = 15, -- Rollers ink velocity deceleration time to start falling.
@@ -291,7 +292,7 @@ end
 ss.UnitsConverter = {
 	["du"] = ss.ToHammerUnits,
 	["du/f"] = ss.ToHammerUnitsPerSec,
-	["du/f2"] = ss.ToHammerUnitsPerSec2,
+	["du/f^2"] = ss.ToHammerUnitsPerSec2,
 	["f"] = ss.FrameToSec,
 	["ink"] = ss.MaxInkAmount,
 }

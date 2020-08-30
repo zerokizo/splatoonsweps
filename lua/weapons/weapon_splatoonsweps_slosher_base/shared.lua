@@ -184,7 +184,7 @@ function SWEP:CreateInk(number, spawncount) -- Group #, spawncount-th bullet(0, 
 	local dmax, dmaxdist, dmin, dmindist = self:GetDamageParameters(number, spawncount)
 	local pfardist, pfarradius, pfarrate, pneardist, pnearradius, pnearrate = self:GetPaintParameters(number, spawncount)
 	local colent, colworld = self:GetCollisionRadii(number, spawncount)
-	local function Do(ang)
+	local function Make(ang)
 		local initvelocity = ang:Forward() * vforward + ang:Right() * vright + ang:Up() * vup
 		local yaw = initvelocity:Angle().yaw
 		if initvelocity.x == 0 and initvelocity.y == 0 then yaw = ang.yaw end
@@ -261,8 +261,8 @@ function SWEP:CreateInk(number, spawncount) -- Group #, spawncount-th bullet(0, 
 		local sgnbias = spreadbias > util.SharedRandom(randspread, 0, 1, number + spawncount + i + 1)
 		local frac = util.SharedRandom(randspread, sgnbias and spreadbias or 0, sgnbias and 1 or spreadbias, number + spawncount + i + 1 + 2)
 		ang:RotateAroundAxis(ang:Up(), sgn * frac * spread)
-		if i == centerline and iscenter then Do(ang) end
-		if i ~= centerline and isside then Do(ang) end
+		if i == centerline and iscenter then Make(ang) end
+		if i ~= centerline and isside then Make(ang) end
 	end
 end
 

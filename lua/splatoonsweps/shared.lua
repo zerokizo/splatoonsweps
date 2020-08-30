@@ -340,6 +340,20 @@ function ss.EndSuppressHostEventsMP(ply)
 	end
 end
 
+-- Modify the source table with given units
+-- Arguments:
+--   table source | The parameter table = {[string ParameterName] = [number Value]}
+--   table units  | The table which describes what units each parameter should have {[string ParameterName] = [string Unit]}
+function ss.ConvertUnits(source, units)
+	for name, value in pairs(source) do
+		if isnumber(value) then
+			local unit = units[name]
+			local converter = unit and ss.UnitsConverter[unit] or 1
+			source[name] = value * converter
+		end
+	end
+end
+
 -- The function names of EffectData() don't make sense, renaming.
 do local e = EffectData()
 	ss.GetEffectSplash = e.GetAngles -- Angle(SplashColRadius, SplashDrawRadius, SplashLength)
@@ -398,6 +412,13 @@ include "sound.lua"
 include "weapons.lua"
 include "weaponregistration.lua"
 
+local path = "splatoonsweps/sub/%s"
+for i, filename in ipairs(file.Find("splatoonsweps/sub/*.lua", "LUA")) do
+	path = path:format(filename)
+	if SERVER then AddCSLuaFile(path) end
+	include(path)
+end
+
 local CrouchMask = bit.bnot(IN_DUCK)
 local WALLCLIMB_KEYS = bit.bor(IN_JUMP, IN_FORWARD, IN_BACK)
 function ss.PredictedThinkMoveHook(w, ply, mv)
@@ -405,7 +426,7 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 
 	local crouching = ply:Crouching()
 	if w:CheckCanStandup() and w:GetKey() ~= 0 and w:GetKey() ~= IN_DUCK
-	or CurTime() > w:GetEnemyInkTouchTime() + 20 * ss.FrameToSec and ply:KeyDown(IN_DUCK)
+	or CurTime() > w:GetEnemyInkTouchTime() + ss.EnemyInkCrouchEndurance and ply:KeyDown(IN_DUCK)
 	or CurTime() < w:GetCooldown() then
 		mv:SetButtons(bit.band(mv:GetButtons(), CrouchMask))
 		crouching = false
@@ -519,33 +540,33 @@ end
 
 function ss.MakeExplosionStructure()
 	return {
-		Origin = Vector(),
-		Radius = 0,
-		Owner = NULL,
-		HurtOwner = false,
-		IsCarriedByLocalPlayer = false,
-		InkColor = 1,
-		ProjectileID = 0,
-		EffectFlags = 0,
-		EffectName = "SplatoonSWEPsExplosion",
-		IsPredicted = nil,
-		IgnorePrediction = nil,
-		SplashInitAng = Angle(),
-		TraceLength = 0,
-		TraceYaw = 0,
 		ClassName = "",
+		DamageRadius = 0,
 		DoDamage = false,
 		DoGroundPaint = false,
+		EffectFlags = 0,
+		EffectName = "SplatoonSWEPsExplosion",
+		EffectRadius = 0,
 		GroundPaintRadius = 0,
 		GroundPaintType = 13,
 		GetDamage = function(dist) return 0 end,
-		GetPaintRadius = function(dist) return 0 end,
+		GetTracePaintRadius = function(dist) return 0 end,
+		HurtOwner = false,
+		IgnorePrediction = nil,
+		IsCarriedByLocalPlayer = false,
+		IsPredicted = nil,
+		InkColor = 1,
+		Origin = Vector(),
+		Owner = NULL,
+		ProjectileID = 0,
+		SplashInitAng = Angle(),
+		TraceLength = 0,
+		TraceYaw = 0,
 	}
 end
 
 function ss.MakeExplosion(data)
 	local origin = data.Origin
-	local radius = data.Radius
 	local owner = data.Owner
 	local hurtowner = data.HurtOwner
 	local IsCarriedByLocalPlayer = data.IsCarriedByLocalPlayer
@@ -558,13 +579,13 @@ function ss.MakeExplosion(data)
 	local splashinitang = data.SplashInitAng
 	local classname = data.ClassName
 	local GetDamage = data.GetDamage
-	local GetPaintRadius = data.GetPaintRadius
+	local GetTracePaintRadius = data.GetTracePaintRadius
 	local d = DamageInfo()
 	local damagedealt = false
 	local attacker = IsValid(owner) and owner or game.GetWorld()
 	local inflictor = ss.IsValidInkling(owner) or game.GetWorld()
 	if data.DoDamage then -- Find entities within explosion and deal damage
-		for _, e in ipairs(ents.FindInSphere(origin, radius)) do
+		for _, e in ipairs(ents.FindInSphere(origin, data.DamageRadius)) do
 			local target_weapon = ss.IsValidInkling(e)
 			if IsValid(e) and e:Health() > 0 and ss.LastHitID[e] ~= projectileID
 			and (not ss.IsAlly(target_weapon, inkcolor) or hurtowner and e == owner) then
@@ -620,7 +641,7 @@ function ss.MakeExplosion(data)
 	e:SetOrigin(origin)
 	e:SetColor(inkcolor)
 	e:SetFlags(effectflags)
-	e:SetRadius(radius)
+	e:SetRadius(data.EffectRadius)
 	if data.IsPredicted then
 		ss.UtilEffectPredicted(owner, effectname, e, true, data.IgnorePrediction)
 	else
@@ -649,7 +670,7 @@ function ss.MakeExplosion(data)
 
 		if t.Hit and not t.StartSolid then
 			local dist = (t.HitPos - t.StartPos):Length2D()
-			ss.Paint(t.HitPos, t.HitNormal, GetPaintRadius(dist),
+			ss.Paint(t.HitPos, t.HitNormal, GetTracePaintRadius(dist),
 			inkcolor, data.TraceYaw, ss.GetDropType(), 1, owner, classname)
 		end
 	end
@@ -668,46 +689,49 @@ function ss.MakeExplosion(data)
 	inkcolor, data.TraceYaw, data.GroundPaintType, 1, owner, classname)
 end
 
-function ss.MakeBombExplosion(org, owner, color)
+function ss.MakeBombExplosion(org, owner, color, params)
+	local w = ss.IsValidInkling(owner)
+	if not w then return end
 	sound.Play("SplatoonSWEPs.BombExplosion", org) -- TODO: Burst bomb sound
 	ss.MakeExplosion(table.Merge(ss.MakeExplosionStructure(), {
-		Origin = org,
-		Radius = 300,
-		Owner = owner,
-		HurtOwner = false,
-		InkColor = color,
-		ProjectileID = CurTime(),
-		EffectName = "SplatoonSWEPsExplosion",
-		TraceLength = 150,
-		ClassName = "weapon_splatoonsweps_splattershotjr",
+		ClassName = w:GetClass(),
+		DamageRadius = params.Burst_Radius_Far,
 		DoDamage = true,
+		DoGroundPaint = true,
+		EffectName = "SplatoonSWEPsExplosion",
+		EffectRadius = params.Burst_Radius_Far,
 		GetDamage = function(dist)
-			local rnear = 100
-			local dnear = 1.8
-			local dfar = 0.3
+			local rnear = params.Burst_Radius_Near
+			local dnear = params.Burst_Damage_Near
+			local dfar = params.Burst_Damage_Far
 			return dist < rnear and dnear or dfar
 		end,
-		GetPaintRadius = function(dist) return 50 end,
-		DoGroundPaint = true,
-		GroundPaintRadius = 150,
+		GetTracePaintRadius = function(dist) return params.CrossPaintRadius end,
+		GroundPaintRadius = params.Burst_PaintR,
+		HurtOwner = false,
+		InkColor = color,
+		Origin = org,
+		Owner = owner,
+		ProjectileID = CurTime(),
+		TraceLength = params.CrossPaintRayLength,
 	}))
 end
 
 function ss.MakeDeathExplosion(org, attacker, color)
 	sound.Play("SplatoonSWEPs.PlayerDeathExplosion", org)
 	ss.MakeExplosion(table.Merge(ss.MakeExplosionStructure(), {
-		Origin = org,
-		Radius = 300,
-		Owner = attacker,
-		InkColor = color,
-		ProjectileID = CurTime(),
-		EffectName = "SplatoonSWEPsExplosion",
-		TraceLength = 150,
 		ClassName = ss.IsValidInkling(attacker).ClassName,
-		GetPaintRadius = function(dist) return 50 end,
 		DoGroundPaint = true,
+		EffectName = "SplatoonSWEPsExplosion",
+		EffectRadius = 300,
+		GetTracePaintRadius = function(dist) return 50 end,
 		GroundPaintRadius = 150,
 		GroundPaintType = 14,
+		InkColor = color,
+		Origin = org,
+		Owner = attacker,
+		ProjectileID = CurTime(),
+		TraceLength = 150,
 	}))
 end
 
@@ -722,22 +746,12 @@ function ss.MakeBlasterExplosion(ink)
 	local rmid = p.mCollisionRadiusMiddle * rmul
 	local rfar = p.mCollisionRadiusFar * rmul
 	local e = table.Merge(ss.MakeExplosionStructure(), {
-		Origin = ink.Trace.endpos,
-		Radius = p.mCollisionRadiusFar * rmul,
-		Owner = ink.Trace.filter,
-		HurtOwner = ss.GetOption "weapon_splatoonsweps_blaster_base" "hurtowner",
-		IsCarriedByLocalPlayer = ink.IsCarriedByLocalPlayer,
-		InkColor = data.Color,
-		ProjectileID = data.ID,
+		ClassName = data.Weapon.ClassName,
+		DamageRadius = rfar,
+		DoDamage = true,
 		EffectFlags = ink.BlasterHitWall and 1 or 0,
 		EffectName = "SplatoonSWEPsBlasterExplosion",
-		IsPredicted = true,
-		IgnorePrediction = data.Weapon.IgnorePrediction,
-		SplashInitAng = data.InitDir:Angle(),
-		TraceLength = p.mMoveLength,
-		TraceYaw = data.Yaw,
-		ClassName = data.Weapon.ClassName,
-		DoDamage = true,
+		EffectRadius = p.mCollisionRadiusFar * rmul,
 		GetDamage = function(dist)
 			if dist > rmid then
 				return math.Remap(dist, rmid, rfar, dmid, dfar)
@@ -747,10 +761,21 @@ function ss.MakeBlasterExplosion(ink)
 	
 			return dnear
 		end,
-		GetPaintRadius = function(dist)
+		GetTracePaintRadius = function(dist)
 			local frac = dist / p.mBoundPaintMinDistanceXZ
 			return Lerp(frac, p.mBoundPaintMaxRadius, p.mBoundPaintMinRadius)
 		end,
+		HurtOwner = ss.GetOption "weapon_splatoonsweps_blaster_base" "hurtowner",
+		IgnorePrediction = data.Weapon.IgnorePrediction,
+		IsCarriedByLocalPlayer = ink.IsCarriedByLocalPlayer,
+		IsPredicted = true,
+		InkColor = data.Color,
+		Origin = ink.Trace.endpos,
+		Owner = ink.Trace.filter,
+		ProjectileID = data.ID,
+		SplashInitAng = data.InitDir:Angle(),
+		TraceLength = p.mMoveLength,
+		TraceYaw = data.Yaw,
 	})
 
 	if ink.BlasterHitWall then
@@ -1024,29 +1049,26 @@ end
 
 function ss.KeyPress(self, ply, key)
 	if ss.KeyMaskFind[key] then
-		self.LastKeyDown[key] = CurTime()
 		self:SetKey(key)
-		if CurTime() > self:GetCooldown() then
-			self:SetThrowing(self:GetThrowing() and key == IN_ATTACK2)
-		end
+		table.RemoveByValue(self.KeyPressedOrder, key)
+		self.KeyPressedOrder[#self.KeyPressedOrder + 1] = key
 	end
-
+	
 	ss.ProtectedCall(self.KeyPress, self, ply, key)
 end
 
 function ss.KeyRelease(self, ply, key)
-	if CurTime() < self:GetNextSecondaryFire() then return end
-	local keytable, keytime = {}, {}
-	for _, k in ipairs(ss.KeyMask) do
-		local t = self.LastKeyDown[k] or 0
-		if self.Owner:KeyDown(k) then keytime[#keytime + 1] = t end
-		keytable[t] = k -- [Last time key down] = key
+	table.RemoveByValue(self.KeyPressedOrder, key)
+	if #self.KeyPressedOrder > 0 then
+		ss.KeyPress(self, ply, self.KeyPressedOrder[#self.KeyPressedOrder])
+	else
+		self:SetKey(0)
 	end
 
-	self:SetKey(keytable[math.max(0, unpack(keytime))] or 0)
 	ss.ProtectedCall(self.KeyRelease, self, ply, key)
 
 	if not ss.KeyMaskFind[key] then return end
+	if CurTime() < self:GetNextSecondaryFire() then return end
 	if not (self:GetThrowing() and key == IN_ATTACK2) then return end
 	self:AddSchedule(ss.SubWeaponThrowTime, 1, function() self:SetThrowing(false) end)
 
