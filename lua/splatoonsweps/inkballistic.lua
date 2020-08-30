@@ -113,7 +113,7 @@ local function HitPaint(ink, t)
 	if length2d == lmin_ratio then data.Type = ss.GetDropType() end
 	if data.DoDamage then
 		if weapon.IsCharger then
-			-- HitSmoke(ink, t) -- Add smoke if the surface is not paintable
+			-- HitSmoke(ink, t) -- TODO: Add smoke if the surface is not paintable
 			local radiusmul = ink.Parameters.mPaintRateLastSplash
 			if not hitfloor then radius = radius * Lerp(data.Charge, radiusmul, 1) end
 			if tr.LengthSum < data.Range then
