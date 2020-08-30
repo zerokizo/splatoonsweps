@@ -11,6 +11,10 @@ local randsplash = "SplatoonSWEPs: SplashNum"
 local randinktype = "SplatoonSWEPs: Shooter ink type"
 function SWEP:GetRange() return self.Range end
 function SWEP:GetInitVelocity() return self.Parameters.mInitVel end
+function SWEP:GetSplashInitRate()
+	return self.SplashInitTable[self:GetSplashInitMul()] / self.Parameters.mSplashSplitNum
+end
+
 function SWEP:GetFirePosition(ping)
 	if not IsValid(self.Owner) then return self:GetPos(), self:GetForward(), 0 end
 	local aim = self:GetAimVector() * self:GetRange(ping)
@@ -127,19 +131,8 @@ end
 
 function SWEP:GetSpread()
 	local DegRandX, DegRandY = self:GetSpreadAmount()
-	local sgnx = math.Round(util.SharedRandom(rand, 0, 1, CurTime())) * 2 - 1
-	local sgny = math.Round(util.SharedRandom(rand, 0, 1, CurTime() * 2)) * 2 - 1
-	local SelectIntervalX = self:GetBias() > util.SharedRandom(rand, 0, 1, CurTime() * 3)
-	local SelectIntervalY = self:GetBias() > util.SharedRandom(rand, 0, 1, CurTime() * 4)
-	local fracx = util.SharedRandom(rand,
-		SelectIntervalX and self:GetBias() or 0,
-		SelectIntervalX and 1 or self:GetBias(), CurTime() * 5)
-	local fracy = util.SharedRandom(rand,
-		SelectIntervalY and self:GetBias() or 0,
-		SelectIntervalY and 1 or self:GetBias(), CurTime() * 6)
-	local rx = sgnx * fracx * DegRandX
-	local ry = sgny * fracy * DegRandY
-
+	local rx = ss.GetBiasedRandom("SplatoonSWEPs: Spread X", self:GetBias()) * DegRandX
+	local ry = ss.GetBiasedRandom("SplatoonSWEPs: Spread Y", self:GetBias()) * DegRandY
 	return rx, ry
 end
 
@@ -169,7 +162,7 @@ function SWEP:CreateInk()
 		ID = CurTime() + self:EntIndex(),
 		InitPos = pos,
 		InitVel = ang:Forward() * self:GetInitVelocity(),
-		SplashInitRate = self.SplashInitTable[self:GetSplashInitMul()] / p.mSplashSplitNum,
+		SplashInitRate = self:GetSplashInitRate(),
 		SplashNum = splashnum,
 		Type = util.SharedRandom(randinktype, 4, 9),
 		Yaw = ang.yaw,

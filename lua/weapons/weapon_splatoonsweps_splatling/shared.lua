@@ -5,8 +5,6 @@ SWEP.Base = "weapon_splatoonsweps_shooter"
 SWEP.IsSplatling = true
 SWEP.FlashDuration = .25
 
-local rand = "SplatoonSWEPs: Spread"
-local randsplash = "SplatoonSWEPs: SplashNum"
 function SWEP:GetChargeProgress(ping)
 	local p = self.Parameters
 	local ts = ss.GetTimeScale(self.Owner)
@@ -15,24 +13,27 @@ function SWEP:GetChargeProgress(ping)
 	return math.Clamp(frac / p.mSecondPeriodMaxChargeFrame * ts, 0, 1)
 end
 
+local rand = "SplatoonSWEPs: Spread"
 function SWEP:GetInitVelocity(nospread)
-	local v
 	local p = self.Parameters
+	local frac = ss.GetBiasedRandom(rand, self:GetBiasVelocity())
+	local v = 1 + (nospread and 0 or frac * p.mInitVelSpeedRateRandom)
 	local prog = self:GetFireInk() > 0 and self:GetFireAt() or self:GetChargeProgress(CLIENT)
 	if prog < self.MediumCharge then
-		v = Lerp(prog / self.MediumCharge, p.mInitVelMinCharge, p.mInitVelFirstPeriodMaxCharge)
+		return v * Lerp(prog / self.MediumCharge, p.mInitVelMinCharge, p.mInitVelFirstPeriodMaxCharge)
 	else
-		v = Lerp(prog - self.MediumCharge, p.mInitVelSecondPeriodMinCharge, p.mInitVelSecondPeriodMaxCharge)
+		return v * Lerp(prog - self.MediumCharge, p.mInitVelSecondPeriodMinCharge, p.mInitVelSecondPeriodMaxCharge)
 	end
+end
 
-	if nospread then return v end
-	local sgnv = math.Round(util.SharedRandom(rand, 0, 1, CurTime() * 7)) * 2 - 1
-	local SelectIntervalV = self:GetBiasVelocity() > util.SharedRandom(rand, 0, 1, CurTime() * 8)
-	local fracmin = SelectIntervalV and self:GetBias() or 0
-	local fracmax = SelectIntervalV and 1 or self:GetBiasVelocity(), CurTime() * 9
-	local frac = util.SharedRandom(rand, fracmin, fracmax)
+local randsign = "SplatoonSWEPs: Init rate sign"
+function SWEP:GetSplashInitRate()
+	local rate = self:GetBase().GetSplashInitRate(self)
+	if util.SharedRandom(randsign, 0, 3, CurTime() - 1) < 1 then return rate end
 
-	return v * (1 + sgnv * frac * p.mInitVelSpeedRateRandom)
+	local p = self.Parameters
+	local diff = ss.RandomSign(rand) * 0.5 / p.mSplashSplitNum
+	return math.max(rate + diff, 0)
 end
 
 function SWEP:GetRange()
