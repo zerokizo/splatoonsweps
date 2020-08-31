@@ -261,8 +261,6 @@ function SWEP:SetWeaponAnim(act, index)
 end
 
 function SWEP:SharedInitBase()
-	if ss[self.Sub] then table.Merge(self, ss[self.Sub].Functions) end -- Load fields related to sub weapon
-
 	self:SetCooldown(CurTime())
 	self:ApplySkinAndBodygroups()
 	self.SwimSound = CreateSound(self, ss.SwimSound)
@@ -504,3 +502,7 @@ function SWEP:SetupDataTables()
 	ss.ProtectedCall(self.CustomDataTables, self)
 	self:NetworkVarNotify("Throwing", self.ChangeThrowing)
 end
+
+ -- Load fields related to sub weapon
+if not ss[SWEP.Sub] then return end
+table.Merge(SWEP, ss[SWEP.Sub].Functions)

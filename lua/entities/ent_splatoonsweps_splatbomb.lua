@@ -70,9 +70,7 @@ function ENT:PhysicsUpdate(p)
     local fix = FrameTime() * ss.SecToFrame
     
     -- Linear drag for X/Y axis
-    local v = p:GetVelocity()
-    if v.z < 0 then v.z = 0 end
-    p:AddVelocity(v * (self.Parameters.Fly_VelKd - 1) * fix)
+    p:AddVelocity(p:GetVelocity() * (self.Parameters.Fly_VelKd - 1) * fix)
 
     -- Angular drag
     local a = p:GetAngleVelocity()
