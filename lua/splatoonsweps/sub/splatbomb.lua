@@ -3,7 +3,11 @@ AddCSLuaFile()
 local ss = SplatoonSWEPs
 if not ss then return {} end
 ss.splatbomb = {
-    Functions = {},
+    Merge = {
+        IsSubWeaponThrowable = true,
+    },
+
+    -- Parameters are from Splatoon 2 ver. 5.2.0, https://leanny.github.io/splat2new/parameters.html
     Parameters = {
         BringCloseRateCrossVec = 0.7,
         BringCloseRateMoveVec = 0.7,
@@ -138,8 +142,7 @@ ss.splatbomb = {
 
 ss.ConvertUnits(ss.splatbomb.Parameters, ss.splatbomb.Units)
 
--- Parameters are from Splatoon 2 ver. 5.2.0, https://leanny.github.io/splat2new/parameters.html
-local module = ss.splatbomb.Functions
+local module = ss.splatbomb.Merge
 local p = ss.splatbomb.Parameters
 function module:SharedSecondaryAttack(throwable)
     

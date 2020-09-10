@@ -285,7 +285,7 @@ function SWEP:SharedInitBase()
 	end
 
 	if ss.sp then self.Buttons, self.OldButtons = 0, 0 end
-	if ss[self.Sub] then table.Merge(self, ss[self.Sub].Functions) end
+	if ss[self.Sub] then table.Merge(self, ss[self.Sub].Merge) end
 
 	self.Translate = translate
 	self.Projectile = ss.MakeProjectileStructure()
@@ -394,10 +394,14 @@ function SWEP:SecondaryAttack() -- Use sub weapon
 	if self.Owner:IsPlayer() then
 		self:SetThrowing(true)
 		self:SetWeaponAnim(ss.ViewModel.Throwing)
-		local e = EffectData()
-		e:SetEntity(self)
-		e:SetScale(1.5)
-		ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsLandingPoint", e, true, self.IgnorePrediction)
+
+		if self.IsSubWeaponThrowable then
+			local e = EffectData()
+			e:SetEntity(self)
+			e:SetScale(1.5)
+			ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsLandingPoint", e, true, self.IgnorePrediction)
+		end
+
 		if not self:IsFirstTimePredicted() then return end
 		if self.HoldType ~= "grenade" then
 			self.Owner:AnimResetGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD)

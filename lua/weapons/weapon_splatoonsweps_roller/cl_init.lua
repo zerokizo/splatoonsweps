@@ -77,6 +77,7 @@ end
 
 local function DrawVCrosshair(self, isfirstperson)
 	if self.Owner ~= LocalPlayer() then return end
+	if self:GetThrowing() then return end
 	if CurTime() > self.NextCrosshairSpawnTime then
 		ss.tablepush(self.Crosshair, CurTime())
 		self.NextCrosshairSpawnTime = CurTime() + (self.CrosshairSpawnDelay or delay)

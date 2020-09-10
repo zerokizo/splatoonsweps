@@ -495,6 +495,7 @@ end
 function SWEP:DoDrawCrosshair(x, y)
 	self.Cursor = self.Owner:GetEyeTrace().HitPos:ToScreen()
 	if not ss.GetOption "drawcrosshair" then return end
+	if self:GetThrowing() then return end
 	x, y = self.Cursor.x, self.Cursor.y
 
 	return ss.ProtectedCall(self.DrawCrosshair, self, x, y)
