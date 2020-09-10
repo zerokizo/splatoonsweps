@@ -116,15 +116,13 @@ include "convars.lua"
 include "inkballistic.lua"
 include "inkpainting.lua"
 include "movement.lua"
-include "sound.lua"
+include "sounds/common.lua"
 include "weapons.lua"
 include "weaponregistration.lua"
 
 local path = "splatoonsweps/sub/%s"
 for i, filename in ipairs(file.Find("splatoonsweps/sub/*.lua", "LUA")) do
-	path = path:format(filename)
-	if SERVER then AddCSLuaFile(path) end
-	include(path)
+	include(path:format(filename))
 end
 
 local CrouchMask = bit.bnot(IN_DUCK)

@@ -1,4 +1,5 @@
 
+AddCSLuaFile()
 local ss = SplatoonSWEPs
 if not ss then return {} end
 ss.splatbomb = {
@@ -166,6 +167,7 @@ if SERVER then
         e:SetInkColorProxy(self:GetInkColorProxy())
         e:SetPos(self:GetShootPos())
         e:Spawn()
+        e:EmitSound "SplatoonSWEPs.SubWeaponThrown"
 
         local ph = e:GetPhysicsObject()
         if IsValid(ph) then

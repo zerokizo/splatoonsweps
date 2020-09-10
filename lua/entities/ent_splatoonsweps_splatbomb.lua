@@ -5,6 +5,8 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.ContactTotalTime = 0
+ENT.NextPlayHitSE = 0
+ENT.WarnSoundPlayed = false
 local mdl = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
 function ENT:Initialize()
     local p = ss.splatbomb.Parameters
@@ -14,6 +16,7 @@ function ENT:Initialize()
     self.DragCoeffChangeTime = CurTime() + p.Fly_AirFrm
     self.Parameters = p
     if CLIENT then return end
+    self.WarnSound = CreateSound(self, ss.BombAlert)
     self:PhysicsInit(SOLID_VPHYSICS)
     self:PhysWake()
     local p = self:GetPhysicsObject()
@@ -37,6 +40,7 @@ function ENT:Detonate()
     if self.RemoveFlag then return end
     if self:GetContactTime() < self.BurstTotalFrame then return end
     ss.MakeBombExplosion(self:GetPos(), self.Owner, self:GetNWInt "inkcolor", self.Parameters)
+    self:StopSound "SplatoonSWEPs.BombAlert"
     self.RemoveFlag = true
 end
 
@@ -53,12 +57,17 @@ function ENT:Think()
         self:SetFlexWeight(0, f)
         self:SetSkin(pulse > 0 and 1 or 0)
     end
+    
 
     if p:GetStress() > 0 then
         self:Detonate()
+        if t > self.Parameters.CollisionSeSilentFrame then
+            self.WarnSound:PlayEx(1, 100)
+        end
     else
         self.ContactStartTime = nil
         self.ContactTotalTime = t
+        self.WarnSound:PlayEx(1, 0)
     end
     
     if not self.RemoveFlag then return true end
@@ -85,6 +94,11 @@ end
 
 function ENT:PhysicsCollide(data, collider)
     if self.RemoveFlag then return end
+    if data.OurOldVelocity:LengthSqr() > 1000 and CurTime() > self.NextPlayHitSE then
+        self:EmitSound "SplatoonSWEPs.SplatbombHitWorld"
+        self.NextPlayHitSE = CurTime() + self.Parameters.CollisionSeSilentFrame
+    end
+
     if self.ContactStartTime then return end
     if data.HitNormal:Dot(ss.GetGravityDirection()) < ss.MAX_COS_DIFF then return end
     self.ContactStartTime = CurTime()

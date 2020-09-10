@@ -284,9 +284,8 @@ function SWEP:SharedInitBase()
 		translate[t] = self.ActivityTranslate
 	end
 
-	if ss.sp then
-		self.Buttons, self.OldButtons = 0, 0
-	end
+	if ss.sp then self.Buttons, self.OldButtons = 0, 0 end
+	if ss[self.Sub] then table.Merge(self, ss[self.Sub].Functions) end
 
 	self.Translate = translate
 	self.Projectile = ss.MakeProjectileStructure()
@@ -502,7 +501,3 @@ function SWEP:SetupDataTables()
 	ss.ProtectedCall(self.CustomDataTables, self)
 	self:NetworkVarNotify("Throwing", self.ChangeThrowing)
 end
-
- -- Load fields related to sub weapon
-if not ss[SWEP.Sub] then return end
-table.Merge(SWEP, ss[SWEP.Sub].Functions)
