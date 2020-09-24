@@ -32,23 +32,16 @@ end
 function ss.MakeExplosion(data)
 	local origin = data.Origin
 	local owner = data.Owner
-	local hurtowner = data.HurtOwner
-	local IsCarriedByLocalPlayer = data.IsCarriedByLocalPlayer
 	local inkcolor = data.InkColor
-	local projectileID = data.ProjectileID
-	local splashinitang = data.SplashInitAng
-	local effectflags = data.EffectFlags
-	local effectname = data.EffectName
-	local IgnorePrediction = data.IgnorePrediction
-	local splashinitang = data.SplashInitAng
-	local classname = data.ClassName
-	local GetDamage = data.GetDamage
-	local GetTracePaintRadius = data.GetTracePaintRadius
-	local d = DamageInfo()
-	local damagedealt = false
-	local attacker = IsValid(owner) and owner or game.GetWorld()
-	local inflictor = ss.IsValidInkling(owner) or game.GetWorld()
 	if data.DoDamage then -- Find entities within explosion and deal damage
+		local d = DamageInfo()
+		local damagedealt = false
+		local hurtowner = data.HurtOwner
+		local projectileID = data.ProjectileID
+		local attacker = IsValid(owner) and owner or game.GetWorld()
+		local inflictor = ss.IsValidInkling(owner) or game.GetWorld()
+		local IsCarriedByLocalPlayer = data.IsCarriedByLocalPlayer
+		local GetDamage = data.GetDamage
 		for _, e in ipairs(ents.FindInSphere(origin, data.DamageRadius)) do
 			local target_weapon = ss.IsValidInkling(e)
 			if IsValid(e) and e:Health() > 0 and ss.LastHitID[e] ~= projectileID
@@ -101,6 +94,9 @@ function ss.MakeExplosion(data)
 	if ss.mp and not IsFirstTimePredicted() then return end
 
 	-- Explosion effect
+	local IgnorePrediction = data.IgnorePrediction
+	local effectflags = data.EffectFlags
+	local effectname = data.EffectName
 	local e = EffectData()
 	e:SetOrigin(origin)
 	e:SetColor(inkcolor)
@@ -113,7 +109,9 @@ function ss.MakeExplosion(data)
 	end
 
 	-- Trace around and paint
-	local a = splashinitang
+	local GetTracePaintRadius = data.GetTracePaintRadius
+	local classname = data.ClassName
+	local a = data.SplashInitAng
 	local a2, a3 = Angle(a), Angle(a)
 	a2:RotateAroundAxis(a:Right(), 45)
 	a2:RotateAroundAxis(a:Up(), 45)
@@ -139,18 +137,20 @@ function ss.MakeExplosion(data)
 		end
 	end
 
-	if not data.DoGroundPaint then return end
-	local t = util.TraceLine {
-		collisiongroup = COLLISION_GROUP_DEBRIS,
-		start = origin,
-		endpos = origin + ss.GetGravityDirection() * data.GroundPaintRadius / 2,
-		filter = owner,
-		mask = ss.SquidSolidMaskBrushOnly,
-	}
+	if data.DoGroundPaint then
+		local t = util.TraceLine {
+			collisiongroup = COLLISION_GROUP_DEBRIS,
+			start = origin,
+			endpos = origin + ss.GetGravityDirection() * data.GroundPaintRadius / 2,
+			filter = owner,
+			mask = ss.SquidSolidMaskBrushOnly,
+		}
 
-	if not t.Hit or t.StartSolid then return end
-	ss.Paint(t.HitPos, t.HitNormal, data.GroundPaintRadius,
-	inkcolor, data.TraceYaw, data.GroundPaintType, 1, owner, classname)
+		if t.Hit and not t.StartSolid then
+			ss.Paint(t.HitPos, t.HitNormal, data.GroundPaintRadius,
+			inkcolor, data.TraceYaw, data.GroundPaintType, 1, owner, classname)
+		end
+	end
 end
 
 function ss.MakeBombExplosion(org, owner, color, params)

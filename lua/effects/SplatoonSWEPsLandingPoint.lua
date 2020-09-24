@@ -11,6 +11,15 @@ local function CheckVars(self)
     return true
 end
 
+local function RefreshPos(self, pos)
+    local pos = pos or util.QuickTrace(self.Weapon:GetShootPos(), EyeAngles():Forward() * 16384, self.Owner).HitPos
+    local ang = self.Normal:Angle()
+    ang:RotateAroundAxis(ang:Right(), 90)
+    self:SetAngles(ang)
+    self:SetPos(pos)
+    self:SetRenderOrigin(pos)
+end
+
 function EFFECT:Init(e)
     self.Weapon = e:GetEntity()
     if not IsValid(self.Weapon) then return end
@@ -38,11 +47,10 @@ function EFFECT:Render()
     end
     render.EndBeam()
 
+    RefreshPos(self, self.Positions[#self.Positions])
     render.SetColorModulation(color.r / 255, color.g / 255, color.b / 255)
     render.ModelMaterialOverride(mat)
     render.SuppressEngineLighting(true)
-    self:SetPos(self.Positions[#self.Positions])
-    self:SetRenderOrigin(self.Positions[#self.Positions])
     self:SetupBones()
     self:DrawModel()
     render.ModelMaterialOverride()
@@ -85,9 +93,7 @@ function EFFECT:Think()
 
     self.Positions[#self.Positions + 1] = self.Positions[#self.Positions]
     + velocity * dt - self.Normal * TRACE_SIZE
-    local ang = self.Normal:Angle()
-    ang:RotateAroundAxis(ang:Right(), 90)
-    self:SetAngles(ang)
-    self:SetRenderOrigin(util.QuickTrace(initpos, EyeAngles():Forward() * 16384).HitPos)
+    
+    RefreshPos(self)
     return self.Weapon:GetThrowing() and self.Weapon:GetKey() == IN_ATTACK2
 end
