@@ -12,7 +12,7 @@ local function CheckVars(self)
 end
 
 local function RefreshPos(self, pos)
-    local pos = pos or util.QuickTrace(self.Weapon:GetShootPos(), EyeAngles():Forward() * 16384, self.Owner).HitPos
+    local pos = pos or GetViewEntity():GetPos()
     local ang = self.Normal:Angle()
     ang:RotateAroundAxis(ang:Right(), 90)
     self:SetAngles(ang)
@@ -25,6 +25,7 @@ function EFFECT:Init(e)
     if not IsValid(self.Weapon) then return end
     self.Positions = {}
     self.Normal = Vector()
+    self:SetRenderBounds(ss.vector_one * -16384, ss.vector_one * 16384)
     self:SetPos(GetViewEntity():GetPos())
     self:SetColor(ss.GetColor(self:GetNWInt "inkcolor"))
     self:SetModel(mdl)
