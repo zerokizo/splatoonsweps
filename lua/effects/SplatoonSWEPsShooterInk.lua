@@ -96,7 +96,7 @@ function EFFECT:Init(e)
 		material = math.random() > 0.5 and rollerink1 or rollerink2
 		self.Frame = 0
 	end
-
+	
 	if DrawRadius == 0 then return end
 	if IsBombSplash then
 		IsDrop = true
@@ -108,7 +108,6 @@ function EFFECT:Init(e)
 		ApparentPos = InitPos
 		RenderFunc = "RenderGeneral"
 	end
-	print(AirResist, Gravity)
 
 	if IsSlosher then
 		DrawRadius = DrawRadius / 3

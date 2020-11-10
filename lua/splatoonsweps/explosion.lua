@@ -56,20 +56,7 @@ local function MakeExplosionSplashes(data, weapon)
 		dropdata.InitVel = ang:Forward() * speed
 		dropdata.Yaw = ang.yaw
 		ss.AddInk(p, dropdata)
-		
-		local e = EffectData()
-		ss.SetEffectColor(e, dropdata.Color)
-		ss.SetEffectColRadius(e, dropdata.ColRadiusWorld)
-		ss.SetEffectDrawRadius(e, drawradius)
-		ss.SetEffectEntity(e, weapon)
-		ss.SetEffectFlags(e, weapon, 8)
-		ss.SetEffectInitPos(e, dropdata.InitPos)
-		ss.SetEffectInitVel(e, dropdata.InitVel)
-		ss.SetEffectSplash(e, Angle(dropdata.AirResist * 180, dropdata.Gravity / ss.InkDropGravity * 180))
-		ss.SetEffectSplashInitRate(e, Vector(0))
-		ss.SetEffectSplashNum(e, 0)
-		ss.SetEffectStraightFrame(e, dropdata.StraightFrame)
-		util.Effect("SplatoonSWEPsShooterInk", e)
+		ss.CreateDropEffect(dropdata, drawradius)
 	end
 end
 

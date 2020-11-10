@@ -57,20 +57,7 @@ local function DoScatterSplash(ink)
 	dropdata.InitPos = dropdata.InitPos + offsetvec
 	dropdata.InitVel = initang:Right() * offsetsign * initspeed
 	ss.AddInk(p, dropdata)
-	
-	local e = EffectData()
-	ss.SetEffectColor(e, dropdata.Color)
-	ss.SetEffectColRadius(e, dropdata.ColRadiusWorld)
-	ss.SetEffectDrawRadius(e, p.mScatterSplashColRadius)
-	ss.SetEffectEntity(e, dropdata.Weapon)
-	ss.SetEffectFlags(e, dropdata.Weapon, 8)
-	ss.SetEffectInitPos(e, dropdata.InitPos)
-	ss.SetEffectInitVel(e, dropdata.InitVel)
-	ss.SetEffectSplash(e, Angle(dropdata.AirResist * 180, dropdata.Gravity / ss.InkDropGravity * 180))
-	ss.SetEffectSplashInitRate(e, Vector(0))
-	ss.SetEffectSplashNum(e, 0)
-	ss.SetEffectStraightFrame(e, dropdata.StraightFrame)
-	ss.UtilEffectPredicted(ink.Trace.filter, "SplatoonSWEPsShooterInk", e)
+	ss.CreateDropEffect(dropdata, p.mScatterSplashPaintRadius, ink.Trace.filter)
 end
 
 local function Simulate(ink)
@@ -365,6 +352,26 @@ function ss.CreateDrop(params, pos, color, weapon, colradius, paintradius, paint
 	ss.AddInk(params, dropdata)
 end
 
+function ss.CreateDropEffect(data, drawradius, owner)
+	local e = EffectData()
+	ss.SetEffectColor(e, data.Color)
+	ss.SetEffectColRadius(e, data.ColRadiusWorld)
+	ss.SetEffectDrawRadius(e, drawradius)
+	ss.SetEffectEntity(e, data.Weapon)
+	ss.SetEffectFlags(e, data.Weapon, 8)
+	ss.SetEffectInitPos(e, data.InitPos)
+	ss.SetEffectInitVel(e, data.InitVel)
+	ss.SetEffectSplash(e, Angle(data.AirResist * 180, data.Gravity / ss.InkDropGravity * 180))
+	ss.SetEffectSplashInitRate(e, Vector(0))
+	ss.SetEffectSplashNum(e, 0)
+	ss.SetEffectStraightFrame(e, data.StraightFrame)
+	if IsValid(owner) then
+		ss.UtilEffectPredicted(owner, "SplatoonSWEPsShooterInk", e)
+	else
+		util.Effect("SplatoonSWEPsShooterInk", e)
+	end
+end
+
 function ss.DoDropSplashes(ink, iseffect)
 	local data, tr, p = ink.Data, ink.Trace, ink.Parameters
 	if not data.DoDamage then return end
@@ -414,7 +421,7 @@ function ss.DoDropSplashes(ink, iseffect)
 			ss.SetEffectEntity(e, data.Weapon)
 			ss.SetEffectFlags(e, 1)
 			ss.SetEffectInitPos(e, droppos + ss.GetGravityDirection() * data.SplashDrawRadius)
-			ss.SetEffectInitVel(e, data.InitVel)
+			ss.SetEffectInitVel(e, data.Weapon.IsSloshingMachine and Vector() or data.InitVel)
 			ss.SetEffectSplash(e, Angle(0, 0, data.SplashLength))
 			ss.SetEffectSplashInitRate(e, Vector(0))
 			ss.SetEffectSplashNum(e, 0)
