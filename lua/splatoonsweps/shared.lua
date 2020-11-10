@@ -144,7 +144,7 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 		maxspeed = maxspeed * Either(crouching, ss.SquidSpeedOutofInk, 1)
 		maxspeed = w:GetInInk() and w.SquidSpeed or maxspeed
 		maxspeed = w:GetOnEnemyInk() and w.OnEnemyInkSpeed or maxspeed
-		maxspeed = maxspeed * (w.IsDisruptored and ss.DisruptoredSpeed or 1)
+		maxspeed = maxspeed * (w.IsDisrupted and ss.DisruptedSpeed or 1)
 		ply:SetWalkSpeed(maxspeed)
 		if w:GetNWBool "allowsprint" and not (crouching or w:GetInInk() or w:GetOnEnemyInk()) then
 			maxspeed = Lerp(0.5, maxspeed, w.SquidSpeed) -- Sprint speed

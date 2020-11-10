@@ -8,7 +8,6 @@ SWEP.HeroColor = {ss.GetColor(8), ss.GetColor(11), ss.GetColor(2), ss.GetColor(5
 local FirePosition = 10
 local rand = "SplatoonSWEPs: Spread"
 local randsplash = "SplatoonSWEPs: SplashNum"
-local randinktype = "SplatoonSWEPs: Shooter ink type"
 function SWEP:GetRange() return self.Range end
 function SWEP:GetInitVelocity() return self.Parameters.mInitVel end
 function SWEP:GetSplashInitRate()
@@ -109,7 +108,7 @@ function SWEP:SharedInit()
 		DamageMaxDistance = p.mGuideCheckCollisionFrame,
 		DamageMin = p.mDamageMin,
 		DamageMinDistance = p.mDamageMinFrame,
-		Gravity = 1 * ss.ToHammerUnitsPerSec2,
+		Gravity = ss.ShooterGravityMul * ss.InkDropGravity,
 		PaintFarDistance = p.mPaintFarDistance,
 		PaintFarRadius = p.mPaintFarRadius,
 		PaintNearDistance = p.mPaintNearDistance,
@@ -164,7 +163,7 @@ function SWEP:CreateInk()
 		InitVel = ang:Forward() * self:GetInitVelocity(),
 		SplashInitRate = self:GetSplashInitRate(),
 		SplashNum = splashnum,
-		Type = util.SharedRandom(randinktype, 4, 9),
+		Type = ss.GetShooterInkType(),
 		Yaw = ang.yaw,
 	})
 
@@ -188,19 +187,20 @@ function SWEP:CreateInk()
 		self.ViewPunch = Angle(rnda, rndb, rnda)
 		
 		local e = EffectData()
-		ss.SetEffectColor(e, self.Projectile.Color)
-		ss.SetEffectColRadius(e, self.Projectile.ColRadiusWorld)
+		local proj = self.Projectile
+		ss.SetEffectColor(e, proj.Color)
+		ss.SetEffectColRadius(e, proj.ColRadiusWorld)
 		ss.SetEffectDrawRadius(e, self.IsBlaster and p.mSphereSplashDropDrawRadius or p.mDrawRadius)
 		ss.SetEffectEntity(e, self)
 		ss.SetEffectFlags(e, self)
-		ss.SetEffectInitPos(e, self.Projectile.InitPos)
-		ss.SetEffectInitVel(e, self.Projectile.InitVel)
-		ss.SetEffectSplash(e, Angle(self.Projectile.SplashColRadius, p.mSplashDrawRadius, self.Projectile.SplashLength))
-		ss.SetEffectSplashInitRate(e, Vector(self.Projectile.SplashInitRate))
-		ss.SetEffectSplashNum(e, self.Projectile.SplashNum)
-		ss.SetEffectStraightFrame(e, self.Projectile.StraightFrame)
+		ss.SetEffectInitPos(e, proj.InitPos)
+		ss.SetEffectInitVel(e, proj.InitVel)
+		ss.SetEffectSplash(e, Angle(proj.SplashColRadius, p.mSplashDrawRadius, proj.SplashLength))
+		ss.SetEffectSplashInitRate(e, Vector(proj.SplashInitRate))
+		ss.SetEffectSplashNum(e, proj.SplashNum)
+		ss.SetEffectStraightFrame(e, proj.StraightFrame)
 		ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
-		ss.AddInk(p, self.Projectile)
+		ss.AddInk(p, proj)
 	end
 end
 

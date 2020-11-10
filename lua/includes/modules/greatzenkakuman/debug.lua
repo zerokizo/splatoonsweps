@@ -45,7 +45,7 @@ function DColor(r, g, b, a, sv)
 end
 
 function DAxis(v, a, z, l)
-	a, z, l = a or angle_zero, Either(z ~= nil, z, g), l or s
+	a, z, l = a or angle_zero, Either(z ~= nil, z, g), l or 20
 	if d then
 		debugoverlay.Axis(v, a, l, t, z)
 	else

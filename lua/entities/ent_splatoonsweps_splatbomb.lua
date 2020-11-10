@@ -14,6 +14,7 @@ function ENT:Initialize()
     self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
     self.BurstTotalFrame = p.Burst_WaitFrm + p.Burst_WarnFrm
     self.DragCoeffChangeTime = CurTime() + p.Fly_AirFrm
+    self.HitNormal = vector_up
     self.Parameters = p
     if CLIENT then return end
     self.WarnSound = CreateSound(self, ss.BombAlert)
@@ -39,7 +40,7 @@ end
 function ENT:Detonate()
     if self.RemoveFlag then return end
     if self:GetContactTime() < self.BurstTotalFrame then return end
-    ss.MakeBombExplosion(self:GetPos(), self.Owner, self:GetNWInt "inkcolor", self.Parameters)
+    ss.MakeBombExplosion(self:GetPos(), self.HitNormal, self.Owner, self:GetNWInt "inkcolor", self.Parameters)
     self:StopSound "SplatoonSWEPs.BombAlert"
     self.RemoveFlag = true
 end
@@ -101,5 +102,6 @@ function ENT:PhysicsCollide(data, collider)
 
     if self.ContactStartTime then return end
     if data.HitNormal:Dot(ss.GetGravityDirection()) < ss.MAX_COS_DIFF then return end
+    self.HitNormal = -data.HitNormal
     self.ContactStartTime = CurTime()
 end

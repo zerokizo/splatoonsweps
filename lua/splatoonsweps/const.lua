@@ -109,8 +109,8 @@ ss.KeyMask = {IN_ATTACK, IN_DUCK, IN_ATTACK2}
 ss.KeyMaskFind = {[IN_ATTACK] = true, [IN_DUCK] = true, [IN_ATTACK2] = true}
 ss.CleanupTypeInk = "SplatoonSWEPs Ink"
 ss.GrayScaleFactor = Vector(.298912, .586611, .114478)
-ss.ShooterGravityMul = 15
-ss.RollerGravityMul = 2.25
+ss.ShooterGravityMul = 1
+ss.RollerGravityMul = 0.15
 ss.PLAYER_BITS = 3 -- unsigned enum
 ss.SEND_ERROR_DURATION_BITS = 4 -- unsgined
 ss.SEND_ERROR_NOTIFY_BITS = 3 -- unsigned NOTIFY_ enum 0 to 4
@@ -242,7 +242,7 @@ ss.SquidBoundHeight = 32
 ss.SquidViewOffset = vector_up * 24
 ss.InkGridSize = 12 -- in Hammer Units
 ss.InklingJumpPower = 250
-ss.DisruptoredSpeed = .45 -- Disruptor's debuff factor
+ss.DisruptedSpeed = .45 -- Disruptor's debuff factor
 ss.OnEnemyInkJumpPower = ss.InklingJumpPower * .75
 ss.ToHammerUnits = .1 * 3.28084 * 16 * (1.00965 / 1.5) -- = 3.53, Splatoon distance units -> Hammer distance units
 ss.ToHammerUnitsPerSec = ss.ToHammerUnits * framepersec -- = 212, Splatoon du/s -> Hammer du/s

@@ -3,7 +3,6 @@ local ss = SplatoonSWEPs
 if not ss then return end
 
 local rand = "SplatoonSWEPs: Spread"
-local randink = "SplatoonSWEPs: Shooter ink type"
 local randsplash = "Splatoon SWEPs: SplashNum"
 local randvel = "SplatoonSWEPs: Spread velocity"
 local function EndSwing(self)
@@ -262,7 +261,7 @@ function SWEP:CreateInk(createnum)
 		table.Merge(self.Projectile, {
 			InitPos = pos + dp,
 			InitVel = initvelocity,
-			Type = util.SharedRandom(randink, 4, 9, CurTime() * i),
+			Type = ss.GetShooterInkType(),
 			Yaw = yaw,
 
 			ColRadiusEntity = colent,
@@ -279,19 +278,20 @@ function SWEP:CreateInk(createnum)
 		})
 	
 		local e = EffectData()
-		ss.SetEffectColor(e, self.Projectile.Color)
-		ss.SetEffectColRadius(e, self.Projectile.ColRadiusWorld)
+		local proj = self.Projectile
+		ss.SetEffectColor(e, proj.Color)
+		ss.SetEffectColRadius(e, proj.ColRadiusWorld)
 		ss.SetEffectDrawRadius(e, self:GetDrawRadius(issub))
 		ss.SetEffectEntity(e, self)
 		ss.SetEffectFlags(e, self)
-		ss.SetEffectInitPos(e, self.Projectile.InitPos)
-		ss.SetEffectInitVel(e, self.Projectile.InitVel)
-		ss.SetEffectSplash(e, Angle(self.Projectile.SplashColRadius, p.mDropSplashDrawRadius, self.Projectile.SplashLength))
-		ss.SetEffectSplashInitRate(e, Vector(self.Projectile.SplashInitRate))
-		ss.SetEffectSplashNum(e, self.Projectile.SplashNum)
-		ss.SetEffectStraightFrame(e, self.Projectile.StraightFrame)
+		ss.SetEffectInitPos(e, proj.InitPos)
+		ss.SetEffectInitVel(e, proj.InitVel)
+		ss.SetEffectSplash(e, Angle(proj.SplashColRadius, p.mDropSplashDrawRadius, proj.SplashLength))
+		ss.SetEffectSplashInitRate(e, Vector(proj.SplashInitRate))
+		ss.SetEffectSplashNum(e, proj.SplashNum)
+		ss.SetEffectStraightFrame(e, proj.StraightFrame)
 		ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
-		ss.AddInk(p, self.Projectile)
+		ss.AddInk(p, proj)
 	end
 
 	if splashnum % 1 ~= insidenum % 1 then
@@ -351,7 +351,7 @@ function SWEP:SharedInit()
 
 	table.Merge(self.Projectile, {
 		AirResist = 0.15,
-		Gravity = 0.15 * ss.ToHammerUnitsPerSec2,
+		Gravity = ss.RollerGravityMul * ss.InkDropGravity,
 		PaintRatioNearDistance = 25 * ss.ToHammerUnits,
 	})
 end
@@ -407,7 +407,7 @@ function SWEP:SharedPrimaryAttack(able, auto)
 				ColRadiusEntity = colent,
 				ColRadiusWorld = colworld,
 				DoDamage = false,
-				Gravity = ss.ToHammerUnitsPerSec2,
+				Gravity = ss.InkDropGravity,
 				InitPos = self:GetShootPos(),
 				PaintFarDistance = 0,
 				PaintFarRadius = p.mPaintBrushNearestBulletRadius,

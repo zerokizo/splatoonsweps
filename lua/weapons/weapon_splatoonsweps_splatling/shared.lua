@@ -123,7 +123,7 @@ function SWEP:SharedInit()
 		DamageMaxDistance = p.mDamageMinFrame, -- Swapped from shooters
 		DamageMin = p.mDamageMin,
 		DamageMinDistance = p.mGuideCheckCollisionFrame, -- Swapped from shooters
-		Gravity = 1 * ss.ToHammerUnitsPerSec2,
+		Gravity = ss.ShooterGravityMul * ss.InkDropGravity,
 		PaintFarDistance = p.mPaintFarDistance,
 		PaintFarRadius = p.mPaintFarRadius,
 		PaintNearDistance = p.mPaintNearDistance,

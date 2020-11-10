@@ -124,7 +124,7 @@ function SWEP:SharedInit()
 
 	table.Merge(self.Projectile, {
 		AirResist = 1,
-		Gravity = 1 * ss.ToHammerUnitsPerSec2,
+		Gravity = ss.InkDropGravity,
 		SplashColRadius = p.mSplashColRadius,
 	})
 end

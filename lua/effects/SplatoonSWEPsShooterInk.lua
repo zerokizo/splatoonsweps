@@ -56,8 +56,6 @@ function EFFECT:Init(e)
 	local Weapon = ss.GetEffectEntity(e)
 	if not IsValid(Weapon) then return end
 	if not IsValid(Weapon.Owner) then return end
-	local Owner = Weapon.Owner
-	local AirResist = Weapon.Projectile.AirResist
 	local ApparentPos, ApparentAng = Weapon:GetMuzzlePosition()
 	if not (ApparentPos and ApparentAng) then return end
 	local p = Weapon.Parameters
@@ -74,6 +72,7 @@ function EFFECT:Init(e)
 	local IsDrop = bit.band(f, 1) > 0
 	local IsBlasterSphereSplashDrop = bit.band(f, 2) > 0
 	local IsRollerSubSplash = bit.band(f, 4) > 0
+	local IsBombSplash = bit.band(f, 8) > 0
 	local IsLP = bit.band(f, 128) > 0 -- IsCarriedByLocalPlayer
 	local IsBlaster = Weapon.IsBlaster
 	local IsCharger = Weapon.IsCharger
@@ -82,9 +81,10 @@ function EFFECT:Init(e)
 	local Order = OrdinalNumbers[BulletGroup]
 	local Ping = IsLP and Weapon:Ping() or 0
 	local Splash = ss.GetEffectSplash(e)
+	local SplashInitRateVector = ss.GetEffectSplashInitRate(e)
 	local SplashColRadius = Splash.pitch
 	local SplashDrawRadius = Splash.yaw
-	local SplashInitRate = ss.GetEffectSplashInitRate(e).x
+	local SplashInitRate = SplashInitRateVector.x
 	local SplashLength = Splash.roll
 	local SplashNum = ss.GetEffectSplashNum(e)
 	local StraightFrame = ss.GetEffectStraightFrame(e)
@@ -98,17 +98,21 @@ function EFFECT:Init(e)
 	end
 
 	if DrawRadius == 0 then return end
-	if IsCharger then SplashNum = math.huge end
+	if IsBombSplash then
+		IsDrop = true
+		AirResist = Splash.pitch / 180
+		Gravity = Splash.yaw / 180 * ss.InkDropGravity
+	end
+
 	if IsDrop then
-		AirResist = 1
 		ApparentPos = InitPos
-		Gravity = 1 * ss.ToHammerUnitsPerSec2
 		RenderFunc = "RenderGeneral"
 	end
+	print(AirResist, Gravity)
 
 	if IsSlosher then
 		DrawRadius = DrawRadius / 3
-		self.SpiralTime = CurTime() - 5 * ss.FrameToSec
+		self.SpiralTime = CurTime() - 5 * ss.FrameToSec - Ping
 		self.SpiralCount = 0
 	end
 	
@@ -133,7 +137,7 @@ function EFFECT:Init(e)
 	self.Ink.InitTime = CurTime() - Ping
 	self.Ink.IsCarriedByLocalPlayer = IsLP
 	self.Ink.Parameters = p
-	self.Ink.Trace.filter = Owner
+	self.Ink.Trace.filter = IsValid(Weapon) and Weapon.Owner or nil
 	self.Ink.Trace.maxs:Mul(ColRadius)
 	self.Ink.Trace.mins:Mul(ColRadius)
 	self.Ink.Trace.endpos:Set(self.Ink.Data.InitPos)

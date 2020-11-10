@@ -2,6 +2,77 @@
 local ss = SplatoonSWEPs
 if not ss then return end
 
+-- Make splashes for the explosion and spread them around.
+local function MakeExplosionSplashes(data, weapon)
+	if not weapon then return end
+	
+	local rand = "SplatoonSWEPs: Explosion splash"
+	local colradius = data.SplashPaintRadius / 4
+	local paintradius = data.SplashPaintRadius
+	local pitchmin = data.SplashInitPitchLow
+	local pitchmax = data.SplashInitPitchHigh
+	local speedmin = data.SplashInitVelocityLow
+	local speedmax = data.SplashInitVelocityHigh
+	local gpr = data.GroundPaintRadius
+	local gravity = data.SplashGravity
+	local distfar = gpr * 1.5
+	local distnear = gpr
+	local ratiofar = 3
+	local rationear = 1.5
+	local radiusfar = paintradius
+	local radiusnear = paintradius
+	local drawradius = 10
+	
+	for i = 1, data.SplashNum do
+		local dropdata = ss.MakeProjectileStructure()
+		table.Merge(dropdata, {
+			AirResist = data.SplashAirResist,
+			Color = data.InkColor,
+			ColRadiusEntity = colradius,
+			ColRadiusWorld = colradius,
+			DoDamage = false,
+			Gravity = gravity,
+			PaintFarDistance = distfar,
+			PaintFarRadius = radiusfar,
+			PaintFarRatio = ratiofar,
+			PaintNearDistance = distnear,
+			PaintNearRadius = radiusnear,
+			PaintNearRatio = rationear,
+			PaintRatioFarDistance = distfar,
+			PaintRatioNearDistance = distnear,
+			StraightFrame = ss.FrameToSec,
+			Type = ss.GetShooterInkType(i),
+			Weapon = weapon,
+		})
+	
+		local ang = Angle(data.SplashInitAng)
+		local pitch = util.SharedRandom(rand, pitchmin, pitchmax, CurTime() + i)
+		local yaw = util.SharedRandom(rand, -180, 180, CurTime() * 2 + i)
+		local speed = util.SharedRandom(rand, speedmin, speedmax, CurTime() * 3 + i)
+		local offsetdir = ang:Up()
+		ang:RotateAroundAxis(ang:Up(), yaw)
+		ang:RotateAroundAxis(ang:Right(), pitch)
+		dropdata.InitPos = data.Origin + offsetdir * data.SplashHeightOffset
+		dropdata.InitVel = ang:Forward() * speed
+		dropdata.Yaw = ang.yaw
+		ss.AddInk(p, dropdata)
+		
+		local e = EffectData()
+		ss.SetEffectColor(e, dropdata.Color)
+		ss.SetEffectColRadius(e, dropdata.ColRadiusWorld)
+		ss.SetEffectDrawRadius(e, drawradius)
+		ss.SetEffectEntity(e, weapon)
+		ss.SetEffectFlags(e, weapon, 8)
+		ss.SetEffectInitPos(e, dropdata.InitPos)
+		ss.SetEffectInitVel(e, dropdata.InitVel)
+		ss.SetEffectSplash(e, Angle(dropdata.AirResist * 180, dropdata.Gravity / ss.InkDropGravity * 180))
+		ss.SetEffectSplashInitRate(e, Vector(0))
+		ss.SetEffectSplashNum(e, 0)
+		ss.SetEffectStraightFrame(e, dropdata.StraightFrame)
+		util.Effect("SplatoonSWEPsShooterInk", e)
+	end
+end
+
 function ss.MakeExplosionStructure()
 	return {
 		ClassName = "",
@@ -23,7 +94,14 @@ function ss.MakeExplosionStructure()
 		Origin = Vector(),
 		Owner = NULL,
 		ProjectileID = 0,
+		SplashNum = 0,
+		SplashHeightOffset = 0,
+		SplashPaintRadius = 0,
 		SplashInitAng = Angle(),
+		SplashInitPitchLow = 0,
+		SplashInitPitchHigh = 0,
+		SplashInitVelocityLow = 0,
+		SplashInitVelocityHigh = 0,
 		TraceLength = 0,
 		TraceYaw = 0,
 	}
@@ -33,13 +111,14 @@ function ss.MakeExplosion(data)
 	local origin = data.Origin
 	local owner = data.Owner
 	local inkcolor = data.InkColor
+	local weapon = ss.IsValidInkling(owner)
 	if data.DoDamage then -- Find entities within explosion and deal damage
 		local d = DamageInfo()
 		local damagedealt = false
 		local hurtowner = data.HurtOwner
 		local projectileID = data.ProjectileID
 		local attacker = IsValid(owner) and owner or game.GetWorld()
-		local inflictor = ss.IsValidInkling(owner) or game.GetWorld()
+		local inflictor = weapon or game.GetWorld()
 		local IsCarriedByLocalPlayer = data.IsCarriedByLocalPlayer
 		local GetDamage = data.GetDamage
 		for _, e in ipairs(ents.FindInSphere(origin, data.DamageRadius)) do
@@ -117,7 +196,7 @@ function ss.MakeExplosion(data)
 	a2:RotateAroundAxis(a:Up(), 45)
 	a3:RotateAroundAxis(a:Right(), 45)
 	a3:RotateAroundAxis(a:Up(), -45)
-	for _, d in ipairs {
+	for i, d in ipairs {
 		a:Forward(), -a:Forward(), a:Right(), -a:Right(), a:Up(),
 		a2:Forward(), a2:Right(), -a2:Right(), a2:Up(),
 		a3:Forward(), a3:Right(), -a3:Right(), a3:Up(),
@@ -133,7 +212,7 @@ function ss.MakeExplosion(data)
 		if t.Hit and not t.StartSolid then
 			local dist = (t.HitPos - t.StartPos):Length2D()
 			ss.Paint(t.HitPos, t.HitNormal, GetTracePaintRadius(dist),
-			inkcolor, data.TraceYaw, ss.GetDropType(), 1, owner, classname)
+			inkcolor, data.TraceYaw, ss.GetDropType(i), 1, owner, classname)
 		end
 	end
 
@@ -151,11 +230,15 @@ function ss.MakeExplosion(data)
 			inkcolor, data.TraceYaw, data.GroundPaintType, 1, owner, classname)
 		end
 	end
+
+	MakeExplosionSplashes(data, weapon)
 end
 
-function ss.MakeBombExplosion(org, owner, color, params)
+function ss.MakeBombExplosion(org, normal, owner, color, params)
 	local w = ss.IsValidInkling(owner)
 	if not w then return end
+	local ang = normal:Angle()
+	ang:RotateAroundAxis(ang:Right(), -90)
 	sound.Play("SplatoonSWEPs.BombExplosion", org) -- TODO: Burst bomb sound
 	ss.MakeExplosion(table.Merge(ss.MakeExplosionStructure(), {
 		ClassName = w:GetClass(),
@@ -177,6 +260,16 @@ function ss.MakeBombExplosion(org, owner, color, params)
 		Origin = org,
 		Owner = owner,
 		ProjectileID = CurTime(),
+		SplashAirResist = 1 - params.Fly_VelKd,
+		SplashGravity = params.Fly_Gravity,
+		SplashNum = params.Burst_SplashNum,
+		SplashHeightOffset = params.Burst_SplashOfstY,
+		SplashPaintRadius = params.Burst_SplashPaintR,
+		SplashInitAng = ang,
+		SplashInitPitchLow = params.Burst_SplashPitL,
+		SplashInitPitchHigh = params.Burst_SplashPitH,
+		SplashInitVelocityLow = params.Burst_SplashVelL,
+		SplashInitVelocityHigh = params.Burst_SplashVelH,
 		TraceLength = params.CrossPaintRayLength,
 	}))
 end
@@ -209,11 +302,12 @@ function ss.MakeBlasterExplosion(ink)
 	local rnear = p.mCollisionRadiusNear * rmul
 	local rmid = p.mCollisionRadiusMiddle * rmul
 	local rfar = p.mCollisionRadiusFar * rmul
+	local IsLP = CLIENT and LocalPlayer() == ink.Trace.filter
 	local e = table.Merge(ss.MakeExplosionStructure(), {
 		ClassName = data.Weapon.ClassName,
 		DamageRadius = rfar,
 		DoDamage = true,
-		EffectFlags = ink.BlasterHitWall and 1 or 0,
+		EffectFlags = (IsLP and 128 or 0) + (ink.BlasterHitWall and 1 or 0),
 		EffectName = "SplatoonSWEPsBlasterExplosion",
 		EffectRadius = p.mCollisionRadiusFar * rmul,
 		GetDamage = function(dist)

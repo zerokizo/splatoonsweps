@@ -57,6 +57,20 @@ local function DoScatterSplash(ink)
 	dropdata.InitPos = dropdata.InitPos + offsetvec
 	dropdata.InitVel = initang:Right() * offsetsign * initspeed
 	ss.AddInk(p, dropdata)
+	
+	local e = EffectData()
+	ss.SetEffectColor(e, dropdata.Color)
+	ss.SetEffectColRadius(e, dropdata.ColRadiusWorld)
+	ss.SetEffectDrawRadius(e, p.mScatterSplashColRadius)
+	ss.SetEffectEntity(e, dropdata.Weapon)
+	ss.SetEffectFlags(e, dropdata.Weapon, 8)
+	ss.SetEffectInitPos(e, dropdata.InitPos)
+	ss.SetEffectInitVel(e, dropdata.InitVel)
+	ss.SetEffectSplash(e, Angle(dropdata.AirResist * 180, dropdata.Gravity / ss.InkDropGravity * 180))
+	ss.SetEffectSplashInitRate(e, Vector(0))
+	ss.SetEffectSplashNum(e, 0)
+	ss.SetEffectStraightFrame(e, dropdata.StraightFrame)
+	ss.UtilEffectPredicted(ink.Trace.filter, "SplatoonSWEPsShooterInk", e)
 end
 
 local function Simulate(ink)
@@ -321,8 +335,12 @@ function ss.CreateHitEffect(color, flags, pos, normal)
 	util.Effect("SplatoonSWEPsMuzzleSplash", e)
 end
 
-function ss.GetDropType() -- math.floor(1 <= x < 4) -> 1, 2, 3
-	return math.floor(util.SharedRandom("SplatoonSWEPs: Drop ink type", 1, 4, CurTime()))
+function ss.GetDropType(offset) -- math.floor(1 <= x < 4) -> 1, 2, 3
+	return math.floor(util.SharedRandom("SplatoonSWEPs: Ink type", 1, 4, CurTime() + (offset or 0)))
+end
+
+function ss.GetShooterInkType(offset) -- math.floor(4 <= x < 10) -> 4, 5, 6, 7, 8
+	return math.floor(util.SharedRandom("SplatoonSWEPs: Ink type", 4, 9, CurTime() * 2 + (offset or 0)))
 end
 
 function ss.CreateDrop(params, pos, color, weapon, colradius, paintradius, paintratio, yaw)
