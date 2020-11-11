@@ -62,6 +62,7 @@ end
 
 function ss.MakeExplosionStructure()
 	return {
+		BombEntity = NULL,
 		ClassName = "",
 		DamageRadius = 0,
 		DoDamage = false,
@@ -130,22 +131,22 @@ function ss.MakeExplosion(data)
 				local t = ss.SquidTrace
 				t.start = origin
 				t.endpos = origin + dist
-				t.filter = not hurtowner and owner or nil
+				t.filter = {data.BombEntity, not hurtowner and owner or nil}
 				t = util.TraceLine(t)
 				if not t.Hit or t.Entity == e then
 					if IsCarriedByLocalPlayer then
 						ss.CreateHitEffect(inkcolor, damagedealt and 6 or 2, origin + dist, -dist)
 						if CLIENT and e ~= owner then damagedealt = true break end
 					end
-
+					
 					ss.LastHitID[e] = projectileID -- Avoid multiple damages at once
 					damagedealt = damagedealt or ss.sp or e == owner
-					local dmg = GetDamage(dist:Length())
+					local dmg = GetDamage(dist:Length(), e)
 					
 					d:SetDamage(dmg)
 					d:SetDamageForce((e:WorldSpaceCenter() - origin):GetNormalized() * dmg)
-					d:SetDamagePosition(origin)
-					d:SetDamageType(DMG_GENERIC)
+					d:SetDamagePosition(e:WorldSpaceCenter())
+					d:SetDamageType(DMG_BLAST)
 					d:SetMaxDamage(dmg)
 					d:SetReportedPosition(origin)
 					d:SetAttacker(attacker)
@@ -207,7 +208,7 @@ function ss.MakeExplosion(data)
 		local t = util.TraceLine {
 			collisiongroup = COLLISION_GROUP_DEBRIS,
 			start = origin,
-			endpos = origin + ss.GetGravityDirection() * data.GroundPaintRadius / 2,
+			endpos = origin + -a:Up() * data.GroundPaintRadius / 2,
 			filter = owner,
 			mask = ss.SquidSolidMaskBrushOnly,
 		}
@@ -221,31 +222,29 @@ function ss.MakeExplosion(data)
 	MakeExplosionSplashes(data, weapon)
 end
 
-function ss.MakeBombExplosion(org, normal, owner, color, params)
-	local w = ss.IsValidInkling(owner)
-	if not w then return end
+function ss.MakeBombExplosion(org, normal, ent, color, subweapon)
+	local sub = ss[subweapon]
+	if not sub then return end
+	local params = sub.Parameters
+	if not params then return end
 	local ang = normal:Angle()
 	ang:RotateAroundAxis(ang:Right(), -90)
-	sound.Play("SplatoonSWEPs.BombExplosion", org) -- TODO: Burst bomb sound
+	sound.Play(sub.BurstSound, org)
 	ss.MakeExplosion(table.Merge(ss.MakeExplosionStructure(), {
-		ClassName = w:GetClass(),
+		BombEntity = ent,
+		ClassName = ent.WeaponClassName,
 		DamageRadius = params.Burst_Radius_Far,
 		DoDamage = true,
 		DoGroundPaint = true,
 		EffectName = "SplatoonSWEPsExplosion",
 		EffectRadius = params.Burst_Radius_Far,
-		GetDamage = function(dist)
-			local rnear = params.Burst_Radius_Near
-			local dnear = params.Burst_Damage_Near
-			local dfar = params.Burst_Damage_Far
-			return dist < rnear and dnear or dfar
-		end,
+		GetDamage = sub.GetDamage,
 		GetTracePaintRadius = function(dist) return params.CrossPaintRadius end,
 		GroundPaintRadius = params.Burst_PaintR,
-		HurtOwner = false,
+		HurtOwner = ss.GetOption "hurtowner",
 		InkColor = color,
 		Origin = org,
-		Owner = owner,
+		Owner = IsValid(ent.Owner) and ent.Owner or ent,
 		ProjectileID = CurTime(),
 		SplashAirResist = 1 - params.Fly_VelKd,
 		SplashGravity = params.Fly_Gravity,
@@ -271,6 +270,7 @@ function ss.MakeDeathExplosion(org, attacker, color)
 		GetTracePaintRadius = function(dist) return 50 end,
 		GroundPaintRadius = 150,
 		GroundPaintType = 14,
+		HurtOwner = false,
 		InkColor = color,
 		Origin = org,
 		Owner = attacker,
@@ -310,7 +310,7 @@ function ss.MakeBlasterExplosion(ink)
 			local frac = dist / p.mBoundPaintMinDistanceXZ
 			return Lerp(frac, p.mBoundPaintMaxRadius, p.mBoundPaintMinRadius)
 		end,
-		HurtOwner = ss.GetOption "weapon_splatoonsweps_blaster_base" "hurtowner",
+		HurtOwner = ss.GetOption "hurtowner",
 		IgnorePrediction = data.Weapon.IgnorePrediction,
 		IsCarriedByLocalPlayer = ink.IsCarriedByLocalPlayer,
 		IsPredicted = true,

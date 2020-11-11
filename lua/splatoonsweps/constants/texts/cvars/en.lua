@@ -18,12 +18,13 @@ return {CVars = {
     Gain = {
         HealSpeedInk = "A multiplier of healing speed when you're in ink.  200 means 200%, twice faster healing speed.",
         HealSpeedStand = "A multiplier of healing speed when you're out of ink.  200 means 200%, twice faster healing speed.",
-        MaxHealth = "Maximum health of inkling.",
+        MaxHealth = "Maximum health of inklings.",
         InkAmount = "The amount ink tank can hold up to.",
         ReloadSpeedInk = "A multiplier of reloading speed when you're in ink.  200 means 200%, twice faster reloading speed.",
         ReloadSpeedStand = "A multiplier of reloading speed when you're out of ink.  200 means 200%, twice faster reloading speed.",
     },
     HideInk = "Hide painted ink in the map. (1: enabled, 0: disabled)",
+    HurtOwner = "If enabled, inklings will be injured by his/her explosion. (1: enabled, 0: disabled)",
     InkColor = "Your ink color.  Available values are as follows:\n",
     LeftHand = "Use left hand to hold weapons. (1: enabled, 0: disabled)",
     MoveViewmodel = "Move viewmodel when avoid setting is enabled. (1: enabled, 0: disabled)",
@@ -56,9 +57,6 @@ Make sure your graphics card has enough space of video memory.
 5: 16384x16384, 2GB.]],
     TakeFallDamage = "Whether to take fall damage when you equip a Splatoon weapon. (1: do, 0: do not)",
     ToggleADS = "Aim down sight mode. (1: toggle, 0: hold)",
-	weapon_splatoonsweps_blaster_base = {
-		HurtOwner = "If enabled, inkling will be injured by his/her blaster's explosion. (1: enabled, 0: disabled)",
-	},
     weapon_splatoonsweps_charger = {
         UseRTScope = "For scoped chargers, use realistic scope instead of standard scope effect. (1: enabled, 0: disabled)",
         weapon_splatoonsweps_herocharger = {

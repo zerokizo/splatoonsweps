@@ -8,6 +8,8 @@ local mdl = Model "models/hunter/misc/sphere075x075.mdl"
 local p = ss.splatbomb.Parameters
 local function CheckVars(self)
     if not IsValid(self.Weapon) then return end
+    if not IsValid(self.Weapon.Owner) then return end
+    if self.Weapon.Owner:GetActiveWeapon() ~= self.Weapon then return end
     return true
 end
 

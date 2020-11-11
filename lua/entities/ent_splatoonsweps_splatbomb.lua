@@ -3,27 +3,25 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
-ENT.Type = "anim"
+ENT.Base = "ent_splatoonsweps_throwable"
 ENT.ContactTotalTime = 0
 ENT.NextPlayHitSE = 0
 ENT.WarnSoundPlayed = false
-local mdl = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
+ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
+
 function ENT:Initialize()
     local p = ss.splatbomb.Parameters
-    self:SetModel(mdl)
-    self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
-    self.BurstTotalFrame = p.Burst_WaitFrm + p.Burst_WarnFrm
-    self.DragCoeffChangeTime = CurTime() + p.Fly_AirFrm
-    self.HitNormal = vector_up
     self.Parameters = p
+    self.StraightFrame = p.Fly_AirFrm
+    self.AirResist = p.Fly_VelKd - 1
+    self.AngleAirResist = p.Fly_RotKd - 1
+    self.Gravity = p.Fly_Gravity
+    self.BurstTotalFrame = p.Burst_WaitFrm + p.Burst_WarnFrm
+    self.HitNormal = vector_up
+
+    self.BaseClass.Initialize(self)
     if CLIENT then return end
     self.WarnSound = CreateSound(self, ss.BombAlert)
-    self:PhysicsInit(SOLID_VPHYSICS)
-    self:PhysWake()
-    local p = self:GetPhysicsObject()
-    if not IsValid(p) then return end
-    p:EnableDrag(false)
-    p:EnableGravity(false)
 end
 
 function ENT:SetupDataTables()
@@ -40,7 +38,7 @@ end
 function ENT:Detonate()
     if self.RemoveFlag then return end
     if self:GetContactTime() < self.BurstTotalFrame then return end
-    ss.MakeBombExplosion(self:GetPos(), self.HitNormal, self.Owner, self:GetNWInt "inkcolor", self.Parameters)
+    ss.MakeBombExplosion(self:GetPos(), self.HitNormal, self, self:GetNWInt "inkcolor", "splatbomb")
     self:StopSound "SplatoonSWEPs.BombAlert"
     self.RemoveFlag = true
 end
@@ -74,23 +72,6 @@ function ENT:Think()
     if not self.RemoveFlag then return true end
     self:Remove()
     return true
-end
-
-function ENT:PhysicsUpdate(p)
-    local fix = FrameTime() * ss.SecToFrame
-    
-    -- Linear drag for X/Y axis
-    p:AddVelocity(p:GetVelocity() * (self.Parameters.Fly_VelKd - 1) * fix)
-
-    -- Angular drag
-    local a = p:GetAngleVelocity()
-    p:AddAngleVelocity(a * (self.Parameters.Fly_RotKd - 1) * fix)
-
-    if CurTime() < self.DragCoeffChangeTime then return end
-
-    -- Gravity
-    local g_dir = ss.GetGravityDirection()
-    p:AddVelocity(g_dir * self.Parameters.Fly_Gravity * FrameTime() * fix)
 end
 
 function ENT:PhysicsCollide(data, collider)

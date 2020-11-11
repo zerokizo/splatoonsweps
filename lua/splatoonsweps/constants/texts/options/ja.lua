@@ -35,6 +35,7 @@ return {Options = {
     },
     HideInk = "マップ上のインクを非表示にする",
     HideInk_help = "チェックを入れると、マップ上に塗られたインクが非表示になる。",
+    HurtOwner = "自爆を有効化",
     InkColor = "インクの色",
     LeftHand = "左利き",
     LeftHand_help = "一人称視点でブキが左側に表示される。",
@@ -55,9 +56,6 @@ return {Options = {
     TakeFallDamage = "落下ダメージを有効化",
     ToggleADS = "アイアンサイト切り替え",
     ToggleADS_help = "アイアンサイトを長押しで覗くか、切り替えて覗くか。",
-	weapon_splatoonsweps_blaster_base = {
-		HurtOwner = "自爆を有効化",
-	},
     weapon_splatoonsweps_charger = {
         UseRTScope = "リアルなスコープを使う",
         UseRTScope_help = "チェックを入れると、スコープ付きチャージャーのスコープを実際に覗いているかのような見た目になる。三人称視点ではスコープを覗かなくなる。",

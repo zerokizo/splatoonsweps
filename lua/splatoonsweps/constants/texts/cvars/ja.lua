@@ -24,6 +24,7 @@ return {CVars = {
         ReloadSpeedStand = "インク外におけるインク回復速度の倍率。 例えば200を設定するとインク回復にかかる時間が半分になる。",
     },
     HideInk = "マップに塗られたインクを非表示にする。 (1: 有効, 0: 無効)",
+    HurtOwner = "各種爆風で自爆するかどうか。 (1: 有効, 0: 無効)",
     InkColor = "インクの色を設定する。使用可能な値は以下の通り。:\n",
     LeftHand = "左手でブキを構える。 (1: 有効, 0: 無効)",
     MoveViewmodel = "壁を避けて狙う時、ビューモデルを動かす。 (1: 有効, 0: 無効)",
@@ -56,9 +57,6 @@ return {CVars = {
 5: 16384x16384、2GB。]],
     TakeFallDamage = "ブキを持っている時、落下ダメージを受けるかどうか。 (1: 受ける, 0: 受けない)",
     ToggleADS = "アイアンサイト切り替え(1)/ホールド(0)",
-	weapon_splatoonsweps_blaster_base = {
-		HurtOwner = "ブラスターの爆風で自爆するかどうか。 (1: 有効, 0: 無効)",
-	},
     weapon_splatoonsweps_charger = {
         UseRTScope = "スコープ付きチャージャーで、リアルなスコープを使う。 (1: 有効, 0: 無効)",
         weapon_splatoonsweps_herocharger = {

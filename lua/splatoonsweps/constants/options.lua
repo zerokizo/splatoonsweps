@@ -12,7 +12,7 @@ return {
 	DrawCrosshair = true,
 	DrawInkOverlay = true,
 	Enabled = {true, order = 1, serverside = true},
-	ExplodeOnlySquids = {false, order = 4, serverside = true},
+	ExplodeOnlySquids = {false, order = 6, serverside = true},
 	FF = {false, order = 3, serverside = true},
 	Gain = {
 		HealSpeedInk = {100, min = 1, max = 500, decimals = 0, order = 4, serverside = true},
@@ -23,6 +23,7 @@ return {
 		ReloadSpeedStand = {100, min = 1, max = 500, decimals = 0, order = 5, serverside = true},
 	},
 	HideInk = {false, order = 2, serverside = true},
+	HurtOwner = {false, order = 7, serverside = true},
 	InkColor = {1, bottomorder = 1, type = "color"},
 	LeftHand = false,
 	MoveViewmodel = true,
@@ -40,11 +41,8 @@ return {
 	},
 	Playermodel = {1, hidden = true},
 	RTResolution = {1, hidden = true},
-	TakeFallDamage = {false, order = 4, serverside = true},
+	TakeFallDamage = {false, order = 5, serverside = true},
 	ToggleADS = false,
-	weapon_splatoonsweps_blaster_base = {
-		HurtOwner = {false, order = 1, serverside = true},
-	},
 	weapon_splatoonsweps_charger = {
 		UseRTScope = false,
 		weapon_splatoonsweps_herocharger = {Level = {0, min = 0, max = 3}, __subcategory = true},
