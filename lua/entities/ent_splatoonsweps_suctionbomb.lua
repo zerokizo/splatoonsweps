@@ -7,6 +7,7 @@ ENT.Base = "ent_splatoonsweps_splatbomb"
 ENT.Model = Model "models/splatoonsweps/subs/suction_bomb/suction_bomb.mdl"
 ENT.SubWeaponName = "suctionbomb"
 ENT.HitSound = "SplatoonSWEPs.SuctionBomb"
+ENT.ExplosionOffset = 10
 
 if CLIENT then
     local Sprite = Material "sprites/light_ignorez"
@@ -21,6 +22,7 @@ if CLIENT then
         if self:GetSkin() == 0 then return end
         local color = ss.GetColor(self:GetNWInt "inkcolor")
         if not color then return end
+        color = Color((color.r + 255) / 2, (color.g + 255) / 2, (color.b + 255) / 2)
         render.SetMaterial(Sprite)
         render.DrawSprite(self:GetPos(), 128, 128, ColorAlpha(color, 64))
         render.DrawSprite(self:GetPos(), 64, 64, color)

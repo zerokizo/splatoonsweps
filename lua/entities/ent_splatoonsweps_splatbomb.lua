@@ -10,6 +10,7 @@ ENT.WarnSoundPlayed = false
 ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
 ENT.SubWeaponName = "splatbomb"
 ENT.HitSound = "SplatoonSWEPs.SplatbombHitWorld"
+ENT.ExplosionOffset = 0
 
 function ENT:Initialize()
     local p = ss[self.SubWeaponName].Parameters
@@ -43,7 +44,8 @@ end
 function ENT:Detonate()
     if self.RemoveFlag then return end
     if self:GetContactTime() < self.BurstTotalFrame then return end
-    ss.MakeBombExplosion(self:GetPos(), self.HitNormal, self, self:GetNWInt "inkcolor", self.SubWeaponName)
+    ss.MakeBombExplosion(self:GetPos() + self.HitNormal * self.ExplosionOffset,
+    self.HitNormal, self, self:GetNWInt "inkcolor", self.SubWeaponName)
     self:StopSound "SplatoonSWEPs.BombAlert"
     self.RemoveFlag = true
 end
