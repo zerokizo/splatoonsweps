@@ -45,5 +45,6 @@ function ENT:PhysicsCollide(data, collider)
     end
 
     ss.MakeBombExplosion(self:GetPos(), -data.HitNormal, self, self:GetNWInt "inkcolor", "burstbomb")
+    self:StopSound "SplatoonSWEPs.SubWeaponThrown"
     SafeRemoveEntity(self)
 end

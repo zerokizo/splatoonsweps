@@ -1,17 +1,17 @@
 "VertexLitGeneric"
 {
-	"$basetexture" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_ink"
-	"$bumpmap" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_ink_normal"
-
-	"$lightwarptexture" "models/props_splatoon/inklings/inkling_lightwarp6"
+	"$basetexture" "splatoonsweps/weapons/subs/suction_bomb/suction_bomb"
+	"$bumpmap" "splatoonsweps/weapons/subs/suction_bomb/suction_bomb_normal"
+	"$lightwarptexture" "splatoonsweps/weapons/primaries/inkling_lightwarp7"
 
 	"$phong" "1"
-	"$phongexponent" "100"
-	"$phongboost" "24"	
-	"$phongfresnelranges"	"[.3 1 8]"
+	"$phongexponent" "50"
+	"$phongboost" "12"	
+	"$phongfresnelranges"	"[.3 1 2]"
+	"$halflambert" "1"
 
 	"$envmap" "env_cubemap"
-	"$envmaptint" "[.1 .1 .1]"	
+	"$normalmapalphaenvmapmask" "1"
 
 	"$blendtintbybasealpha"		"1"
 	"$blendtintcoloroverbase"		"1"
@@ -32,4 +32,5 @@
 			"resultVar"		"$color2"
 		}
 	}
+
 }

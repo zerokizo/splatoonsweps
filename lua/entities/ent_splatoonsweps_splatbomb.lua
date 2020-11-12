@@ -8,9 +8,11 @@ ENT.ContactTotalTime = 0
 ENT.NextPlayHitSE = 0
 ENT.WarnSoundPlayed = false
 ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
+ENT.SubWeaponName = "splatbomb"
+ENT.HitSound = "SplatoonSWEPs.SplatbombHitWorld"
 
 function ENT:Initialize()
-    local p = ss.splatbomb.Parameters
+    local p = ss[self.SubWeaponName].Parameters
     self.Parameters = p
     self.StraightFrame = p.Fly_AirFrm
     self.AirResist = p.Fly_VelKd - 1
@@ -18,8 +20,11 @@ function ENT:Initialize()
     self.Gravity = p.Fly_Gravity
     self.BurstTotalFrame = p.Burst_WaitFrm + p.Burst_WarnFrm
     self.HitNormal = vector_up
+    self.CollisionSeSilentFrame = p.CollisionSeSilentFrame or math.huge
 
-    self.BaseClass.Initialize(self)
+    local base = self.BaseClass
+    while base.ClassName ~= "ent_splatoonsweps_throwable" do base = base.BaseClass end
+    base.Initialize(self)
     if CLIENT then return end
     self.WarnSound = CreateSound(self, ss.BombAlert)
 end
@@ -38,7 +43,7 @@ end
 function ENT:Detonate()
     if self.RemoveFlag then return end
     if self:GetContactTime() < self.BurstTotalFrame then return end
-    ss.MakeBombExplosion(self:GetPos(), self.HitNormal, self, self:GetNWInt "inkcolor", "splatbomb")
+    ss.MakeBombExplosion(self:GetPos(), self.HitNormal, self, self:GetNWInt "inkcolor", self.SubWeaponName)
     self:StopSound "SplatoonSWEPs.BombAlert"
     self.RemoveFlag = true
 end
@@ -58,9 +63,9 @@ function ENT:Think()
     end
     
 
-    if p:GetStress() > 0 then
+    if self:GetClass() ~= "ent_splatoonsweps_splatbomb" or p:GetStress() > 0 then
         self:Detonate()
-        if t > self.Parameters.CollisionSeSilentFrame then
+        if t > self.Parameters.Burst_WaitFrm - self.Parameters.Burst_WarnFrm then
             self.WarnSound:PlayEx(1, 100)
         end
     else
@@ -77,8 +82,8 @@ end
 function ENT:PhysicsCollide(data, collider)
     if self.RemoveFlag then return end
     if data.OurOldVelocity:LengthSqr() > 1000 and CurTime() > self.NextPlayHitSE then
-        self:EmitSound "SplatoonSWEPs.SplatbombHitWorld"
-        self.NextPlayHitSE = CurTime() + self.Parameters.CollisionSeSilentFrame
+        self:EmitSound(self.HitSound)
+        self.NextPlayHitSE = CurTime() + self.CollisionSeSilentFrame
     end
 
     if self.ContactStartTime then return end

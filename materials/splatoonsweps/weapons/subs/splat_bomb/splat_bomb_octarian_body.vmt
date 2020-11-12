@@ -1,8 +1,8 @@
 "VertexLitGeneric"
 {
-	"$basetexture" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb_octarian"
-	"$bumpmap" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb_octarian_normal"
-	"$lightwarptexture" "models/props_splatoon/inklings/inkling_lightwarp7"
+	"$basetexture" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_octarian"
+	"$bumpmap" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_octarian_normal"
+	"$lightwarptexture" "splatoonsweps/weapons/primaries/inkling_lightwarp7"
 
 	"$selfillum" "1"
 	"$selfillumtint" "[4 4 4]"

@@ -1,10 +1,10 @@
 "VertexLitGeneric"
 {
-	"$basetexture" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb"
-	"$bumpmap" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb_normal"
-	"$lightwarptexture" "models/props_splatoon/inklings/inkling_lightwarp7"
+	"$basetexture" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb"
+	"$bumpmap" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_normal"
+	"$lightwarptexture" "splatoonsweps/weapons/primaries/inkling_lightwarp7"
 
-	"$detail" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb_rimlight"
+	"$detail" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_rimlight"
 	"$detailscale" "1"
 	"$detailblendfactor" ".5"
 	"$detailblendmode" "1"

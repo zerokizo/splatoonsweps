@@ -1,7 +1,7 @@
 "VertexLitGeneric"
 {
-	"$baseTexture" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb_rimlight"
-	"$lightwarptexture" "models/props_splatoon/inklings/inkling_lightwarp7"
+	"$baseTexture" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_rimlight"
+	"$lightwarptexture" "splatoonsweps/weapons/primaries/inkling_lightwarp7"
 	"$additive" "1"
 
 	"$phong" "1"

@@ -1,7 +1,7 @@
 "VertexLitGeneric"
 {
-	"$basetexture" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb_plastic"
-	"$bumpmap" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb_plastic_normal"
+	"$basetexture" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_plastic"
+	"$bumpmap" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_plastic_normal"
 
 	"$translucent" "1"
 //	"$additive" "1"

@@ -162,9 +162,9 @@ sound.Add {
 
 sound.Add {
     channel = CHAN_WEAPON,
-    name = "SplatoonSWEPs.SuckerBomb",
+    name = "SplatoonSWEPs.SuctionBomb",
     level = ss.WeakShotLevel,
-    sound = "splatoonsweps/weapons/sub/suckerbomb.mp3",
+    sound = "splatoonsweps/weapons/sub/suctionbomb.mp3",
     volume = ss.WeaponSoundVolume,
     pitch = 100,
 }

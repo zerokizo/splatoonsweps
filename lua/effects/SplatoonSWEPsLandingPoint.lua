@@ -70,6 +70,7 @@ function EFFECT:Think()
         start = initpos,
         endpos = initpos,
         mask = MASK_SOLID,
+        collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
         filter = self.Weapon.Owner,
         maxs = ss.vector_one * TRACE_SIZE,
         mins = -ss.vector_one * TRACE_SIZE,

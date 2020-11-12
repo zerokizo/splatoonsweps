@@ -1,6 +1,6 @@
 "VertexLitGeneric"
 {
-	"$basetexture" "models\props_splatoon\weapons\subs\splat_bombs\splat_bomb_hero_glass"
+	"$basetexture" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_hero_glass"
 
 	"$translucent" "1"
 //	"$additive" "1"
