@@ -53,7 +53,6 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
         * [ ] Sprinkler
         * [ ] Splash Wall
         * [ ] Squid Beakon
-        * [ ] Toxic Mist
 
 ## I want to make the following, too
 * Special weapons in Splatoon and Splatoon 2
