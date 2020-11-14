@@ -20,6 +20,12 @@ if CLIENT then
 
         self:DrawModel()
         if self:GetSkin() == 0 then return end
+        if util.TraceLine {
+            start = self:GetPos(),
+            endpos = EyePos(),
+            filter = {self, GetViewEntity()},
+            mask = MASK_VISIBLE_AND_NPCS,
+        }.Hit then return end
         local color = ss.GetColor(self:GetNWInt "inkcolor")
         if not color then return end
         color = Color((color.r + 255) / 2, (color.g + 255) / 2, (color.b + 255) / 2)
