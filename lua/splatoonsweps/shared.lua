@@ -221,7 +221,7 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 
 	-- Send viewmodel animation.
 	if crouching then
-		w.SwimSound:ChangeVolume(math.Clamp(mv:GetVelocity():Length() / w.SquidSpeed * (w:GetInInk() and 1 or 0), 0, 1))
+		w.LoopSounds.SwimSound.SoundPatch:ChangeVolume(math.Clamp(mv:GetVelocity():Length() / w.SquidSpeed * (w:GetInInk() and 1 or 0), 0, 1))
 		if not w:GetOldCrouching() then
 			w:SetWeaponAnim(ss.ViewModel.Squid)
 			if w:GetNWInt "playermodel" ~= ss.PLAYER.NOCHANGE then
@@ -233,7 +233,7 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 			end
 		end
 	elseif w:GetOldCrouching() then
-		w.SwimSound:ChangeVolume(0)
+		w.LoopSounds.SwimSound.SoundPatch:ChangeVolume(0)
 		w:SetWeaponAnim(w:GetThrowing() and ss.ViewModel.Throwing or ss.ViewModel.Standing)
 		if IsFirstTimePredicted() then
 			ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToHuman")
@@ -250,10 +250,13 @@ end
 --   Entity ent	| The entity to add to.
 function ss.AddNetworkVar(ent)
 	if ent.NetworkSlot then return end
-	ent.NetworkSlot = {
-		String = -1, Bool = -1, Float = -1, Int = -1,
-		Vector = -1, Angle = -1, Entity = -1,
-	}
+	function ent:InitNetworkSlots()
+		self.NetworkSlot = {
+			String = -1, Bool = -1, Float = -1, Int = -1,
+			Vector = -1, Angle = -1, Entity = -1,
+		}
+	end
+	ent:InitNetworkSlots()
 
 	-- Returns how many network slots the entity uses.
 	-- Argument:
@@ -406,7 +409,10 @@ function ss.AddTimerFramework(ent)
 	function ent:ProcessSchedules()
 		for i, s in pairs(self.FunctionQueue) do
 			if isstring(s.time) then
-				if CurTime() > self["Get" .. s.time](self) then
+				local get = self["Get" .. s.time]
+				if not (isfunction(s.func) and isfunction(get) and isnumber(get(self))) then
+					self.FunctionQueue[i] = nil
+				elseif CurTime() > get(self) then
 					local remove = s.func(self, s)
 					self["Set" .. s.prevtime](self, CurTime())
 					self["Set" .. s.time](self, CurTime() + self["Get" .. s.delay](self))
@@ -414,7 +420,7 @@ function ss.AddTimerFramework(ent)
 					if remove then self["Set" .. s.done](self, 2^16 - 1) end
 				end
 			elseif CurTime() > s.time then
-				local remove = s.func(self, s)
+				local remove = not isfunction(s.func) or s.func(self, s)
 				s.prevtime = CurTime()
 				s.time = CurTime() + s.delay
 				if s.numcall > 0 then

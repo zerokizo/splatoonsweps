@@ -11,8 +11,8 @@ local function EndSwing(self)
 	self:SetMode(self.MODE.READY)
 	self:SetWeaponAnim(ACT_VM_IDLE)
 	self:SetMousePressedTime(CurTime())
-	self.RollSound:ChangeVolume(0)
-	self.EmptyRollSound:ChangeVolume(0)
+	self.LoopSounds.RollSound.SoundPatch:ChangeVolume(0)
+	self.LoopSounds.EmptyRollSound.SoundPatch:ChangeVolume(0)
 	if self.IsBrush then
 		self:SetSwingCount(self.SwingCountInit)
 		return
@@ -80,7 +80,7 @@ local function DoRunover(self, t, mv)
 	local function dealdamage(i, v)
 		if v == self.Owner then return end
 		keys[v] = true
-		if self.RunoverExceptions[v] then return end
+		if self.RunoverExclusion[v] then return end
 		if v:Health() == 0 then return end
 		
 		local effectpos = center + dir * dir:Dot(v:GetPos() - center)
@@ -107,7 +107,7 @@ local function DoRunover(self, t, mv)
 	end
 
 	for i, v in ipairs(victims) do dealdamage(i, v) end
-	self.RunoverExceptions = keys
+	self.RunoverExclusion = keys
 	if not self.Owner:IsPlayer() then return end
 	if not knockback then return end
 	mv:SetVelocity(mv:GetVelocity() - self:GetForward() * ss.InklingBaseSpeed * 10)
@@ -123,11 +123,6 @@ SWEP.SwingAnimTime = 10 * ss.FrameToSec
 SWEP.SwingBackWait = 24 * ss.FrameToSec
 SWEP.RollingEffectDelay = 12 * ss.FrameToSec
 SWEP.RunningEffectDelay = 6 * ss.FrameToSec
-
-function SWEP:AddPlaylist(p)
-	p[#p + 1] = self.EmptyRollSound
-	p[#p + 1] = self.RollSound
-end
 
 function SWEP:GetVelocitySpread(issub)
 	local p = self.Parameters
@@ -334,9 +329,9 @@ function SWEP:SharedInit()
 	self.SwingCountInit = p.mPaintBrushNearestBulletLoopNum - p.mPaintBrushNearestBulletOrderNum
 	self.Bodygroup = table.Copy(self.Bodygroup or {})
 	self.IsBrush = self.Parameters.mPaintBrushType
-	self.RollSound = CreateSound(self, self.RollSoundName)
-	self.EmptyRollSound = CreateSound(self, self.IsBrush and ss.EmptyRun or ss.EmptyRoll)
-	self.RunoverExceptions = {}
+	self.RunoverExclusion = {}
+	self.LoopSounds.RollSound = {SoundName = self.RollSoundName}
+	self.LoopSounds.EmptyRollSound = {SoundName = self.IsBrush and ss.EmptyRun or ss.EmptyRoll}
 	self:SetIsSecondSwing(false)
 	self:SetMousePressedTime(CurTime())
 	self:SetSwingStartTime(CurTime())
@@ -458,7 +453,8 @@ function SWEP:Move(ply, mv)
 			return
 		end
 
-		local soundplay, soundstop = self.RollSound, self.EmptyRollSound
+		local soundplay = self.LoopSounds.RollSound.SoundPatch
+		local soundstop = self.LoopSounds.EmptyRollSound.SoundPatch
 		local velocity = 1
 		if ply:IsPlayer() then
 			velocity = math.abs(ply:GetVelocity():Dot(ply:GetForward())) / ply:GetMaxSpeed()

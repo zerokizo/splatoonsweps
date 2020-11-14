@@ -54,6 +54,7 @@ function ss.ClearAllInk()
 	net.Send(ss.PlayersReady)
 	table.Empty(ss.InkQueue)
 	table.Empty(ss.PaintSchedule)
+	if not ss.SurfaceArray then return end -- Workaround for changelevel
 	for _, s in ipairs(ss.SurfaceArray) do
 		for i, v in pairs(s.InkSurfaces) do
 			table.Empty(v)
@@ -197,8 +198,11 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
 	SetGlobalString("SplatoonSWEPs: Ink map CRC", util.CRC(file.Read(path))) -- CRC check clientside
 	resource.AddSingleFile("data/" .. path)
 	ss.SURFACE_ID_BITS = select(2, math.frexp(#ss.SurfaceArray))
+
+	ss.ClearAllInk()
 end)
 
+-- NOTE: PlayerInitialSpawn is called before InitPostEntity on changelevel
 hook.Add("PlayerInitialSpawn", "SplatoonSWEPs: Add a player", function(ply)
 	ss.InitializeMoveEmulation(ply)
 	if not ply:IsBot() then ss.ClearAllInk() end	

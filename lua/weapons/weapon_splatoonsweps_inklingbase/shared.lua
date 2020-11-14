@@ -11,17 +11,29 @@ SWEP.RestrictedFieldsToCopy = {
 	HealSchedule = true,
 	ReloadSchedule = true,
 }
+SWEP.LoopSounds = {
+	SwimSound = {SoundName = ss.SwimSound},
+	EnemyInkSound = {SoundName = ss.EnemyInkSound},
+}
 ss.AddTimerFramework(SWEP)
 function SWEP:PlayLoopSound()
-	local playlist = {self.SwimSound, self.EnemyInkSound}
-	ss.ProtectedCall(self.AddPlaylist, self, playlist)
-	for _, s in ipairs(playlist) do s:PlayEx(0, 100) end
+	for _, s in pairs(self.LoopSounds) do
+		if not s.SoundPatch then
+			s.SoundPatch = CreateSound(self, s.SoundName)
+		end
+
+		s.SoundPatch:PlayEx(0, 100)
+	end
 end
 
 function SWEP:StopLoopSound()
-	local playlist = {self.SwimSound, self.EnemyInkSound}
-	ss.ProtectedCall(self.AddPlaylist, self, playlist)
-	for _, s in ipairs(playlist) do s:Stop() end
+	for _, s in pairs(self.LoopSounds) do
+		if not s.SoundPatch then
+			s.SoundPatch = CreateSound(self, s.SoundName)
+		end
+
+		s.SoundPatch:Stop()
+	end
 end
 
 function SWEP:StartRecording()
@@ -208,8 +220,12 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	
 	local inwallink = self:Crouching() and onwallink
 	local inink = self:Crouching() and (onink and onourink or self:GetInWallInk())
-	if onenemyink and not self:GetOnEnemyInk() then self.EnemyInkSound:ChangeVolume(1, .5) end
-	if not onenemyink and self:GetOnEnemyInk() then self.EnemyInkSound:ChangeVolume(0, .5) end
+	if onenemyink and not self:GetOnEnemyInk() then
+		self.LoopSounds.EnemyInkSound.SoundPatch:ChangeVolume(1, .5)
+	end
+	if not onenemyink and self:GetOnEnemyInk() then
+		self.LoopSounds.EnemyInkSound.SoundPatch:ChangeVolume(0, .5)
+	end
 	if inink and not self:GetInInk() then self.Owner:SetDSP(14) end
 	if not inink and self:GetInInk() then self.Owner:SetDSP(1) end
 	if self.Owner:IsPlayer() then
@@ -263,8 +279,6 @@ end
 function SWEP:SharedInitBase()
 	self:SetCooldown(CurTime())
 	self:ApplySkinAndBodygroups()
-	self.SwimSound = CreateSound(self, ss.SwimSound)
-	self.EnemyInkSound = CreateSound(self, ss.EnemyInkSound)
 	self.KeyPressedOrder = {} -- Pressed keys are added here, most recent key will go last
 
 	local translate = {}
@@ -430,8 +444,18 @@ function SWEP:ChangeThrowing(name, old, new)
 	net.Send(ss.PlayersReady) -- Properly changes it on other clients
 end
 
+function SWEP:OnRestore()
+	if ss[self.Sub] then table.Merge(self, ss[self.Sub].Merge) end
+	for _, s in pairs(self.LoopSounds) do
+		if not s.SoundPatch then
+			s.SoundPatch = CreateSound(self, s.SoundName)
+		end
+	end
+end
+
 function SWEP:SetupDataTables()
 	local gain = ss.GetOption "gain"
+	self:InitNetworkSlots()
 	self:AddNetworkVar("Bool", "InInk") -- If owner is in ink.
 	self:AddNetworkVar("Bool", "InFence") -- If owner is in fence.
 	self:AddNetworkVar("Bool", "InWallInk") -- If owner is on wall.

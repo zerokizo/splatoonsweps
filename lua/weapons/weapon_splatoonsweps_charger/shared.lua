@@ -70,21 +70,21 @@ function SWEP:ResetCharge()
 	self.NotEnoughInk = false
 	self.JumpPower = ss.InklingJumpPower
 	if ss.mp and SERVER then return end
-	self.AimSound:Stop()
-	self.AimSound:ChangePitch(1)
+	if not self.LoopSounds.AimSound.SoundPatch then return end
+	self.LoopSounds.AimSound.SoundPatch:Stop()
+	self.LoopSounds.AimSound.SoundPatch:ChangePitch(1)
 end
 
 SWEP.SharedDeploy = SWEP.ResetCharge
 SWEP.SharedHolster = SWEP.ResetCharge
-function SWEP:AddPlaylist(p) p[#p + 1] = self.AimSound end
 function SWEP:PlayChargeSound()
 	if ss.mp and (SERVER or not IsFirstTimePredicted()) then return end
 	local prog = self:GetChargeProgress()
 	if not (ss.sp and SERVER and not self.Owner:IsPlayer()) and 0 < prog and prog < 1 then
-		self.AimSound:PlayEx(1, math.max(self.AimSound:GetPitch(), prog * 99 + 1))
+		self.LoopSounds.AimSound.SoundPatch:PlayEx(1, math.max(self.LoopSounds.AimSound.SoundPatch:GetPitch(), prog * 99 + 1))
 	else
-		self.AimSound:Stop()
-		self.AimSound:ChangePitch(1)
+		self.LoopSounds.AimSound.SoundPatch:Stop()
+		self.LoopSounds.AimSound.SoundPatch:ChangePitch(1)
 	end
 end
 
@@ -98,7 +98,7 @@ end
 
 function SWEP:SharedInit()
 	local p = self.Parameters
-	self.AimSound = CreateSound(self, ss.ChargerAim)
+	self.LoopSounds.AimSound = {SoundName = ss.ChargerAim}
 	self.AirTimeFraction = 1 - 1 / p.mEmptyChargeTimes
 	self:SetAimTimer(CurTime())
 	self:ResetCharge()
@@ -165,7 +165,7 @@ function SWEP:SharedPrimaryAttack()
 		end
 
 		self.FullChargeFlag = false
-		self.AimSound:PlayEx(0, 1)
+		self.LoopSounds.AimSound.SoundPatch:PlayEx(0, 1)
 		self:SetAimTimer(CurTime() + ss.AimDuration)
 		self:SetCharge(CurTime())
 		self:SetWeaponAnim(ACT_VM_IDLE)
