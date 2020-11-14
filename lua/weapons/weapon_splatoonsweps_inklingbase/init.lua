@@ -119,22 +119,11 @@ function SWEP:Initialize()
 	self:SetInk(ss.GetMaxInkAmount())
 	self:SetInkColorProxy(ss.vector_one)
 	self:SharedInitBase()
+	self.NextEnemyInkDamage = CurTime()
 	timer.Simple(0, function()
 		if not IsValid(self) then return end
 		if IsValid(self.Owner) then return end
 		self:CreateRagdoll()
-	end)
-	
-	self:AddSchedule(200 / ss.GetMaxHealth() * ss.FrameToSec, function(self, schedule)
-		if not self:GetOnEnemyInk() then return end
-		self.HealSchedule:SetDelay(ss.HealDelay)
-		if self.Owner:Health() > self.Owner:GetMaxHealth() / 2 then
-			local d = DamageInfo()
-			d:SetAttacker(game.GetWorld())
-			d:SetDamage(1)
-			d:SetInflictor(self)
-			self.Owner:TakeDamageInfo(d) -- Enemy ink damage
-		end
 	end)
 
 	ss.ProtectedCall(self.ServerInit, self)
@@ -355,6 +344,19 @@ function SWEP:Think()
 		end
 
 		return
+	end
+	
+	if self:GetOnEnemyInk() and CurTime() > self.NextEnemyInkDamage then
+		local delay = 200 / ss.GetMaxHealth() * ss.FrameToSec
+		self.NextEnemyInkDamage = CurTime() + delay
+		self.HealSchedule:SetDelay(ss.HealDelay)
+		if self.Owner:Health() > self.Owner:GetMaxHealth() / 2 then
+			local d = DamageInfo()
+			d:SetAttacker(game.GetWorld())
+			d:SetDamage(1)
+			d:SetInflictor(self)
+			self.Owner:TakeDamageInfo(d) -- Enemy ink damage
+		end
 	end
 
 	local PMPath = ss.Playermodel[self:GetNWInt "playermodel"]

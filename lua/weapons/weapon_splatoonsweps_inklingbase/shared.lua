@@ -445,12 +445,9 @@ function SWEP:ChangeThrowing(name, old, new)
 end
 
 function SWEP:OnRestore()
+	self:PlayLoopSound()
+	self.NextEnemyInkDamage = CurTime()
 	if ss[self.Sub] then table.Merge(self, ss[self.Sub].Merge) end
-	for _, s in pairs(self.LoopSounds) do
-		if not s.SoundPatch then
-			s.SoundPatch = CreateSound(self, s.SoundName)
-		end
-	end
 end
 
 function SWEP:SetupDataTables()
