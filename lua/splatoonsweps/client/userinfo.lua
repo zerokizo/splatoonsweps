@@ -52,7 +52,7 @@ local function SetPlayerModel(self) -- Apply changes to preview model
 	self.Entity.GetInkColorProxy = GetColor
 	self.Entity:SetEyeTarget(vector_up * campos)
 	self.Entity.GetInfoNum = LocalPlayer().GetInfoNum
-	ss.SetSubMaterial_ShouldBeRemoved(self.Entity)
+	ss.SetSubMaterial_Workaround(self.Entity)
 
 	function self:OnRemove()
 		if not IsValid(self.Weapon) then return end

@@ -12,11 +12,11 @@ local AdvancedColourToolLoaded
 local AdvancedColourToolReplacedSetSubMaterial
 = AdvancedColourToolLoaded and FindMetaTable "Entity"._OldSetSubMaterial
 if AdvancedColourToolReplacedSetSubMaterial then
-	function ss.SetSubMaterial_ShouldBeRemoved(ent, ...)
+	function ss.SetSubMaterial_Workaround(ent, ...)
 		ent:_OldSetSubMaterial(...)
 	end
 else
-	function ss.SetSubMaterial_ShouldBeRemoved(ent, ...)
+	function ss.SetSubMaterial_Workaround(ent, ...)
 		ent:SetSubMaterial(...)
 	end
 end
@@ -34,7 +34,7 @@ if isfunction(FindMetaTable "Player".SplatoonOffsets) then
         hook.Remove("PlayerSpawn", "splt_Spawn")
         hook.Remove("PlayerDeath", "splt_OnDeath")
         hook.Add("PlayerSpawn", "SplatoonSWEPs: Fix PM change", function(ply)
-            ss.SetSubMaterial_ShouldBeRemoved(ply)
+            ss.SetSubMaterial_Workaround(ply)
         end)
     else
         hook.Remove("Tick", "splt_Offsets_cl")

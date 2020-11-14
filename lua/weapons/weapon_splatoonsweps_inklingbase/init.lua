@@ -27,7 +27,7 @@ function SWEP:ChangePlayermodel(data)
 		end
 	end
 
-	ss.SetSubMaterial_ShouldBeRemoved(self.Owner)
+	ss.SetSubMaterial_Workaround(self.Owner)
 	self.Owner:SetPlayerColor(data.PlayerColor)
 	if self:GetNWInt "playermodel" <= ss.PLAYER.BOY then
 		ss.ProtectedCall(self.Owner.SplatColors, self.Owner)
@@ -194,7 +194,7 @@ function SWEP:RestoreInfo()
 		self.Owner:SetViewOffsetDucked(self.BackupPlayerInfo.ViewOffsetDucked)
 		self.Owner:SetMaterial(self.BackupPlayerInfo.Material)
 		for i = 0, 31 do
-			ss.SetSubMaterial_ShouldBeRemoved(self.Owner, i, self.BackupPlayerInfo.SubMaterial[i])
+			ss.SetSubMaterial_Workaround(self.Owner, i, self.BackupPlayerInfo.SubMaterial[i])
 		end
 	end
 end
