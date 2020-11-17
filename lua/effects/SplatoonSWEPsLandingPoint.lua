@@ -31,7 +31,7 @@ function EFFECT:Init(e)
     self:SetPos(GetViewEntity():GetPos())
     self:SetColor(ss.GetColor(self:GetNWInt "inkcolor"))
     self:SetModel(mdl)
-    self:SetMaterial(mat)
+    self:SetMaterial(mat:GetName())
     self:SetModelScale(e:GetScale())
 end
 

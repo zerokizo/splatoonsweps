@@ -51,7 +51,7 @@ function EFFECT:Init(e)
 	local ping = ss.mp and LocalPlayer():Ping() / 1000 or 0
 	local c = ss.GetColor(e:GetColor())
 	self:SetModel(mdl)
-	self:SetMaterial(ss.Materials.Effects.Invisible)
+	self:SetMaterial(ss.Materials.Effects.Invisible:GetName())
 	self:SetPos(e:GetOrigin())
 	self.Color = (c:ToVector() + ss.vector_one) / 2
 	self.Color = self.Color:ToColor()

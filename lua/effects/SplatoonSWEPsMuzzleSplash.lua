@@ -36,7 +36,7 @@ end
 
 function EFFECT:Init(e)
 	self:SetModel(mdl)
-	self:SetMaterial(ss.Materials.Effects.Invisible)
+	self:SetMaterial(ss.Materials.Effects.Invisible:GetName())
 	self.Weapon = e:GetEntity()
 	local f = e:GetFlags()
 	local ping = ss.mp and LocalPlayer():Ping() / 1000 or 0

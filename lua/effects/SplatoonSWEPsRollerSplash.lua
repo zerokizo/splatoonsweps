@@ -4,7 +4,7 @@ if not ss then return end
 local mdl = Model "models/props_junk/PopCan01a.mdl"
 function EFFECT:Init(e)
 	self:SetModel(mdl)
-	self:SetMaterial(ss.Materials.Effects.Invisible)
+	self:SetMaterial(ss.Materials.Effects.Invisible:GetName())
 	self:SetNoDraw(true)
 	local w = e:GetEntity()
 	if not IsValid(w) then return end

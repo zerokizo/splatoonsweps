@@ -52,7 +52,7 @@ end
 
 function EFFECT:Init(e)
 	self:SetModel(mdl)
-	self:SetMaterial(invisiblemat)
+	self:SetMaterial(invisiblemat:GetName())
 	local Weapon = ss.GetEffectEntity(e)
 	if not IsValid(Weapon) then return end
 	if not IsValid(Weapon.Owner) then return end

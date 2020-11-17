@@ -19,7 +19,7 @@ end
 
 function EFFECT:Init(e)
 	self:SetModel(mdl)
-	self:SetMaterial(ss.Materials.Effects.Invisible)
+	self:SetMaterial(ss.Materials.Effects.Invisible:GetName())
 	self.Weapon = e:GetEntity()
 	if not IsValid(self.Weapon) then return end
 	local f = e:GetFlags()
