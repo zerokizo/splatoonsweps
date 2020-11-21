@@ -147,8 +147,10 @@ function EFFECT:Init(e)
 	self.ColorVector = ColorValue:ToVector()
 	self.DrawRadius = math.max(6, DrawRadius)
 	self.IsBlaster = not IsDrop and IsBlaster
+	self.IsBombSplash = IsBombSplash
 	self.IsCharger = IsCharger
 	self.IsDrop = IsDrop
+	self.IsRoller = IsRoller
 	self.IsSlosher = IsSlosher
 	self.Render = self[RenderFunc]
 
@@ -211,7 +213,7 @@ function EFFECT:Think()
 		return t < p.mExplosionFrame or not p.mExplosionSleep
 	end
 
-	if Weapon.IsRoller then return true end
+	if self.IsRoller and not self.IsBombSplash then return true end
 	
 	local tt = math.max(t - ss.ShooterTrailDelay, 0)
 	if self.IsDrop or tt > 0 then
