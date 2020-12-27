@@ -159,7 +159,7 @@ end
 function SWEP:Think()
 	if not IsValid(self.Owner) or self:GetHolstering() then return end
 	if self:IsFirstTimePredicted() then
-		local enough = self:GetInk() > self:GetSubWeaponInkConsume()
+		local enough = self:GetInk() > (ss.ProtectedCall(self.GetSubWeaponInkConsume, self) or 0)
 		if not self.EnoughSubWeapon and enough then
 			self.JustUsableTime = CurTime() - LocalPlayer():Ping() / 1000
 			if self:IsCarriedByLocalPlayer() then

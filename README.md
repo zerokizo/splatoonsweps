@@ -43,7 +43,7 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
     * [x] Guide marker
     * [ ] Explosive sub weapons
         * [x] Burst Bomb
-        * [ ] Ink Mine
+        * [x] Ink Mine
         * [ ] Seeker
         * [x] Splat Bomb
         * [x] Suction Bomb

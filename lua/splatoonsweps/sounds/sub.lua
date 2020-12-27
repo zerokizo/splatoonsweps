@@ -99,7 +99,7 @@ sound.Add {
 
 sound.Add {
     channel = CHAN_WEAPON,
-    name = "SplatoonSWEPs.InkMineAlert",
+    name = "SplatoonSWEPs.InkmineAlert",
     level = ss.WeaponSoundLevel,
     sound = "splatoonsweps/weapons/sub/inkminealert.wav",
     volume = ss.WeaponSoundVolume,

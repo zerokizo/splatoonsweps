@@ -145,7 +145,7 @@ end
 --   TraceResult tr	| A TraceResult structure to pick up a position.
 -- Returning:
 --   number			| The ink color of the specified position.
---   nil			| If there is no ink, returns nil.
+--   nil			| If there is no ink, this returns nil.
 function ss.GetSurfaceColor(tr)
 	if not tr.Hit then return end
 	local pos = tr.HitPos
@@ -158,4 +158,36 @@ function ss.GetSurfaceColor(tr)
 		if ss.Debug then ss.Debug.ShowInkStateMesh(Vector(x, y), i, s) end
 		if colorid then return colorid end
 	end
+end
+
+-- Traces and picks up colors in an area on XY plane and returns the representative color of the area
+-- Arguments:
+--   Vector org       | the origin/center of the area.
+--   Vector max       | Maximum size (only X and Y components are used).
+--   Vector min       | Minimum size (only X and Y components are used).
+--   number step      | Distance between the traces.
+--   number tracez    | Depth of the traces.
+--   number tolerance | Should be from 0 to 1.
+--     The returning color should be the one that covers this ratio of the area.
+-- Returning:
+--   number           | The ink color.
+--   nil              | If there is no ink or it's too mixed, this returns nil.
+function ss.GetSurfaceColorArea(org, mins, maxs, step, tracez, tolerance)
+	local ink_t = {filter = filter, mask = MASK_SHOT, maxs = maxs, mins = mins}
+	local gcoloravailable = 0 -- number of points whose color is not -1
+	local gcolorlist = {} -- Ground color list
+	for dx = -step, step do
+		for dy = -step, step do
+			ink_t.start = org + Vector(maxs.x * dx, maxs.y * dy) / step
+			ink_t.endpos = ink_t.start - vector_up * tracez
+			local color = ss.GetSurfaceColor(util.TraceLine(ink_t)) or -1
+			if color >= 0 then
+				gcoloravailable = gcoloravailable + 1
+				gcolorlist[color] = (gcolorlist[color] or 0) + 1
+			end
+		end
+	end
+
+	local gcolorkey = table.GetWinningKey(gcolorlist)
+	return gcoloravailable / (step * 2 + 1)^2 > tolerance and gcolorkey or -1
 end

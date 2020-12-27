@@ -37,7 +37,7 @@ end
 
 function EFFECT:Render()
     if not CheckVars(self) then return end
-    if self.Weapon:GetInk() < self.Weapon:GetSubWeaponInkConsume() then return end
+    if self.Weapon:GetInk() < ss.ProtectedCall(self.Weapon.GetSubWeaponInkConsume, self.Weapon) then return end
     local color = ss.GetColor(self.Weapon:GetNWInt "inkcolor")
     local initapparentpos = self.Weapon:GetHandPos()
     local initposdiff = initapparentpos - self.Weapon:GetShootPos()
