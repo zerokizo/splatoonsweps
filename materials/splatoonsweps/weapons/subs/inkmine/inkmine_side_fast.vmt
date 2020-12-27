@@ -17,7 +17,7 @@
 		"TextureScroll"
 		{
 			"texturescrollvar" "$detailtexturetransform"
-			"texturescrollrate" "2.5"
+			"texturescrollrate" "5"
 			"texturescrollangle" "90"
 		}
 	}
