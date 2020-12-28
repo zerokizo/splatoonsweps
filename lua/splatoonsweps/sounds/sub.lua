@@ -12,7 +12,9 @@ ss.BombAvailable = Sound "splaoonsweps/weapons/sub/available.wav"
 -- TODO: make it loop these files
 ss.BombAlert = Sound "splatoonsweps/weapons/sub/bombalert.mp3"
 ss.SeekerAlert = Sound "splatoonsweps/weapons/sub/seeker/alert.wav"
-ss.SeekerRunning = Sound 'splatoonsweps/weapons/sub/seeker/running.wav'
+ss.SeekerRunning = Sound "splatoonsweps/weapons/sub/seeker/running.wav"
+ss.SeekerFar = Sound "splatoonsweps/weapons/sub/seeker/seekerfar.wav"
+ss.SeekerNear = Sound "splatoonsweps/weapons/sub/seeker/seekernear.wav"
 ss.SplashShieldRunning = Sound "splatoonsweps/weapons/sub/splashshield/running.wav"
 ss.SplrinkerRunning = Sound "splatoonsweps/weapons/sub/sprinkler/running.wav"
 
@@ -117,27 +119,54 @@ sound.Add {
 
 sound.Add {
     channel = CHAN_WEAPON,
-    name = "SplatoonSWEPs.SeekerFar",
-    level = ss.WeaponSoundLevel,
-    sound = "splatoonsweps/weapons/sub/seeker/seekfar.wav",
-    volume = ss.WeaponSoundVolume,
-    pitch = 100,
-}
-
-sound.Add {
-    channel = CHAN_WEAPON,
-    name = "SplatoonSWEPs.SeekerNear",
-    level = ss.WeaponSoundLevel,
-    sound = "splatoonsweps/weapons/sub/seeker/seeknear.wav",
-    volume = ss.WeaponSoundVolume,
-    pitch = 100,
-}
-
-sound.Add {
-    channel = CHAN_WEAPON,
     name = "SplatoonSWEPs.SeekerThrown",
     level = ss.WeaponSoundLevel,
     sound = "splatoonsweps/weapons/sub/seeker/start.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.SeekerSelect",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/weapons/beep.mp3",
+    volume = ss.WeaponSoundVolume,
+    pitch = 80,
+}
+
+sound.Add {
+    channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.SeekerAlert",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/weapons/sub/seeker/alert.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_BODY,
+    name = "SplatoonSWEPs.SeekerRunning",
+    level = ss.WeakShotLevel,
+    sound = "splatoonsweps/weapons/sub/seeker/running.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_VOICE,
+    name = "SplatoonSWEPs.SeekerFar",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/weapons/sub/seeker/seekerfar.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_VOICE,
+    name = "SplatoonSWEPs.SeekerNear",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/weapons/sub/seeker/seekernear.wav",
     volume = ss.WeaponSoundVolume,
     pitch = 100,
 }

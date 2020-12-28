@@ -3,7 +3,7 @@
 	"$basetexture" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_ink"
 	"$bumpmap" "splatoonsweps/weapons/subs/splat_bomb/splat_bomb_ink_normal"
 
-	"$lightwarptexture" "models/props_splatoon/inklings/inkling_lightwarp6"
+	"$lightwarptexture" "splatoonsweps/weapons/subs/inkling_lightwarp6"
 
 	"$phong" "1"
 	"$phongexponent" "100"

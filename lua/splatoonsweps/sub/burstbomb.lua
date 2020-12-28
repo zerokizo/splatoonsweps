@@ -111,7 +111,6 @@ end
 
 if SERVER then
     function module:ServerSecondaryAttack(throwable)
-        local tr = util.QuickTrace(self:GetShootPos(), self:GetAimVector() * self.Range, self.Owner)
         local e = ents.Create "ent_splatoonsweps_burstbomb"
         e.Owner = self.Owner
         e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")

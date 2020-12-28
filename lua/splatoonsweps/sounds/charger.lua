@@ -8,7 +8,7 @@ if not ss then return end
 --------------------------------------------------------------------------------
 
 ss.ChargerAim = Sound "splatoonsweps/weapons/charger/aim.wav"
-ss.ChargerBeep = Sound "splatoonsweps/weapons/charger/beep.mp3"
+ss.ChargerBeep = Sound "splatoonsweps/weapons/beep.mp3"
 sound.Add {
 	channel = CHAN_ITEM,
 	name = "SplatoonSWEPs.ChargerPreFire",
