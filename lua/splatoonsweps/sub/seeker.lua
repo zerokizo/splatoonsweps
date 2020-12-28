@@ -8,9 +8,11 @@ ss.seeker = {
     },
     Parameters = {
         Burst_Damage_Far = 0.3,
+        Burst_Damage_Middle = 0.8,
         Burst_Damage_Near = 1.8,
         Burst_PaintR = 40,
         Burst_Radius_Far = 40,
+        Burst_Radius_Middle = 38,
         Burst_Radius_Near = 32,
         Burst_SplashNum = 10,
         Burst_SplashOfstY = 3,
@@ -100,7 +102,7 @@ if SERVER then
         end
 
         self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
-        self:SetReloadDelay(40 * ss.FrameToSec)
+        self:SetReloadDelay(70 * ss.FrameToSec)
     end
 else
     function module:DrawOnSubTriggerDown()

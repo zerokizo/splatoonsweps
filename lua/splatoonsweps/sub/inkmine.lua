@@ -105,7 +105,6 @@ if SERVER then
         e:EmitSound "SplatoonSWEPs.SubWeaponPut"
         self.NumInkmines = self.NumInkmines + 1
         self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
-        self:SetReloadDelay(40 * ss.FrameToSec)
 
         ss.Paint(tr.HitPos, tr.HitNormal, p.InitInkRadius,
         inkcolor, ang.yaw, ss.GetDropType(), 1, self.Owner, self:GetClass())

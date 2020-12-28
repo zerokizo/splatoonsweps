@@ -7,9 +7,7 @@ if not ss then return end
 -- Sub weapons
 --------------------------------------------------------------------------------
 
-ss.BombAvailable = Sound "splaoonsweps/weapons/sub/available.wav"
-
--- TODO: make it loop these files
+ss.BombAvailable = Sound "splatoonsweps/weapons/sub/available.wav"
 ss.BombAlert = Sound "splatoonsweps/weapons/sub/bombalert.mp3"
 ss.SeekerAlert = Sound "splatoonsweps/weapons/sub/seeker/alert.wav"
 ss.SeekerRunning = Sound "splatoonsweps/weapons/sub/seeker/running.wav"

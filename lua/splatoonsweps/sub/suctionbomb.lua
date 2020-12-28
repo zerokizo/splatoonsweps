@@ -145,7 +145,7 @@ if SERVER then
         end
 
         self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
-        self:SetReloadDelay(40 * ss.FrameToSec)
+        self:SetReloadDelay(60 * ss.FrameToSec)
     end
 else
     function module:DrawOnSubTriggerDown()
