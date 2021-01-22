@@ -72,7 +72,7 @@ end
 function ENT:IsEnemyNearby()
     local r = ss.inkmine.Parameters.PlayerColRadius^2
     for _, p in ipairs(ents.GetAll()) do
-        if IsValid(p) and (p:IsPlayer() or p:IsNPC()) then
+        if IsValid(p) and (p:IsPlayer() or p:IsNPC()) and p ~= self:GetOwner() then
             local w = ss.IsValidInkling(p)
             if not w or w:GetNWInt "inkcolor" ~= self:GetNWInt "inkcolor" then
                 if p:GetPos():DistToSqr(self:GetPos()) < r then
