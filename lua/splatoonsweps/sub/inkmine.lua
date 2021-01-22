@@ -27,6 +27,7 @@ ss.inkmine = {
         InitInkRadius = 10,
         InkConsume = 0.6,
         MaxInkmines = 1,
+        PlayerColRadius = 30,
     },
     Units = {
         Burst_Damage_Far = "hp",
@@ -48,6 +49,7 @@ ss.inkmine = {
         InitInkRadius = "du",
         InkConsume = "ink",
         MaxInkmines = "num",
+        PlayerColRadius = "du",
     },
     BurstSound = "SplatoonSWEPs.BombExplosion",
     GetDamage = function(dist, ent)
@@ -96,13 +98,12 @@ if SERVER then
         local e = ents.Create "ent_splatoonsweps_inkmine"
         local ang = (tr.Hit and tr.HitNormal or vector_up):Angle()
         ang:RotateAroundAxis(ang:Right(), -90)
-        e.Owner = self.Owner
         e.Weapon = self
+        e:SetOwner(self.Owner)
         e:SetNWInt("inkcolor", inkcolor)
         e:SetPos(tr.HitPos + tr.HitNormal * 9)
         e:SetAngles(ang)
         e:Spawn()
-        e:EmitSound "SplatoonSWEPs.SubWeaponPut"
         self.NumInkmines = self.NumInkmines + 1
         self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
 

@@ -12,8 +12,8 @@ ENT.ExplosionDelay = 1
 ENT.ExplosionTime = ENT.ExplodeStartTime + ENT.ExplosionDelay
 ENT.AlertSoundPlayed = false
 function ENT:Initialize()
-    if IsValid(self.Owner) then
-        local w = ss.IsValidInkling(self.Owner)
+    if IsValid(self:GetOwner()) then
+        local w = ss.IsValidInkling(self:GetOwner())
         if w then self.WeaponClassName = w:GetClass() end
     end
 
@@ -21,6 +21,10 @@ function ENT:Initialize()
     self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
     self:SetNWBool("EmitDLight", false)
     self.InitTime = CurTime()
+
+    if CLIENT and self:GetOwner() == LocalPlayer() then
+        self:EmitSound "SplatoonSWEPs.SubWeaponPut"
+    end
 end
 
 if CLIENT then
@@ -44,6 +48,9 @@ if CLIENT then
 
     local LightEffectMaterial = Material "sprites/physg_glow1"
     function ENT:Draw()
+        local w = ss.IsValidInkling(LocalPlayer())
+        if not w then return end
+        if w:GetNWInt "inkcolor" ~= self:GetNWInt "inkcolor" then return end
         self:DrawModel()
         local t = CurTime() - self.InitTime - self.ExplodeStartTime
         if t < 0 then return end
@@ -62,9 +69,24 @@ if CLIENT then
     return
 end
 
+function ENT:IsEnemyNearby()
+    local r = ss.inkmine.Parameters.PlayerColRadius^2
+    for _, p in ipairs(ents.GetAll()) do
+        if IsValid(p) and (p:IsPlayer() or p:IsNPC()) then
+            local w = ss.IsValidInkling(p)
+            if not w or w:GetNWInt "inkcolor" ~= self:GetNWInt "inkcolor" then
+                if p:GetPos():DistToSqr(self:GetPos()) < r then
+                    return true
+                end
+            end
+        end
+    end
+end
+
 function ENT:ShouldExplode()
     local elapsed = CurTime() - self.InitTime
     if elapsed > self.ExplodeStartTime then return true end
+    if self:IsEnemyNearby() then return true end
     local mins, maxs = self:GetCollisionBounds()
     local gcolor = ss.GetSurfaceColorArea(self:GetPos(), mins, maxs, 1, 15, 0.5)
     if gcolor ~= self:GetNWInt "inkcolor" then return true end

@@ -282,7 +282,7 @@ function ss.IsAlly(c1, c2)
 	return not ss.GetOption "ff" and c1 == c2
 end
 
--- Play a sound that can be heard only one player.
+-- Play a sound that only can be heard by one player.
 -- Arguments:
 --   Player ply			| The player who can hear it.
 --   string soundName	| The sound to play.
