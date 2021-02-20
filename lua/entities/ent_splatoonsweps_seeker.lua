@@ -21,12 +21,14 @@ function ENT:Initialize()
     self.StraightFrame = p.Fly_AirFrm
     self.AirResist = p.Fly_VelKd - 1
     self.AngleAirResist = p.Fly_RotKd - 1
+    self.GravityHold = p.Fly_Gravity
     self.Gravity = p.Fly_Gravity
     self.HitNormal = vector_up
     self.CollisionSeSilentFrame = p.CollisionSeSilentFrame or math.huge
     self.DragCoeffChangeTime = CurTime() + self.StraightFrame
     self.BaseClass.Initialize(self)
-    self.MoveDirection = self:GetAngles():Forward()
+    self.InitMoveDirection = self:GetAngles():Forward()
+    self.MoveDirection = self.InitMoveDirection
     if CLIENT then return end
     self.InitTime = CurTime()
     self:EmitSound "SplatoonSWEPs.SeekerThrown"
@@ -95,4 +97,23 @@ function ENT:PhysicsUpdate(p)
     local axis = self.MoveDirection:Cross(self:GetForward())
     local dot = self.MoveDirection:Dot(self:GetForward())
     p:AddAngleVelocity(axis * (dot - 1) * 180)
+    if p:GetStress() == 0 then
+        self.Gravity = self.GravityHold
+    else
+        self.Gravity = 0
+    end
+end
+
+local MAX_DIFF = math.cos(math.rad(75))
+function ENT:PhysicsCollide(data, collider)
+    local normal = data.HitNormal
+    if -normal.z > ss.MAX_COS_DIFF then
+        local right = self.InitMoveDirection:Cross(normal)
+        self.MoveDirection = normal:Cross(right)
+        return
+    end
+
+    local mc = collider:LocalToWorld(collider:GetMassCenter())
+    if math.abs(self:GetUp():Dot((data.HitPos - mc):GetNormalized())) > MAX_DIFF then return end
+    self:Explode()
 end
