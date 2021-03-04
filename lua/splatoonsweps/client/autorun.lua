@@ -23,7 +23,7 @@ SplatoonSWEPs = SplatoonSWEPs or {
 }
 
 include "splatoonsweps/const.lua"
-include "drawarc.lua"
+include "drawui.lua"
 include "inkmanager.lua"
 include "network.lua"
 include "splatoonsweps/shared.lua"

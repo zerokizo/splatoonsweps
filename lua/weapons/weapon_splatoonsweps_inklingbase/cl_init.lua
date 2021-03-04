@@ -192,10 +192,18 @@ function SWEP:IsTPS()
 	return not self:IsCarriedByLocalPlayer() or self.Owner:ShouldDrawLocalPlayer()
 end
 
-function SWEP:TranslateViewmodelPos(pos)
+function SWEP:TranslateToViewmodelPos(pos)
 	if self:IsTPS() then return pos end
 	local dir = pos - EyePos() dir:Normalize()
 	local aim = EyeAngles():Forward()
 	dir = aim + self:GetFOV() / self.ViewModelFOV * (dir - aim)
+	return EyePos() + dir * pos:Distance(EyePos())
+end
+
+function SWEP:TranslateToWorldmodelPos(pos)
+	if self:IsTPS() then return pos end
+	local dir = pos - EyePos() dir:Normalize()
+	local aim = EyeAngles():Forward()
+	dir = aim + self.ViewModelFOV / self:GetFOV() * (dir - aim)
 	return EyePos() + dir * pos:Distance(EyePos())
 end

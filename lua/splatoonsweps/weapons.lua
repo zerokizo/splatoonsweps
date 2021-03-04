@@ -707,7 +707,7 @@ sd[SplatoonSWEPsMuzzleMist] = function(self, options, pos, ang)
 	e:SetFlags(PATTACH_POINT_FOLLOW)
 	e:SetOrigin(vector_origin)
 	e:SetScale(self:IsTPS() and 6 or 3)
-	e:SetStart(self:TranslateViewmodelPos(pos) + dir * 100)
+	e:SetStart(self:TranslateToViewmodelPos(pos) + dir * 100)
 	util.Effect("SplatoonSWEPsMuzzleMist", e, true, self.IgnorePrediction)
 end
 

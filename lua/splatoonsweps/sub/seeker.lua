@@ -106,10 +106,43 @@ if SERVER then
     end
 else
     function module:DrawOnSubTriggerDown()
+        local seeker_search_deg = self:GetFOV() / 4
+        local maxdot, ent = math.cos(math.rad(seeker_search_deg)), nil
+        for _, e in ipairs(ents.GetAll()) do
+            local w = ss.IsValidInkling(e)
+            if (not w and e:Health() > 0
+            and (e:IsPlayer() or e:IsNPC() or e:IsNextBot()))
+            or w and not ss.IsAlly(self, w) then
+                local dir = e:WorldSpaceCenter() - EyePos()
+                dir:Normalize()
+                local dot = dir:Dot(EyeAngles():Forward())
+                if dot > maxdot then
+                    maxdot = dot
+                    ent = e
+                end
+            end
+        end
 
+        if self.SeekerPreviousTarget ~= ent then
+            self.SeekerPreviousTarget = ent
+            if ent then surface.PlaySound(ss.SeekerTargetChanged) end
+        end
+        if not ent then return end
+
+        cam.Start2D()
+        local c = ss.GetColor(ss.CrosshairColors[self:GetNWInt "inkcolor"])
+        local p = self:TranslateToWorldmodelPos(ent:WorldSpaceCenter())
+        local data = p:ToScreen()
+        local x, y = data.x, data.y
+        ss.DrawCrosshair.LinesHitBG(x, y, 0.4, 1)
+        ss.DrawCrosshair.OuterCircleBG(x, y)
+        ss.DrawCrosshair.OuterCircle(x, y, c)
+        ss.DrawCrosshair.LinesHit(x, y, c, 0.4, 1)
+        ss.DrawCrosshair.InnerCircle(x, y)
+        cam.End2D()
     end
 
     function module:ClientSecondaryAttack(throwable)
-
+        self.SeekerPreviousTarget = nil
     end
 end

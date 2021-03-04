@@ -13,6 +13,7 @@ ss.SeekerAlert = Sound "splatoonsweps/weapons/sub/seeker/alert.wav"
 ss.SeekerRunning = Sound "splatoonsweps/weapons/sub/seeker/running.wav"
 ss.SeekerFar = Sound "splatoonsweps/weapons/sub/seeker/seekerfar.wav"
 ss.SeekerNear = Sound "splatoonsweps/weapons/sub/seeker/seekernear.wav"
+ss.SeekerTargetChanged = Sound "splatoonsweps/weapons/beep.mp3" -- TODO: Get a correct sound
 ss.SplashShieldRunning = Sound "splatoonsweps/weapons/sub/splashshield/running.wav"
 ss.SplrinkerRunning = Sound "splatoonsweps/weapons/sub/sprinkler/running.wav"
 
