@@ -106,6 +106,10 @@ if SERVER then
     end
 else
     function module:DrawOnSubTriggerDown()
+        if RealTime() - (self.SeekerTargetSearched or 0) > RealFrameTime() * 2 then
+            self.SeekerPreviousTarget= nil
+        end
+
         local seeker_search_deg = self:GetFOV() / 4
         local maxdot, ent = math.cos(math.rad(seeker_search_deg)), nil
         for _, e in ipairs(ents.GetAll()) do
@@ -123,6 +127,7 @@ else
             end
         end
 
+        self.SeekerTargetSearched = RealTime()
         if self.SeekerPreviousTarget ~= ent then
             self.SeekerPreviousTarget = ent
             if ent then surface.PlaySound(ss.SeekerTargetChanged) end
@@ -143,6 +148,6 @@ else
     end
 
     function module:ClientSecondaryAttack(throwable)
-        self.SeekerPreviousTarget = nil
+
     end
 end
