@@ -130,7 +130,7 @@ function SWEP:DrawFourLines(t, degx, degy)
 	local frac = t.Trace.Fraction
 	local bgcolor = t.IsSplatoon2 and t.Trace.Hit and self.Crosshair.color_nohit or color_white
 	local forecolor = t.HitEntity and ss.GetColor(self:GetNWInt "inkcolor")
-	local dir = self:GetAimVector()
+	local dir = self:GetAimVector() * t.Distance
 	local org = self:GetShootPos()
 	local right = EyeAngles():Right()
 	local range = self:GetRange()
@@ -160,11 +160,9 @@ end
 
 function SWEP:DrawHitCross(t) -- Hit cross pattern, foreground
 	if not t.HitEntity then return end
-	local p = self.Parameters
 	local c = ss.GetColor(self:GetNWInt "inkcolor")
-	local mul = ss.ProtectedCall(self.GetScopedSize, self) or 1
 	local frac = 1 - (t.Distance / self:GetRange()) / 2
-	ss.DrawCrosshair.LinesHit(t.HitPosScreen.x, t.HitPosScreen.y, c, frac, mul)
+	ss.DrawCrosshair.LinesHit(t.HitPosScreen.x, t.HitPosScreen.y, c, frac, 1)
 end
 
 function SWEP:DrawOuterCircleBG(t)

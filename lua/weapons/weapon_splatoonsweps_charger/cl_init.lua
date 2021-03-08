@@ -52,58 +52,39 @@ end
 function SWEP:DrawFourLines(t) end
 function SWEP:DrawOuterCircle(t)
 	local scoped = self:GetScopedSize()
-	local r = t.Size.Outer / 2 * scoped
-	local ri = t.Size.Inner / 2 * scoped
-	local rm = t.Size.Middle / 2 * scoped
 	local prog = self:GetChargeProgress(true)
+	local x, y = t.HitPosScreen.x, t.HitPosScreen.y
 	if prog == 0 then
-		prog = math.Clamp(
-			math.max(CurTime() - self:GetCharge() + self:Ping(), 0)
-			/ self.Parameters.mMaxChargeFrame * ss.GetTimeScale(self.Owner),
-			0, 1) * 360
+		local elapsed = math.max(CurTime() - self:GetCharge() + self:Ping(), 0)
+		local minchargetime = self.Parameters.mMaxChargeFrame * ss.GetTimeScale(self.Owner)
+		prog = math.Clamp(elapsed / minchargetime, 0, 1) * 360
 	else
 		prog = prog * (360 - self.MinChargeDeg) + self.MinChargeDeg
 	end
-
-	draw.NoTexture()
-	surface.SetDrawColor(ColorAlpha(color_black, 192))
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, r, r - ri, 90, 450 - prog, 5)
-	surface.SetDrawColor(t.CrosshairDarkColor)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, r, r - rm, 90, 450 - prog, 5)
-	surface.SetDrawColor(self.Crosshair.color_hit)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, r, r - ri, 90 - prog, 90, 5)
-
+	
+	ss.DrawCrosshair.ChargerCircleBG(x, y, scoped, prog)
+	ss.DrawCrosshair.ChargerProgress(x, y, scoped, prog)
 	if not t.Trace.Hit then return end
-	surface.SetDrawColor(t.CrosshairColor)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, r + 1, r - rm)
+	ss.DrawCrosshair.ChargerColoredCircle(x, y, scoped, t.CrosshairColor)
 end
 
-local innerwidth = 2
 function SWEP:DrawInnerCircle(t)
-	local scoped = self:GetScopedSize()
-	local s = t.Size.Inner / 2 * scoped
-	if scoped == 2 then return end
-	draw.NoTexture()
-	surface.SetDrawColor(self.Crosshair.color_nohit)
-	ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, s + innerwidth, innerwidth)
+	local mul = self:GetScopedSize()
+	if mul == 2 then return end
+	ss.DrawCrosshair.ChargerBaseCircle(t.EndPosScreen.x, t.EndPosScreen.y, mul)
 end
 
 function SWEP:DrawCenterDot(t) -- Center circle
-	local scoped = self:GetScopedSize()
-	local s = t.Size.Dot / 2 * scoped
-	draw.NoTexture()
-	if scoped < 2 then
-		surface.SetDrawColor(self.Crosshair.color_circle)
-		ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, s + innerwidth)
-		surface.SetDrawColor(self.Crosshair.color_nohit)
-		ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, s)
+	local mul = self:GetScopedSize()
+	if mul < 2 then
+		ss.DrawCrosshair.ChargerCenterDot(
+		t.EndPosScreen.x, t.EndPosScreen.y, mul)
 	end
 
 	if not t.Trace.Hit then return end
-	surface.SetDrawColor(t.CrosshairDarkColor)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, s + innerwidth)
-	surface.SetDrawColor(t.CrosshairColor)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, s)
+	ss.DrawCrosshair.ChargerCenterDot(
+	t.HitPosScreen.x, t.HitPosScreen.y,
+	mul, t.CrosshairDarkColor, t.CrosshairColor)
 end
 
 function SWEP:DrawCrosshairFlash(t)
@@ -112,6 +93,16 @@ function SWEP:DrawCrosshairFlash(t)
 	surface.SetMaterial(ss.Materials.Crosshair.Flash)
 	surface.SetDrawColor(ColorAlpha(self:GetInkColor(), (self.CrosshairFlashTime + self.FlashDuration - CurTime()) / self.FlashDuration * 128))
 	surface.DrawTexturedRect(t.HitPosScreen.x - s / 2, t.HitPosScreen.y - s / 2, s, s)
+end
+
+function SWEP:DrawHitCross(t) -- Hit cross pattern, foreground
+	if not t.HitEntity then return end
+	local c = ss.GetColor(self:GetNWInt "inkcolor")
+	local mul = self:GetScopedSize()
+	local frac = 1 - (t.Distance / self:GetRange()) / 2
+	ss.DrawCrosshair.ChargetFourLines(
+	t.HitPosScreen.x, t.HitPosScreen.y,
+	frac, mul, t.CrosshairDarkColor, c)
 end
 
 local MatScope = Material "gmod/scope"
@@ -155,7 +146,6 @@ function SWEP:DrawCrosshair(x, y)
 	self:DrawCenterDot(t)
 	self:DrawInnerCircle(t)
 	self:DrawOuterCircle(t)
-	self:DrawHitCrossBG(t)
 	self:DrawHitCross(t)
 	self:DrawCrosshairFlash(t)
 	return true

@@ -48,10 +48,10 @@ end
 ss.DrawCrosshair = {}
 local SCRH_REF = 1080 -- Reference of screen height for crosshairs.
 
-local function DrawCircle(x, y, color, d1, d2)
+local function DrawCircle(x, y, color, d1, d2, mul)
 	local r1, r2 = d1 / 2, d2 / 2
 	local thickness = r1 - r2
-	local scale = ScrH() / SCRH_REF
+	local scale = ScrH() / SCRH_REF * (mul or 1)
 	draw.NoTexture()
 	surface.SetDrawColor(color)
 	ss.DrawArc(x, y, r1 * scale, thickness * scale)
@@ -84,18 +84,20 @@ function ss.DrawCrosshair.OuterCircleBG(x, y)
 end
 
 -- Draws a circle of shooter's crosshair when it doesn't hit anything.
+local NOHIT_ALPHA = 64
+local NOHIT_CDARK = 0
+local NOHIT_CBRIGHT = 192
+local NOHIT_COLOR_DARK = Color(
+	NOHIT_CDARK, NOHIT_CDARK, NOHIT_CDARK, NOHIT_ALPHA)
+local NOHIT_COLOR_BRIGHT = Color(
+	NOHIT_CBRIGHT, NOHIT_CBRIGHT, NOHIT_CBRIGHT, NOHIT_ALPHA)
 function ss.DrawCrosshair.CircleNoHit(x, y)
-	local ALPHA = 64
-	local C_DARK = 0
-	local C_BRIGHT = 192
-	local COLOR_DARK   = Color(C_DARK, C_DARK, C_DARK, ALPHA)
-	local COLOR_BRIGHT = Color(C_BRIGHT, C_BRIGHT, C_BRIGHT, ALPHA)
 	local OUTER_DARK   = 48 -- in pixels
 	local INNER_DARK   = 32 -- in pixels
 	local OUTER_BRIGHT = 44 -- in pixels
 	local INNER_BRIGHT = 38 -- in pixels
-	DrawCircle(x, y, COLOR_DARK, OUTER_DARK, INNER_DARK)
-	DrawCircle(x, y, COLOR_BRIGHT, OUTER_BRIGHT, INNER_BRIGHT)
+	DrawCircle(x, y, NOHIT_COLOR_DARK, OUTER_DARK, INNER_DARK)
+	DrawCircle(x, y, NOHIT_COLOR_BRIGHT, OUTER_BRIGHT, INNER_BRIGHT)
 end
 
 -- Draws shooter's four lines when they hit an enemy.
@@ -104,12 +106,12 @@ local LINEHIT_SIZE_BG = 41 -- in pixels
 local LINEHIT_WIDTH_BG = 5
 local LINEHIT_SIZE = 38
 local LINEHIT_WIDTH = 3
-local function DrawLinesHit(x, y, distanceRatio, mul, size, width, t)
+local function DrawLinesHit(x, y, distanceRatio, distanceReference, mul, size, width, t)
 	local scale = ScrH() / SCRH_REF
 	local length = ((size - width) / sin45) * scale * mul
 	size = size * scale -- = width + length
 	width = (width / sin45) * scale * mul
-	local diff = LINEHIT_SIZE_BG * distanceRatio
+	local diff = distanceReference * distanceRatio * mul
 	for _, v in ipairs(t) do
 		local mat = "Line" .. v[1]
 		local c = v[2]
@@ -124,12 +126,12 @@ local function DrawLinesHit(x, y, distanceRatio, mul, size, width, t)
 end
 
 function ss.DrawCrosshair.LinesHitBG(x, y, distanceRatio, mul)
-	DrawLinesHit(x, y, distanceRatio, mul,
+	DrawLinesHit(x, y, distanceRatio, LINEHIT_SIZE_BG, mul,
 	LINEHIT_SIZE_BG, LINEHIT_WIDTH_BG, {{"", color_black}})
 end
 
 function ss.DrawCrosshair.LinesHit(x, y, color, distanceRatio, mul)
-	DrawLinesHit(x, y, distanceRatio, mul,
+	DrawLinesHit(x, y, distanceRatio, LINEHIT_SIZE_BG, mul,
 	LINEHIT_SIZE, LINEHIT_WIDTH, {{"", color_white}, {"Color", color}})
 end
 
@@ -140,7 +142,9 @@ function ss.DrawCrosshair.FourLinesAround(org, right, dir, range, degx, degy, ad
 	local size = SIZE_ORIGINAL * scale -- width + length
 	local width = (WIDTH_ORIGINAL / sin45) * scale
 	local length = ((SIZE_ORIGINAL - WIDTH_ORIGINAL) / sin45) * scale
-	local up = right:Cross(dir)
+	local ndir = dir:GetNormalized()
+	local ldir = dir:Length()
+	local up = right:Cross(ndir)
 	local diff = OUTER_CIRCLE_OUTER_DIAMETER / 2 * scale
 	if adjust then diff = diff - width * sin45 end
 	for i = 1, 4 do
@@ -170,9 +174,83 @@ end
 
 -- Draws a center dot of shooter's crosshair.
 function ss.DrawCrosshair.CenterDot(x, y, color)
-	local CENTER_DOT_SIZE = 3 -- Radius of the center dot
+	local CENTER_DOT_SIZE = 3 -- Radius of the center dot in pixels
 	color = color or color_white
 	draw.NoTexture()
 	surface.SetDrawColor(color)
 	ss.DrawArc(x, y, CENTER_DOT_SIZE)
+end
+
+-- Draws a center dot of charger's crosshair.
+function ss.DrawCrosshair.ChargerCenterDot(x, y, mul, darkcolor, brightcolor)
+	local DARK_DIAMETER = 10
+	local BRIGHT_DIAMETER = 6
+	local screenscale = ScrH() / SCRH_REF
+	local scale = 0.5 * mul * screenscale
+	local dr = DARK_DIAMETER * scale
+	local br = BRIGHT_DIAMETER * scale
+	darkcolor = darkcolor or ColorAlpha(NOHIT_COLOR_DARK, 128)
+	brightcolor = brightcolor or ColorAlpha(NOHIT_COLOR_BRIGHT, 192)
+	draw.NoTexture()
+	surface.SetDrawColor(darkcolor)
+	ss.DrawArc(x, y, dr)
+	surface.SetDrawColor(brightcolor)
+	ss.DrawArc(x, y, br)
+end
+
+-- Draws a center circle of charger's crosshair.
+function ss.DrawCrosshair.ChargerBaseCircle(x, y, mul)
+	local OUTER_DIAMETER = 27
+	local INNER_DIAMETER = 21
+	DrawCircle(x, y, NOHIT_COLOR_BRIGHT, OUTER_DIAMETER, INNER_DIAMETER, mul)
+end
+
+function ss.DrawCrosshair.ChargerColoredCircle(x, y, mul, color)
+	local OUTER_DIAMETER = 40
+	local INNER_DIAMETER = 34 + 1
+	DrawCircle(x, y, color, OUTER_DIAMETER, INNER_DIAMETER, mul, 5)
+end
+
+local CHARGER_BG_ALPHA = 128
+local CHARGER_FG_ALPHA = 192
+local function DrawArc(x, y, color, d1, d2, start, endang, mul)
+	local scale = ScrH() / SCRH_REF * (mul or 1) * 0.5
+	local r1, r2 = d1 * scale, d2 * scale
+	local thickness = r1 - r2
+	draw.NoTexture()
+	surface.SetDrawColor(color)
+	ss.DrawArc(x, y, r1, thickness, start, endang, 1)
+end
+
+-- Draws a black circle of charger's crosshair
+-- progress ranges from 0 to 360.
+function ss.DrawCrosshair.ChargerCircleBG(x, y, mul, progress)
+	local OUTER_DIAMETER = 40
+	local INNER_DIAMETER = 28
+	local start = 90
+	local endang = 450 - progress
+	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_DARK, CHARGER_BG_ALPHA),
+	OUTER_DIAMETER, INNER_DIAMETER, start, endang, mul)
+end
+
+-- Draws a white ark of charger's crosshair.
+-- progress ranges from 0 to 360.
+function ss.DrawCrosshair.ChargerProgress(x, y, mul, progress)
+	local OUTER_DIAMETER = 40
+	local INNER_DIAMETER = 24
+	local start = 450 - progress
+	local endang = 450
+	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_BRIGHT, CHARGER_FG_ALPHA),
+	OUTER_DIAMETER, INNER_DIAMETER, start, endang, mul)
+end
+
+function ss.DrawCrosshair.ChargetFourLines(x, y, distanceRatio, mul, darkcolor, brightcolor)
+	local SIZE_BG = 18 + 4
+	local SIZE_FG = 14 + 2
+	local WIDTH_BG = 7
+	local WIDTH_FG = 3
+	DrawLinesHit(x, y, distanceRatio, SIZE_BG, mul,
+	SIZE_BG, WIDTH_BG, {{"", darkcolor}})
+	DrawLinesHit(x, y, distanceRatio, SIZE_BG, mul,
+	SIZE_FG, WIDTH_FG, {{"", brightcolor}})
 end
