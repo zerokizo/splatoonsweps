@@ -141,8 +141,8 @@ function SWEP:DrawFourLines(t, degx, degy)
 		degy = Lerp(1 - frac, degy, SPREAD_HITWALL)
 	end
 
-	ss.DrawCrosshair.FourLinesAround(org, right, dir,
-	range, degx, degy, adjust, bgcolor, forecolor)
+	ss.DrawCrosshair.FourLinesAround(
+	org, right, dir, range, degx, degy, adjust, bgcolor, forecolor)
 end
 
 function SWEP:DrawCenterCircleNoHit(t)

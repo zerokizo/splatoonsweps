@@ -96,142 +96,78 @@ function SWEP:DisplayAmmo()
 	return math.max(self:GetChargeProgress(true) * 100, 0)
 end
 
-function SWEP:DrawFourLines(t, spreadx, spready)
+function SWEP:DrawFourLines(t, degx, degy)
 	local frac = t.Trace.Fraction
-	local basecolor = color_white
-	local pos, dir = t.pos, t.dir
-	local w = t.Size.FourLine
-	local h = t.Size.FourLineWidth
+	local bgcolor = t.IsSplatoon2 and t.Trace.Hit and self.Crosshair.color_nohit or color_white
+	local forecolor = t.HitEntity and ss.GetColor(self:GetNWInt "inkcolor")
+	local dir = self:GetAimVector() * t.Distance
+	local org = self:GetShootPos()
+	local right = EyeAngles():Right()
 	local range = self:GetRange()
-	local pitch = EyeAngles():Right()
-	local yaw = pitch:Cross(dir)
-	if t.IsSplatoon2 then
-		frac, range = 1, self.Range
-		dir = self:GetAimVector()
-		pos = self:GetShootPos()
-		if t.Trace.Hit then
-			basecolor = self.Crosshair.color_nohit
+	local adjust = not t.IsSplatoon2 and t.HitEntity
+	if not t.IsSplatoon2 then
+		local SPREAD_HITWALL = 5
+		degx = Lerp(1 - frac, degx, SPREAD_HITWALL)
+		degy = Lerp(1 - frac, degy, SPREAD_HITWALL)
+		if t.HitEntity then
+			bgcolor = Color(
+				(forecolor.r + 512) / 3,
+				(forecolor.g + 512) / 3,
+				(forecolor.b + 512) / 3)
 		end
 	end
 
-	local linesize = t.Size.OutsideColored * (1.5 - frac)
-	for i = 1, 4 do
-		local rot = dir:Angle()
-		local sgnx, sgny = i > 2 and 1 or -1, bit.band(i, 3) > 1 and 1 or -1
-		rot:RotateAroundAxis(yaw, spreadx * sgnx)
-		rot:RotateAroundAxis(pitch, spready * sgny)
-
-		local endpos = pos + rot:Forward() * range * frac
-		local hit = endpos:ToScreen()
-		if hit.visible then
-			hit.x = hit.x - linesize * sgnx * (t.HitEntity and .8 or 1)
-			hit.y = hit.y - linesize * sgny * (t.HitEntity and .8 or 1)
-
-			local dy = w / (2 * math.sqrt(2)) - h
-			local dx = w / math.sqrt(2) - h
-			for _, info in ipairs {
-				{Color = basecolor, Material = ss.Materials.Crosshair.Line},
-				{Color= ss.GetColor(self:GetNWInt "inkcolor"), Material = ss.Materials.Crosshair.LineColor},
-			} do
-				surface.SetDrawColor(info.Color)
-				surface.SetMaterial(info.Material)
-				surface.DrawTexturedRectRotated(hit.x, hit.y, w, h, 90 * i - 45)
-				surface.DrawTexturedRectRotated(hit.x + sgnx * dx, hit.y - sgny * dy, w, h, 0)
-				surface.DrawTexturedRectRotated(hit.x - sgnx * dy, hit.y + sgny * dx, w, h, 90)
-				if not t.HitEntity then break end
-			end
-		end
-	end
+	ss.DrawCrosshair.SplatlingFourLinesAround(
+	org, right, dir, range, degx, degy, adjust, bgcolor, forecolor)
 end
 
 function SWEP:DrawHitCross(t) -- Hit cross pattern, foreground
 	if not t.HitEntity then return end
-	local p = self.Parameters
-	local mul = 1.2
-	local s = 10 * mul
-	local w, h = t.Size.HitLine * mul, t.Size.HitWidth * mul
-	local frac = 1 + p.mPaintNearDistance / p.mPaintFarDistance
-	local lp = s + math.max(frac - (t.Distance / p.mPaintFarDistance)^.125, 0) * t.Size.ExpandHitLine -- Line position
-	for mat, col in pairs {[""] = color_white, Color = ss.GetColor(self:GetNWInt "inkcolor")} do
-		surface.SetMaterial(ss.Materials.Crosshair["Line" .. mat])
-		surface.SetDrawColor(col)
-		for i = 1, 4 do
-			local dx, dy = lp * (i > 2 and 1 or -1), lp * (bit.band(i, 3) > 1 and 1 or -1)
-			surface.DrawTexturedRectRotated(t.HitPosScreen.x + dx, t.HitPosScreen.y + dy, w, h, 90 * i + 45)
-		end
-	end
+	local frac = 1 - (t.Distance / self:GetRange()) / 2
+	ss.DrawCrosshair.SplatlingFourLines(
+	t.HitPosScreen.x, t.HitPosScreen.y,
+	frac, t.CrosshairDarkColor, t.CrosshairBrightColor)
 end
 
 function SWEP:DrawChargeCircle(t)
 	local p = self.Parameters
-	local r = {t.Size.Outside1 / 2, t.Size.Outside2 / 2}
-	local ri = {t.Size.Inside1 / 2, t.Size.Inside2 / 2}
 	local prog = self:GetChargeProgress(true)
+	local p1, p2 = 0, 0
 	if self:GetFireInk() > 0 then
 		local frac = math.max(self:GetNextPrimaryFire() - CurTime() - self:Ping(), 0) / p.mRepeatFrame
-		local max = {
-			math.floor(p.mFirstPeriodMaxChargeShootingFrame / p.mRepeatFrame) + 1,
-			math.floor(p.mSecondPeriodMaxChargeShootingFrame / p.mRepeatFrame) + 1,
-		}
-
-		prog = {
-			math.Clamp((self:GetFireInk() + frac) / max[1], 0, 1) * 360,
-			math.Clamp((self:GetFireInk() + frac - max[1]) / (max[2] - max[1]), 0, 1) * 360,
-		}
+		local max1 = math.floor(p.mFirstPeriodMaxChargeShootingFrame  / p.mRepeatFrame) + 1
+		local max2 = math.floor(p.mSecondPeriodMaxChargeShootingFrame / p.mRepeatFrame) + 1
+		p1 = math.Clamp((self:GetFireInk() + frac) / max1, 0, 1) * 360
+		p2 = math.Clamp((self:GetFireInk() + frac - max1) / (max2 - max1), 0, 1) * 360
 	else
-		prog = {
-			math.min(prog / self.MediumCharge, 1) * (360 - self.MinChargeDeg),
-			math.Clamp((prog - self.MediumCharge) / (1 - self.MediumCharge), 0, 1) * 360,
-		}
-		if prog[1] <= 0 then
+		p1 = math.min(prog / self.MediumCharge, 1) * (360 - self.MinChargeDeg) + self.MinChargeDeg
+		p2 = math.Clamp((prog - self.MediumCharge) / (1 - self.MediumCharge), 0, 1) * 360
+		if p1 <= self.MinChargeDeg then
 			local frac = math.max(CurTime() - self:GetCharge() + self:Ping(), 0) / p.mFirstPeriodMaxChargeFrame
-			prog[1] = math.Clamp(frac * ss.GetTimeScale(self.Owner), 0, 1) * 360
-		else
-			prog[1] = prog[1] + self.MinChargeDeg
+			p1 = math.Clamp(frac * ss.GetTimeScale(self.Owner), 0, 1) * 360
 		end
 	end
 
-	draw.NoTexture()
-	surface.SetDrawColor(ColorAlpha(color_black, 192))
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, r[1], r[1] - ri[1], 90, 450 - prog[1], 5)
-	for i, color in ipairs {self.Crosshair.color_nohit, self.Crosshair.color_hit} do
-		surface.SetDrawColor(color)
-		ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, r[i], r[i] - ri[i], 90 - prog[i], 90, 5)
-	end
+	ss.DrawCrosshair.SplatlingProgress(t.HitPosScreen.x, t.HitPosScreen.y, p1, p2)
 end
 
 function SWEP:DrawColoredCircle(t)
 	if not t.Trace.Hit then return end
-	local r = t.Size.OutsideColored / 2
-	local ri = t.Size.InsideColored / 2
-	draw.NoTexture()
-	surface.SetDrawColor(t.CrosshairColor)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, r + 1, r - ri)
+	ss.DrawCrosshair.SplatlingColoredCircle(t.HitPosScreen.x, t.HitPosScreen.y, t.CrosshairColor)
 end
 
-local centerwidth = 2
 function SWEP:DrawCenterDot(t) -- Center circle
-	local s = t.Size.Dot / 2
-	draw.NoTexture()
 	if self:GetCharge() < math.huge or t.IsSplatoon2 and self:GetFireInk() > 0 then
-		surface.SetDrawColor(self.Crosshair.color_circle)
-		ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, s + centerwidth)
-		surface.SetDrawColor(self.Crosshair.color_nohit)
-		ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, s)
-
-		if math.abs(t.EndPosScreen.x - t.HitPosScreen.x)
-		+ math.abs(t.EndPosScreen.y - t.HitPosScreen.y) > 2 then
-			local s = t.Size.OutsideCenter / 2
-			surface.SetDrawColor(self.Crosshair.color_nohit)
-			ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, s, s - t.Size.InsideCenter / 2)
+		ss.DrawCrosshair.ChargerCenterDot(t.EndPosScreen.x, t.EndPosScreen.y)
+		if t.Trace.Hit then
+			ss.DrawCrosshair.SplatlingBaseCircle(t.EndPosScreen.x, t.EndPosScreen.y)
 		end
 	end
 
 	if not t.Trace.Hit then return end
-	surface.SetDrawColor(t.CrosshairDarkColor)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, s + centerwidth)
-	surface.SetDrawColor(t.CrosshairColor)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, s)
+	ss.DrawCrosshair.ChargerCenterDot(
+		t.HitPosScreen.x, t.HitPosScreen.y, 1,
+		t.CrosshairDarkColor, t.CrosshairColor)
 end
 
 function SWEP:DrawCrosshairFlash(t)
@@ -247,8 +183,13 @@ function SWEP:DrawCrosshair(x, y)
 	local t = self:SetupDrawCrosshair()
 	t.EndPosScreen = (self:GetShootPos() + self:GetAimVector() * self.Range):ToScreen()
 	t.CrosshairDarkColor = ColorAlpha(t.CrosshairColor, 192)
-	t.CrosshairDarkColor.r, t.CrosshairDarkColor.g, t.CrosshairDarkColor.b
-	= t.CrosshairDarkColor.r / 2, t.CrosshairDarkColor.g / 2, t.CrosshairDarkColor.b / 2
+	t.CrosshairDarkColor.r = t.CrosshairDarkColor.r / 2
+	t.CrosshairDarkColor.g = t.CrosshairDarkColor.g / 2
+	t.CrosshairDarkColor.b = t.CrosshairDarkColor.b / 2
+	t.CrosshairBrightColor = ColorAlpha(ss.GetColor(self:GetNWInt "inkcolor"), 255)
+	t.CrosshairBrightColor.r = (t.CrosshairBrightColor.r + 255) / 2
+	t.CrosshairBrightColor.g = (t.CrosshairBrightColor.g + 255) / 2
+	t.CrosshairBrightColor.b = (t.CrosshairBrightColor.b + 255) / 2
 	self:DrawCenterDot(t)
 	self:DrawColoredCircle(t)
 	self:DrawChargeCircle(t)

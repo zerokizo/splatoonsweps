@@ -101,123 +101,58 @@ function SWEP:GetCrosshairTrace(t)
 	end
 end
 
-function SWEP:DrawFourLines(t, spreadx, spready)
+function SWEP:DrawFourLines(t)
 	local frac = t.Trace.Fraction
-	local basecolor = t.IsSplatoon2 and t.Trace.Hit and self.Crosshair.color_nohit or color_white
-	local pos, dir = t.pos, t.dir
-	local w = t.Size.FourLine
-	local h = t.Size.FourLineWidth
-	local pitch = EyeAngles():Right()
-	local yaw = pitch:Cross(dir)
-	if t.IsSplatoon2 then
-		frac = 1
-		if t.Trace.Hit then
-			dir = self:GetAimVector()
-			pos = self:GetShootPos()
-		end
-	end
+	local bgcolor = t.IsSplatoon2 and t.Trace.Hit and self.Crosshair.color_nohit or color_white
+	local forecolor = t.HitEntity and ss.GetColor(self:GetNWInt "inkcolor")
+	local dir = self:GetAimVector() * t.Distance
+	local org = self:GetShootPos()
+	local right = EyeAngles():Right()
+	local range = self:GetRange()
+	local adjust = not t.IsSplatoon2 and t.HitEntity
+	ss.DrawCrosshair.FourLinesAround(
+	org, right, dir, range, 1, 1, adjust, bgcolor, forecolor)
+end
 
-	local linesize = t.Size.Outer * (1.5 - frac)
-	local rot = dir:Angle()
-	for i = 1, 4 do
-		local sgnx, sgny = i > 2 and 1 or -1, bit.band(i, 3) > 1 and 1 or -1
-		local endpos = pos + rot:Forward() * self.Range * frac
-		local hit = endpos:ToScreen()
-		if not hit.visible then continue end
-		hit.x = hit.x - linesize * sgnx * (t.HitEntity and .75 or 1)
-		hit.y = hit.y - linesize * sgny * (t.HitEntity and .75 or 1)
-		surface.SetDrawColor(basecolor)
-		surface.SetMaterial(ss.Materials.Crosshair.Line)
-		surface.DrawTexturedRectRotated(hit.x, hit.y, w, h, 90 * i - 45)
-
-		if not t.HitEntity then continue end
-		surface.SetDrawColor(ss.GetColor(self:GetNWInt "inkcolor"))
-		surface.SetMaterial(ss.Materials.Crosshair.LineColor)
-		surface.DrawTexturedRectRotated(hit.x, hit.y, w, h, 90 * i - 45)
-	end
+function SWEP:DrawCenterCircleNoHit(t)
+	if not t.IsSplatoon2 and t.Trace.Hit then return end
+	ss.DrawCrosshair.CircleNoHit(t.EndPosScreen.x, t.EndPosScreen.y)
 end
 
 function SWEP:DrawHitCrossBG(t) -- Hit cross pattern, background
 	if not t.HitEntity then return end
-	surface.SetMaterial(ss.Materials.Crosshair.Line)
-	surface.SetDrawColor(color_black)
 	local p = self.Parameters
 	local mul = ss.ProtectedCall(self.GetScopedSize, self) or 1
-	local s = t.Size.Inner / 2 * mul
-	local near = p.mFirstGroupBulletFirstPaintNearD
-	local far = p.mFirstGroupBulletFirstPaintFarD
-	local frac = 1 + near / far
-	local lp = s + math.max(frac - (t.Distance / far)^.125, 0) * t.Size.ExpandHitLine -- Line position
-	local w, h = t.Size.HitLine * mul + hitcrossbg, t.Size.HitWidth * mul + hitcrossbg
-	for i = 1, 4 do
-		local dx, dy = lp * (i > 2 and 1 or -1), lp * (bit.band(i, 3) > 1 and 1 or -1)
-		surface.DrawTexturedRectRotated(t.HitPosScreen.x + dx, t.HitPosScreen.y + dy, w, h, 90 * i + 45)
-	end
-end
-
-function SWEP:DrawOuterCircle(t)
-	local r = t.Size.Outer / 2
-	local ri = t.Size.Inner / 2
-
-	draw.NoTexture()
-	if t.HitEntity then
-		local rb = r + hitouterbg
-		surface.SetDrawColor(color_black)
-		ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, rb, rb - ri)
-	end
-
-	surface.SetDrawColor(t.Trace.Hit and t.CrosshairColor or self.Crosshair.color_circle)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, r, r - ri)
-
-	if not (t.IsSplatoon2 and t.Trace.Hit) then return end
-	surface.SetDrawColor(self.Crosshair.color_circle)
-	ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, r, r - ri)
+	local frac = 1 - (t.Distance / self:GetRange()) / 2
+	ss.DrawCrosshair.LinesHitBG(t.HitPosScreen.x, t.HitPosScreen.y, frac, mul)
 end
 
 function SWEP:DrawHitCross(t) -- Hit cross pattern, foreground
 	if not t.HitEntity then return end
-	local mul = ss.ProtectedCall(self.GetScopedSize, self) or 1
-	local s = t.Size.Inner / 2 * mul
-	local w, h = t.Size.HitLine * mul, t.Size.HitWidth * mul
-	local p = self.Parameters
-	local near = p.mFirstGroupBulletFirstPaintNearD
-	local far = p.mFirstGroupBulletFirstPaintFarD
-	local frac = 1 + near / far
-	local lp = s + math.max(frac - (t.Distance / far)^.125, 0) * t.Size.ExpandHitLine -- Line position
-	for mat, col in pairs {
-		[""] = color_white,
-		Color = ss.GetColor(self:GetNWInt "inkcolor")
-	} do
-		surface.SetMaterial(ss.Materials.Crosshair["Line" .. mat])
-		surface.SetDrawColor(col)
-		for i = 1, 4 do
-			local dx, dy = lp * (i > 2 and 1 or -1), lp * (bit.band(i, 3) > 1 and 1 or -1)
-			surface.DrawTexturedRectRotated(t.HitPosScreen.x + dx, t.HitPosScreen.y + dy, w, h, 90 * i + 45)
-		end
-	end
+	local c = ss.GetColor(self:GetNWInt "inkcolor")
+	local frac = 1 - (t.Distance / self:GetRange()) / 2
+	ss.DrawCrosshair.LinesHit(t.HitPosScreen.x, t.HitPosScreen.y, c, frac, 1)
+end
+
+function SWEP:DrawOuterCircleBG(t)
+	if not (t.Trace.Hit and t.HitEntity) then return end
+	ss.DrawCrosshair.OuterCircleBG(t.HitPosScreen.x, t.HitPosScreen.y)
+end
+
+function SWEP:DrawOuterCircle(t)
+	if not t.Trace.Hit then return end
+	ss.DrawCrosshair.OuterCircle(t.HitPosScreen.x, t.HitPosScreen.y, t.CrosshairColor)
 end
 
 function SWEP:DrawInnerCircle(t)
-	local s = t.Size.Middle / 2
-	local thickness = s - t.Size.Inner / 2 - 1
-	draw.NoTexture()
-	surface.SetDrawColor(t.Trace.Hit and color_white or self.Crosshair.color_nohit)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, s, thickness)
-
-	if not (t.IsSplatoon2 and t.Trace.Hit) then return end
-	surface.SetDrawColor(self.Crosshair.color_nohit)
-	ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, s, thickness)
+	if not t.Trace.Hit then return end
+	ss.DrawCrosshair.InnerCircle(t.HitPosScreen.x, t.HitPosScreen.y)
 end
 
 function SWEP:DrawCenterDot(t) -- Center circle
-	local s = t.Size.Dot / 2
-	draw.NoTexture()
-	surface.SetDrawColor(color_white)
-	ss.DrawArc(t.HitPosScreen.x, t.HitPosScreen.y, s)
-
+	ss.DrawCrosshair.CenterDot(t.HitPosScreen.x, t.HitPosScreen.y)
 	if not (t.IsSplatoon2 and t.Trace.Hit) then return end
-	surface.SetDrawColor(self.Crosshair.color_nohit)
-	ss.DrawArc(t.EndPosScreen.x, t.EndPosScreen.y, s)
+	ss.DrawCrosshair.CenterDot(t.EndPosScreen.x, t.EndPosScreen.y, self.Crosshair.color_nohit)
 end
 
 function SWEP:GetArmPos()
@@ -331,7 +266,9 @@ function SWEP:DrawCrosshair(x, y)
 	for linenum = 1, p.mLineNum do
 		local t = self:SetupDrawCrosshair(linenum)
 		self:DrawFourLines(t)
+		self:DrawCenterCircleNoHit(t)
 		self:DrawHitCrossBG(t)
+		self:DrawOuterCircleBG(t)
 		self:DrawOuterCircle(t)
 		self:DrawHitCross(t)
 		self:DrawInnerCircle(t)

@@ -135,18 +135,10 @@ function ss.DrawCrosshair.LinesHit(x, y, color, distanceRatio, mul)
 	LINEHIT_SIZE, LINEHIT_WIDTH, {{"", color_white}, {"Color", color}})
 end
 
-function ss.DrawCrosshair.FourLinesAround(org, right, dir, range, degx, degy, adjust, bgcolor, forecolor)
-	local SIZE_ORIGINAL = 18 -- in pixels
-	local WIDTH_ORIGINAL = 4 -- in pixels
-	local scale = ScrH() / SCRH_REF
-	local size = SIZE_ORIGINAL * scale -- width + length
-	local width = (WIDTH_ORIGINAL / sin45) * scale
-	local length = ((SIZE_ORIGINAL - WIDTH_ORIGINAL) / sin45) * scale
+local function FourLinesAround(org, right, dir, range, degx, degy, drawfunc)
 	local ndir = dir:GetNormalized()
 	local ldir = dir:Length()
 	local up = right:Cross(ndir)
-	local diff = OUTER_CIRCLE_OUTER_DIAMETER / 2 * scale
-	if adjust then diff = diff - width * sin45 end
 	for i = 1, 4 do
 		local rot = dir:Angle()
 		local sgnx = i > 2 and 1 or -1
@@ -157,19 +149,34 @@ function ss.DrawCrosshair.FourLinesAround(org, right, dir, range, degx, degy, ad
 		local endpos = org + rot:Forward() * range
 		local hit = endpos:ToScreen()
 		if hit.visible then
-			hit.x = hit.x - diff * sgnx
-			hit.y = hit.y - diff * sgny
-			surface.SetDrawColor(bgcolor)
-			surface.SetMaterial(ss.Materials.Crosshair.Line)
-			surface.DrawTexturedRectRotated(hit.x, hit.y, length, width, 90 * i - 45)
-			
-			if forecolor then
-				surface.SetDrawColor(forecolor)
-				surface.SetMaterial(ss.Materials.Crosshair.LineColor)
-				surface.DrawTexturedRectRotated(hit.x, hit.y, length, width, 90 * i - 45)
-			end
+			local ang = 90 * i - 45
+			drawfunc(hit.x, hit.y, sgnx, sgny, ang)
 		end
 	end
+end
+
+function ss.DrawCrosshair.FourLinesAround(org, right, dir, range, degx, degy, adjust, bgcolor, forecolor)
+	local SIZE_ORIGINAL = 18 -- in pixels
+	local WIDTH_ORIGINAL = 4 -- in pixels
+	local scale = ScrH() / SCRH_REF
+	local size = SIZE_ORIGINAL * scale -- width + length
+	local width = (WIDTH_ORIGINAL / sin45) * scale
+	local length = ((SIZE_ORIGINAL - WIDTH_ORIGINAL) / sin45) * scale
+	local diff = OUTER_CIRCLE_OUTER_DIAMETER / 2 * scale
+	if adjust then diff = diff - width * sin45 end
+	FourLinesAround(org, right, dir, range, degx, degy,
+	function(x, y, sx, sy, ang)
+		x = x - diff * sx
+		y = y - diff * sy
+		surface.SetDrawColor(bgcolor)
+		surface.SetMaterial(ss.Materials.Crosshair.Line)
+		surface.DrawTexturedRectRotated(x, y, length, width, ang)
+		
+		if not forecolor then return end
+		surface.SetDrawColor(forecolor)
+		surface.SetMaterial(ss.Materials.Crosshair.LineColor)
+		surface.DrawTexturedRectRotated(x, y, length, width, ang)
+	end)
 end
 
 -- Draws a center dot of shooter's crosshair.
@@ -186,7 +193,7 @@ function ss.DrawCrosshair.ChargerCenterDot(x, y, mul, darkcolor, brightcolor)
 	local DARK_DIAMETER = 10
 	local BRIGHT_DIAMETER = 6
 	local screenscale = ScrH() / SCRH_REF
-	local scale = 0.5 * mul * screenscale
+	local scale = 0.5 * screenscale * (mul or 1)
 	local dr = DARK_DIAMETER * scale
 	local br = BRIGHT_DIAMETER * scale
 	darkcolor = darkcolor or ColorAlpha(NOHIT_COLOR_DARK, 128)
@@ -208,7 +215,7 @@ end
 function ss.DrawCrosshair.ChargerColoredCircle(x, y, mul, color)
 	local OUTER_DIAMETER = 40
 	local INNER_DIAMETER = 34 + 1
-	DrawCircle(x, y, color, OUTER_DIAMETER, INNER_DIAMETER, mul, 5)
+	DrawCircle(x, y, color, OUTER_DIAMETER, INNER_DIAMETER, mul)
 end
 
 local CHARGER_BG_ALPHA = 128
@@ -222,29 +229,27 @@ local function DrawArc(x, y, color, d1, d2, start, endang, mul)
 	ss.DrawArc(x, y, r1, thickness, start, endang, 1)
 end
 
--- Draws a black circle of charger's crosshair
+-- Draws the charger's crosshair.
 -- progress ranges from 0 to 360.
-function ss.DrawCrosshair.ChargerCircleBG(x, y, mul, progress)
+function ss.DrawCrosshair.ChargerProgress(x, y, mul, progress)
+	-- Black part of the arc
 	local OUTER_DIAMETER = 40
 	local INNER_DIAMETER = 28
 	local start = 90
 	local endang = 450 - progress
 	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_DARK, CHARGER_BG_ALPHA),
 	OUTER_DIAMETER, INNER_DIAMETER, start, endang, mul)
-end
 
--- Draws a white ark of charger's crosshair.
--- progress ranges from 0 to 360.
-function ss.DrawCrosshair.ChargerProgress(x, y, mul, progress)
-	local OUTER_DIAMETER = 40
-	local INNER_DIAMETER = 24
-	local start = 450 - progress
-	local endang = 450
+	-- White part of the arc
+	OUTER_DIAMETER = 40
+	INNER_DIAMETER = 24
+	start = 450 - progress
+	endang = 450
 	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_BRIGHT, CHARGER_FG_ALPHA),
 	OUTER_DIAMETER, INNER_DIAMETER, start, endang, mul)
 end
 
-function ss.DrawCrosshair.ChargetFourLines(x, y, distanceRatio, mul, darkcolor, brightcolor)
+function ss.DrawCrosshair.ChargerFourLines(x, y, distanceRatio, mul, darkcolor, brightcolor)
 	local SIZE_BG = 18 + 4
 	local SIZE_FG = 14 + 2
 	local WIDTH_BG = 7
@@ -252,5 +257,86 @@ function ss.DrawCrosshair.ChargetFourLines(x, y, distanceRatio, mul, darkcolor, 
 	DrawLinesHit(x, y, distanceRatio, SIZE_BG, mul,
 	SIZE_BG, WIDTH_BG, {{"", darkcolor}})
 	DrawLinesHit(x, y, distanceRatio, SIZE_BG, mul,
+	SIZE_FG, WIDTH_FG, {{"", brightcolor}})
+end
+
+function ss.DrawCrosshair.SplatlingBaseCircle(x, y)
+	local OUTER_DIAMETER = 54
+	local INNER_DIAMETER = 44 + 2
+	DrawCircle(x, y, NOHIT_COLOR_BRIGHT, OUTER_DIAMETER, INNER_DIAMETER, mul)
+end
+
+local SPLATLING_OUTER_DIAMETER = 70
+local SPLATLING_INNER_DIAMETER = 56
+function ss.DrawCrosshair.SplatlingColoredCircle(x, y, color)
+	DrawCircle(x, y, color, SPLATLING_OUTER_DIAMETER, SPLATLING_INNER_DIAMETER)
+end
+
+-- Draws the spaltling's crosshair.
+-- p1 and p2 range from 0 to 360.
+-- p1 is for the first charge, p2 is for the second charge.
+function ss.DrawCrosshair.SplatlingProgress(x, y, p1, p2)
+	-- Black part of the arc.
+	local OUTER_DIAMETER = 58
+	local INNER_DIAMETER = 44
+	local start = 90
+	local endang = 450 - p1
+	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_DARK, CHARGER_BG_ALPHA),
+	OUTER_DIAMETER, INNER_DIAMETER, start, endang)
+
+	-- White part of the arc.
+	OUTER_DIAMETER = 58
+	INNER_DIAMETER = 40
+	start = 450 - p1
+	endang = 450
+	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_BRIGHT, CHARGER_FG_ALPHA),
+	OUTER_DIAMETER, INNER_DIAMETER, start, endang)
+
+	-- The arc for the second charge.
+	OUTER_DIAMETER = 64
+	INNER_DIAMETER = 48
+	start = 450 - p2
+	endang = 450
+	DrawArc(x, y, ColorAlpha(color_white, CHARGER_FG_ALPHA),
+	OUTER_DIAMETER, INNER_DIAMETER, start, endang)
+end
+
+function ss.DrawCrosshair.SplatlingFourLinesAround(org, right, dir, range, degx, degy, adjust, bgcolor, forecolor)
+	local LENGTH = 20 + 3 -- in pixels
+	local WIDTH = 3 -- in pixels
+	local scale = ScrH() / SCRH_REF
+	local mul = 0.775
+	LENGTH = LENGTH * scale
+	WIDTH = WIDTH * scale
+	local dy = (LENGTH * sin45) / 2 * mul
+	local dx = (LENGTH * (1 + sin45)) / 2 * mul
+	local diff = SPLATLING_OUTER_DIAMETER / 2 * scale
+	if adjust then diff = diff - WIDTH * sin45 end
+	FourLinesAround(org, right, dir, range, degx, degy,
+	function(x, y, sx, sy, ang)
+		x, y = x - diff * sx, y - diff * sy
+		surface.SetDrawColor(bgcolor)
+		surface.SetMaterial(ss.Materials.Crosshair.Line)
+		surface.DrawTexturedRectRotated(x, y, LENGTH, WIDTH, ang)
+		surface.DrawTexturedRectRotated(x + sx * dx, y - sy * dy, LENGTH, WIDTH, 0)
+		surface.DrawTexturedRectRotated(x - sx * dy, y + sy * dx, LENGTH, WIDTH, 90)
+		
+		if not forecolor then return end
+		surface.SetDrawColor(forecolor)
+		surface.SetMaterial(ss.Materials.Crosshair.LineColor)
+		surface.DrawTexturedRectRotated(x, y, LENGTH, WIDTH, ang)
+		surface.DrawTexturedRectRotated(x + sx * dx, y - sy * dy, LENGTH, WIDTH, 0)
+		surface.DrawTexturedRectRotated(x - sx * dy, y + sy * dx, LENGTH, WIDTH, 90)
+	end)
+end
+
+function ss.DrawCrosshair.SplatlingFourLines(x, y, distanceRatio, darkcolor, brightcolor)
+	local SIZE_BG = 26 + 5
+	local SIZE_FG = 18 + 5
+	local WIDTH_BG = 8
+	local WIDTH_FG = 4
+	DrawLinesHit(x, y, distanceRatio, 40, 1,
+	SIZE_BG, WIDTH_BG, {{"", darkcolor}})
+	DrawLinesHit(x, y, distanceRatio, 40, 1,
 	SIZE_FG, WIDTH_FG, {{"", brightcolor}})
 end

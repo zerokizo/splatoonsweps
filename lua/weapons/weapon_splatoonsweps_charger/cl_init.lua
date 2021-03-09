@@ -62,7 +62,6 @@ function SWEP:DrawOuterCircle(t)
 		prog = prog * (360 - self.MinChargeDeg) + self.MinChargeDeg
 	end
 	
-	ss.DrawCrosshair.ChargerCircleBG(x, y, scoped, prog)
 	ss.DrawCrosshair.ChargerProgress(x, y, scoped, prog)
 	if not t.Trace.Hit then return end
 	ss.DrawCrosshair.ChargerColoredCircle(x, y, scoped, t.CrosshairColor)
@@ -97,12 +96,11 @@ end
 
 function SWEP:DrawHitCross(t) -- Hit cross pattern, foreground
 	if not t.HitEntity then return end
-	local c = ss.GetColor(self:GetNWInt "inkcolor")
 	local mul = self:GetScopedSize()
 	local frac = 1 - (t.Distance / self:GetRange()) / 2
-	ss.DrawCrosshair.ChargetFourLines(
+	ss.DrawCrosshair.ChargerFourLines(
 	t.HitPosScreen.x, t.HitPosScreen.y,
-	frac, mul, t.CrosshairDarkColor, c)
+	frac, mul, t.CrosshairDarkColor, t.CrosshairBrightColor)
 end
 
 local MatScope = Material "gmod/scope"
@@ -141,8 +139,13 @@ function SWEP:DrawCrosshair(x, y)
 	local dist = self.Scoped and p.mFullChargeDistanceScoped or p.mFullChargeDistance
 	t.EndPosScreen = (self:GetShootPos() + self:GetAimVector() * dist):ToScreen()
 	t.CrosshairDarkColor = ColorAlpha(t.CrosshairColor, 192)
-	t.CrosshairDarkColor.r, t.CrosshairDarkColor.g, t.CrosshairDarkColor.b
-	= t.CrosshairDarkColor.r / 2, t.CrosshairDarkColor.g / 2, t.CrosshairDarkColor.b / 2
+	t.CrosshairDarkColor.r = t.CrosshairDarkColor.r / 2
+	t.CrosshairDarkColor.g = t.CrosshairDarkColor.g / 2
+	t.CrosshairDarkColor.b = t.CrosshairDarkColor.b / 2
+	t.CrosshairBrightColor = ColorAlpha(ss.GetColor(self:GetNWInt "inkcolor"), 255)
+	t.CrosshairBrightColor.r = (t.CrosshairBrightColor.r + 255) / 2
+	t.CrosshairBrightColor.g = (t.CrosshairBrightColor.g + 255) / 2
+	t.CrosshairBrightColor.b = (t.CrosshairBrightColor.b + 255) / 2
 	self:DrawCenterDot(t)
 	self:DrawInnerCircle(t)
 	self:DrawOuterCircle(t)
