@@ -11,6 +11,7 @@ ENT.AlertSoundTime = 4
 ENT.ExplodeTime = 5
 ENT.ExplosionOffset = 16
 ENT.NextTracePaintTime = 0
+ENT.SeekStartTime = 1
 ENT.TracePaintInterval = 2 * ss.FrameToSec
 ENT.TracePaintRadius = 10 * ss.ToHammerUnits
 ENT.DesiredSpeed = 6.65 * ss.ToHammerUnitsPerSec
@@ -29,6 +30,9 @@ function ENT:Initialize()
     self.BaseClass.Initialize(self)
     self.InitMoveDirection = self:GetAngles():Forward()
     self.MoveDirection = self.InitMoveDirection
+    self.SeekerFarSound = CreateSound(self, ss.SeekerFar)
+    self.SeekerNearSound = CreateSound(self, ss.SeekerNear)
+    self.SeekSoundDistanceThreshold = p.SeThreshold
     if CLIENT then return end
     self.InitTime = CurTime()
     self:EmitSound "SplatoonSWEPs.SeekerThrown"
@@ -55,6 +59,8 @@ function ENT:OnRemove()
     self:StopSound "SplatoonSWEPs.SeekerFar"
     self:StopSound "SplatoonSWEPs.SeekerNearar"
     self:StopSound "SplatoonSWEPs.SeekerRunning"
+    self.SeekerFarSound:Stop()
+    self.SeekerNearSound:Stop()
 end
 
 function ENT:TracePaint()
@@ -88,6 +94,38 @@ function ENT:Think()
 
     if t > self.ExplodeTime then self:Explode() end
     if self.RemoveFlag then self:Remove() end
+    if IsValid(self.Target) then
+        if t > self.SeekStartTime then
+            local dir = self.Target:GetPos() - self:GetPos() dir:Normalize()
+            local rdot = dir:Dot(self:GetRight())
+            local fdot = dir:Dot(self:GetForward())
+            local deg = math.abs(90 - math.deg(math.acos(rdot)))
+            if fdot > 0 and deg < 5 then
+                self.InitMoveDirection = dir
+                self.MoveDirection = dir
+            else
+                local sign = rdot > 0 and -1 or 1
+                local ang = self.MoveDirection:Angle()
+                ang:RotateAroundAxis(self:GetUp(), sign * math.min(1, deg))
+                self.InitMoveDirection = ang:Forward()
+                self.MoveDirection = ang:Forward()
+            end
+        end
+
+        local distance = self.Target:GetPos():Distance(self:GetPos())
+        if distance < 30 then self:Explode() end
+        if distance > self.SeekSoundDistanceThreshold then
+            self.SeekerFarSound:Play()
+            self.SeekerNearSound:Stop()
+        else
+            self.SeekerFarSound:Stop()
+            self.SeekerNearSound:Play()
+        end
+    else
+        self.SeekerFarSound:Stop()
+        self.SeekerNearSound:Stop()
+    end
+
     return true
 end
 

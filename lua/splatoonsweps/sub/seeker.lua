@@ -31,6 +31,7 @@ ss.seeker = {
         InkConsume = 0.8,
         
         Fly_InitVel_Estimated = 1.5,
+        SeThreshold = 150,
     },
     Units = {
         Burst_Damage_Far = "hp",
@@ -55,6 +56,7 @@ ss.seeker = {
         InkConsume = "ink",
         
         Fly_InitVel_Estimated = "du/f",
+        SeThreshold = "du",
     },
     BurstSound = "SplatoonSWEPs.BombExplosion",
     GetDamage = function(dist, ent)
@@ -87,10 +89,32 @@ function module:GetSubWeaponInitVelocity()
     return self:GetAimVector() * initspeed
 end
 
+function module:SearchTarget()
+    local seeker_search_deg = self:GetFOV() / 4
+    local maxdot, ent = math.cos(math.rad(seeker_search_deg)), nil
+    for _, e in ipairs(ents.GetAll()) do
+        local w = ss.IsValidInkling(e)
+        if (not w and e:Health() > 0
+        and (e:IsPlayer() or e:IsNPC() or e:IsNextBot()))
+        or w and not ss.IsAlly(self, w) then
+            local dir = e:WorldSpaceCenter() - self:GetShootPos()
+            dir:Normalize()
+            local dot = dir:Dot(self:GetAimVector())
+            if dot > maxdot then
+                maxdot = dot
+                ent = e
+            end
+        end
+    end
+
+    return ent
+end
+
 if SERVER then
     function module:ServerSecondaryAttack(throwable)
         local e = ents.Create "ent_splatoonsweps_seeker"
         e.Owner = self.Owner
+        e.Target = self:SearchTarget()
         e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
         e:SetInkColorProxy(self:GetInkColorProxy())
         e:SetPos(self:GetShootPos())
@@ -107,26 +131,10 @@ if SERVER then
 else
     function module:DrawOnSubTriggerDown()
         if RealTime() - (self.SeekerTargetSearched or 0) > RealFrameTime() * 2 then
-            self.SeekerPreviousTarget= nil
+            self.SeekerPreviousTarget = nil
         end
 
-        local seeker_search_deg = self:GetFOV() / 4
-        local maxdot, ent = math.cos(math.rad(seeker_search_deg)), nil
-        for _, e in ipairs(ents.GetAll()) do
-            local w = ss.IsValidInkling(e)
-            if (not w and e:Health() > 0
-            and (e:IsPlayer() or e:IsNPC() or e:IsNextBot()))
-            or w and not ss.IsAlly(self, w) then
-                local dir = e:WorldSpaceCenter() - EyePos()
-                dir:Normalize()
-                local dot = dir:Dot(EyeAngles():Forward())
-                if dot > maxdot then
-                    maxdot = dot
-                    ent = e
-                end
-            end
-        end
-
+        local ent = self:SearchTarget()
         self.SeekerTargetSearched = RealTime()
         if self.SeekerPreviousTarget ~= ent then
             self.SeekerPreviousTarget = ent
