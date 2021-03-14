@@ -84,20 +84,13 @@ function ss.DrawCrosshair.OuterCircleBG(x, y)
 end
 
 -- Draws a circle of shooter's crosshair when it doesn't hit anything.
-local NOHIT_ALPHA = 64
-local NOHIT_CDARK = 0
-local NOHIT_CBRIGHT = 192
-local NOHIT_COLOR_DARK = Color(
-	NOHIT_CDARK, NOHIT_CDARK, NOHIT_CDARK, NOHIT_ALPHA)
-local NOHIT_COLOR_BRIGHT = Color(
-	NOHIT_CBRIGHT, NOHIT_CBRIGHT, NOHIT_CBRIGHT, NOHIT_ALPHA)
 function ss.DrawCrosshair.CircleNoHit(x, y)
 	local OUTER_DARK   = 48 -- in pixels
 	local INNER_DARK   = 32 -- in pixels
 	local OUTER_BRIGHT = 44 -- in pixels
 	local INNER_BRIGHT = 38 -- in pixels
-	DrawCircle(x, y, NOHIT_COLOR_DARK, OUTER_DARK, INNER_DARK)
-	DrawCircle(x, y, NOHIT_COLOR_BRIGHT, OUTER_BRIGHT, INNER_BRIGHT)
+	DrawCircle(x, y, ss.CrosshairDarkColor, OUTER_DARK, INNER_DARK)
+	DrawCircle(x, y, ss.CrosshairBaseColor, OUTER_BRIGHT, INNER_BRIGHT)
 end
 
 -- Draws shooter's four lines when they hit an enemy.
@@ -196,8 +189,8 @@ function ss.DrawCrosshair.ChargerCenterDot(x, y, mul, darkcolor, brightcolor)
 	local scale = 0.5 * screenscale * (mul or 1)
 	local dr = DARK_DIAMETER * scale
 	local br = BRIGHT_DIAMETER * scale
-	darkcolor = darkcolor or ColorAlpha(NOHIT_COLOR_DARK, 128)
-	brightcolor = brightcolor or ColorAlpha(NOHIT_COLOR_BRIGHT, 192)
+	darkcolor = darkcolor or ss.CrosshairDarkColor
+	brightcolor = brightcolor or ss.CrosshairBaseColor
 	draw.NoTexture()
 	surface.SetDrawColor(darkcolor)
 	ss.DrawArc(x, y, dr)
@@ -209,7 +202,7 @@ end
 function ss.DrawCrosshair.ChargerBaseCircle(x, y, mul)
 	local OUTER_DIAMETER = 27
 	local INNER_DIAMETER = 21
-	DrawCircle(x, y, NOHIT_COLOR_BRIGHT, OUTER_DIAMETER, INNER_DIAMETER, mul)
+	DrawCircle(x, y, ss.CrosshairBaseColor, OUTER_DIAMETER, INNER_DIAMETER, mul)
 end
 
 local CHARGER_OUTER_DIAMETER = 40
@@ -218,8 +211,6 @@ function ss.DrawCrosshair.ChargerColoredCircle(x, y, mul, color)
 	DrawCircle(x, y, color, CHARGER_OUTER_DIAMETER, CHARGER_INNER_DIAMETER, mul)
 end
 
-local CHARGER_BG_ALPHA = 128
-local CHARGER_FG_ALPHA = 192
 local function DrawArc(x, y, color, d1, d2, start, endang, mul)
 	local scale = ScrH() / SCRH_REF * (mul or 1) * 0.5
 	local r1, r2 = d1 * scale, d2 * scale
@@ -231,13 +222,14 @@ end
 
 -- Draws the charger's crosshair.
 -- progress ranges from 0 to 360.
+local CHARGER_ALPHA = 96
 function ss.DrawCrosshair.ChargerProgress(x, y, mul, progress)
 	-- Black part of the arc
 	local OUTER_DIAMETER = 40
 	local INNER_DIAMETER = 28
 	local start = 90
 	local endang = 450 - progress
-	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_DARK, CHARGER_BG_ALPHA),
+	DrawArc(x, y, ColorAlpha(ss.CrosshairDarkColor, CHARGER_ALPHA),
 	OUTER_DIAMETER, INNER_DIAMETER, start, endang, mul)
 
 	-- White part of the arc
@@ -245,7 +237,7 @@ function ss.DrawCrosshair.ChargerProgress(x, y, mul, progress)
 	INNER_DIAMETER = 24
 	start = 450 - progress
 	endang = 450
-	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_BRIGHT, CHARGER_FG_ALPHA),
+	DrawArc(x, y, ColorAlpha(ss.CrosshairBaseColor, CHARGER_ALPHA),
 	OUTER_DIAMETER, INNER_DIAMETER, start, endang, mul)
 end
 
@@ -279,7 +271,7 @@ end
 function ss.DrawCrosshair.SplatlingBaseCircle(x, y)
 	local OUTER_DIAMETER = 54
 	local INNER_DIAMETER = 44 + 2
-	DrawCircle(x, y, NOHIT_COLOR_BRIGHT, OUTER_DIAMETER, INNER_DIAMETER, mul)
+	DrawCircle(x, y, ss.CrosshairBaseColor, OUTER_DIAMETER, INNER_DIAMETER, mul)
 end
 
 local SPLATLING_OUTER_DIAMETER = 70
@@ -291,13 +283,14 @@ end
 -- Draws the spaltling's crosshair.
 -- p1 and p2 range from 0 to 360.
 -- p1 is for the first charge, p2 is for the second charge.
+local SPLATLING_ALPHA = 128
 function ss.DrawCrosshair.SplatlingProgress(x, y, p1, p2)
 	-- Black part of the arc.
 	local OUTER_DIAMETER = 58
 	local INNER_DIAMETER = 44
 	local start = 90
 	local endang = 450 - p1
-	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_DARK, CHARGER_BG_ALPHA),
+	DrawArc(x, y, ColorAlpha(ss.CrosshairDarkColor, CHARGER_ALPHA),
 	OUTER_DIAMETER, INNER_DIAMETER, start, endang)
 
 	-- White part of the arc.
@@ -305,7 +298,7 @@ function ss.DrawCrosshair.SplatlingProgress(x, y, p1, p2)
 	INNER_DIAMETER = 40
 	start = 450 - p1
 	endang = 450
-	DrawArc(x, y, ColorAlpha(NOHIT_COLOR_BRIGHT, CHARGER_FG_ALPHA),
+	DrawArc(x, y, ColorAlpha(ss.CrosshairBaseColor, CHARGER_ALPHA),
 	OUTER_DIAMETER, INNER_DIAMETER, start, endang)
 
 	-- The arc for the second charge.
@@ -313,7 +306,7 @@ function ss.DrawCrosshair.SplatlingProgress(x, y, p1, p2)
 	INNER_DIAMETER = 48
 	start = 450 - p2
 	endang = 450
-	DrawArc(x, y, ColorAlpha(color_white, CHARGER_FG_ALPHA),
+	DrawArc(x, y, ColorAlpha(color_white, SPLATLING_ALPHA),
 	OUTER_DIAMETER, INNER_DIAMETER, start, endang)
 end
 

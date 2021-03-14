@@ -50,24 +50,6 @@ SWEP.IronSightsFlip = {
 	false,
 }
 
-local crosshairalpha = 64
-local texdotsize = 32 / 4
-local texringsize = 128 / 2
-local texlinesize = 128 / 2
-local texlinewidth = 8 / 2
-local hitcrossbg = 4 -- in pixel
-local hitouterbg = 3 -- in pixel
-local originalres = 1920 * 1080
-local hitline, hitwidth = 50, 3
-local line, linewidth = 16, 3
-SWEP.Crosshair = {
-	color_circle = ColorAlpha(color_black, crosshairalpha),
-	color_nohit = ColorAlpha(color_white, crosshairalpha),
-	Dot = 7, HitLine = 50, HitWidth = 2, Inner = 35, -- in pixel
-	Line = 8, LineWidth = 2, Middle = 44, Outer = 51, -- in pixel
-	HitLineSize = 44,
-}
-
 function SWEP:ClientInit()
 	self.ArmPos, self.ArmBegin = nil, nil
 	self.BasePos, self.BaseAng = nil, nil
@@ -129,7 +111,7 @@ end
 function SWEP:DrawFourLines(t, degx, degy)
 	degx = math.max(degx, degy) -- Stupid workaround for Blasters' crosshair
 	local frac = t.Trace.Fraction
-	local bgcolor = t.IsSplatoon2 and t.Trace.Hit and self.Crosshair.color_nohit or color_white
+	local bgcolor = t.IsSplatoon2 and t.Trace.Hit and ss.CrosshairBaseColor or color_white
 	local forecolor = t.HitEntity and ss.GetColor(self:GetNWInt "inkcolor")
 	local dir = self:GetAimVector() * t.Distance
 	local org = self:GetShootPos()
@@ -187,7 +169,7 @@ end
 function SWEP:DrawCenterDot(t) -- Center circle
 	ss.DrawCrosshair.CenterDot(t.HitPosScreen.x, t.HitPosScreen.y)
 	if not (t.IsSplatoon2 and t.Trace.Hit) then return end
-	ss.DrawCrosshair.CenterDot(t.EndPosScreen.x, t.EndPosScreen.y, self.Crosshair.color_nohit)
+	ss.DrawCrosshair.CenterDot(t.EndPosScreen.x, t.EndPosScreen.y, ss.CrosshairBaseColor)
 end
 
 function SWEP:GetArmPos()

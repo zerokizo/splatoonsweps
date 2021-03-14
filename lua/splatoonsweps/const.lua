@@ -256,6 +256,9 @@ ss.CameraFadeDistance = 100^2 -- Thirdperson model fade distance[Hammer units^2]
 ss.InkDropGravity = 1 * ss.ToHammerUnitsPerSec2 -- The gravity acceleration of ink drops[Hammer units/s^2]
 ss.ShooterAirResist = 0.25 -- Air resistance of Shooter's ink.  The velocity will be multiplied by (1 - AirResist).
 ss.RollerAirResist = 0.1 -- Air resistance of Roller's splash.
+ss.CrosshairBaseAlpha = 64
+ss.CrosshairBaseColor = ColorAlpha(color_white, ss.CrosshairBaseAlpha)
+ss.CrosshairDarkColor = ColorAlpha(color_black, ss.CrosshairBaseAlpha)
 ss.SquidTrace = {
 	start = vector_origin, endpos = vector_origin,
 	filter = {}, mask = ss.SquidSolidMask,
