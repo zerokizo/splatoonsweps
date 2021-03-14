@@ -37,7 +37,9 @@ function SWEP:GetSplashInitRate()
 end
 
 function SWEP:GetRange()
-	return self:GetInitVelocity(true) * (self.Parameters.mStraightFrame + ss.ShooterDecreaseFrame / 2)
+	local p = self.Parameters
+	return ss.GetRange(self:GetInitVelocity(true),
+	p.mStraightFrame, p.mGuideCheckCollisionFrame, ss.ShooterAirResist)
 end
 
 function SWEP:GetSpreadAmount()
@@ -113,7 +115,7 @@ function SWEP:SharedInit()
 	self:SetAimTimer(CurTime())
 	self:SharedDeploy()
 	table.Merge(self.Projectile, {
-		AirResist = 0.75,
+		AirResist = ss.ShooterAirResist,
 		ColRadiusEntity = p.mColRadius,
 		ColRadiusWorld = p.mColRadius,
 		DamageMax = p.mDamageMax,

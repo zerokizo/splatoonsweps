@@ -135,7 +135,7 @@ function ss.DrawCrosshair.LinesHit(x, y, color, distanceRatio, mul)
 	LINEHIT_SIZE, LINEHIT_WIDTH, {{"", color_white}, {"Color", color}})
 end
 
-local function FourLinesAround(org, right, dir, range, degx, degy, drawfunc)
+local function FourLinesAround(org, right, dir, range, degx, degy, dx, dy, drawfunc)
 	local ndir = dir:GetNormalized()
 	local ldir = dir:Length()
 	local up = right:Cross(ndir)
@@ -150,12 +150,12 @@ local function FourLinesAround(org, right, dir, range, degx, degy, drawfunc)
 		local hit = endpos:ToScreen()
 		if hit.visible then
 			local ang = 90 * i - 45
-			drawfunc(hit.x, hit.y, sgnx, sgny, ang)
+			drawfunc(hit.x + dx, hit.y + dy, sgnx, sgny, ang)
 		end
 	end
 end
 
-function ss.DrawCrosshair.FourLinesAround(org, right, dir, range, degx, degy, adjust, bgcolor, forecolor)
+function ss.DrawCrosshair.FourLinesAround(org, right, dir, range, degx, degy, dx, dy, adjust, bgcolor, forecolor)
 	local SIZE_ORIGINAL = 18 -- in pixels
 	local WIDTH_ORIGINAL = 4 -- in pixels
 	local scale = ScrH() / SCRH_REF
@@ -164,7 +164,7 @@ function ss.DrawCrosshair.FourLinesAround(org, right, dir, range, degx, degy, ad
 	local length = ((SIZE_ORIGINAL - WIDTH_ORIGINAL) / sin45) * scale
 	local diff = OUTER_CIRCLE_OUTER_DIAMETER / 2 * scale
 	if adjust then diff = diff - width * sin45 end
-	FourLinesAround(org, right, dir, range, degx, degy,
+	FourLinesAround(org, right, dir, range, degx, degy, dx, dy,
 	function(x, y, sx, sy, ang)
 		x = x - diff * sx
 		y = y - diff * sy
@@ -301,32 +301,32 @@ function ss.DrawCrosshair.SplatlingProgress(x, y, p1, p2)
 	OUTER_DIAMETER, INNER_DIAMETER, start, endang)
 end
 
-function ss.DrawCrosshair.SplatlingFourLinesAround(org, right, dir, range, degx, degy, adjust, bgcolor, forecolor)
+function ss.DrawCrosshair.SplatlingFourLinesAround(org, right, dir, range, degx, degy, dx, dy, adjust, bgcolor, forecolor)
 	local LENGTH = 20 + 3 -- in pixels
 	local WIDTH = 3 -- in pixels
 	local scale = ScrH() / SCRH_REF
 	local mul = 0.775
 	LENGTH = LENGTH * scale
 	WIDTH = WIDTH * scale
-	local dy = (LENGTH * sin45) / 2 * mul
-	local dx = (LENGTH * (1 + sin45)) / 2 * mul
+	local dy2 = (LENGTH * sin45) / 2 * mul
+	local dx2 = (LENGTH * (1 + sin45)) / 2 * mul
 	local diff = SPLATLING_OUTER_DIAMETER / 2 * scale
 	if adjust then diff = diff - WIDTH * sin45 end
-	FourLinesAround(org, right, dir, range, degx, degy,
+	FourLinesAround(org, right, dir, range, degx, degy, dx, dy,
 	function(x, y, sx, sy, ang)
 		x, y = x - diff * sx, y - diff * sy
 		surface.SetDrawColor(bgcolor)
 		surface.SetMaterial(ss.Materials.Crosshair.Line)
 		surface.DrawTexturedRectRotated(x, y, LENGTH, WIDTH, ang)
-		surface.DrawTexturedRectRotated(x + sx * dx, y - sy * dy, LENGTH, WIDTH, 0)
-		surface.DrawTexturedRectRotated(x - sx * dy, y + sy * dx, LENGTH, WIDTH, 90)
+		surface.DrawTexturedRectRotated(x + sx * dx2, y - sy * dy2, LENGTH, WIDTH, 0)
+		surface.DrawTexturedRectRotated(x - sx * dy2, y + sy * dx2, LENGTH, WIDTH, 90)
 		
 		if not forecolor then return end
 		surface.SetDrawColor(forecolor)
 		surface.SetMaterial(ss.Materials.Crosshair.LineColor)
 		surface.DrawTexturedRectRotated(x, y, LENGTH, WIDTH, ang)
-		surface.DrawTexturedRectRotated(x + sx * dx, y - sy * dy, LENGTH, WIDTH, 0)
-		surface.DrawTexturedRectRotated(x - sx * dy, y + sy * dx, LENGTH, WIDTH, 90)
+		surface.DrawTexturedRectRotated(x + sx * dx2, y - sy * dy2, LENGTH, WIDTH, 0)
+		surface.DrawTexturedRectRotated(x - sx * dy2, y + sy * dx2, LENGTH, WIDTH, 90)
 	end)
 end
 

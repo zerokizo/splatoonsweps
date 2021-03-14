@@ -253,7 +253,9 @@ ss.SecToFrame = framepersec -- = 60, Constants for time conversion
 ss.mDegRandomY = .5 -- Shooter spread angle, yaw (need to be validated)
 ss.SquidSpeedOutofInk = .45 -- Squid speed coefficient when it goes out of ink.
 ss.CameraFadeDistance = 100^2 -- Thirdperson model fade distance[Hammer units^2]
-ss.InkDropGravity = 1 * ss.ToHammerUnitsPerSec2 -- The gravity acceleration that ink drops have[Hammer units^2]
+ss.InkDropGravity = 1 * ss.ToHammerUnitsPerSec2 -- The gravity acceleration of ink drops[Hammer units/s^2]
+ss.ShooterAirResist = 0.25 -- Air resistance of Shooter's ink.  The velocity will be multiplied by (1 - AirResist).
+ss.RollerAirResist = 0.1 -- Air resistance of Roller's splash.
 ss.SquidTrace = {
 	start = vector_origin, endpos = vector_origin,
 	filter = {}, mask = ss.SquidSolidMask,
@@ -280,9 +282,6 @@ for key, value in pairs {
 	EnemyInkCrouchEndurance = 20, -- Time to force inklings to stand up when they're on enemy ink.
 	HealDelay = 60, -- Time to heal again after taking damage.
 	RollerRunoverStopFrame = 30, -- Stopping time when inkling tries to run over.
-	RollerDecreaseFrame = 15, -- Rollers ink velocity deceleration time to start falling.
-	ShooterDecreaseFrame = 5, -- Shooters ink velocity deceleration time to start falling.
-	ShooterTermTime = 10, -- Time to reach the terminal velocity.
 	ShooterTrailDelay = 2, -- Time to start to move the latter half of shooter's ink.
 	SubWeaponThrowTime = 25, -- Duration of TPS sub weapon throwing animation.
 } do

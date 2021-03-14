@@ -103,10 +103,13 @@ function SWEP:DrawFourLines(t, degx, degy)
 	local dir = self:GetAimVector() * t.Distance
 	local org = self:GetShootPos()
 	local right = EyeAngles():Right()
-	local range = self:GetRange()
+	local range = self.Range
 	local adjust = not t.IsSplatoon2 and t.HitEntity
+	local dx, dy = 0, 0
 	if not t.IsSplatoon2 then
 		local SPREAD_HITWALL = 5
+		dx = t.HitPosScreen.x - t.EndPosScreen.x
+		dy = t.HitPosScreen.y - t.EndPosScreen.y
 		degx = Lerp(1 - frac, degx, SPREAD_HITWALL)
 		degy = Lerp(1 - frac, degy, SPREAD_HITWALL)
 		if t.HitEntity then
@@ -118,7 +121,7 @@ function SWEP:DrawFourLines(t, degx, degy)
 	end
 
 	ss.DrawCrosshair.SplatlingFourLinesAround(
-	org, right, dir, range, degx, degy, adjust, bgcolor, forecolor)
+	org, right, dir, range, degx, degy, dx, dy, adjust, bgcolor, forecolor)
 end
 
 function SWEP:DrawHitCross(t) -- Hit cross pattern, foreground

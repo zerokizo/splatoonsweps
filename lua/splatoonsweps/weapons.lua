@@ -4,6 +4,10 @@
 local ss = SplatoonSWEPs
 if not ss then return end
 
+function ss.GetRange(initvel, straightframe, guideframe, airresist)
+	return ss.GetBulletPos(Vector(initvel), straightframe, airresist, 0, guideframe).x
+end
+
 function ss.SetChargingEye(self)
 	local ply = self.Owner
 	local mdl = ply:GetModel()
@@ -170,8 +174,9 @@ end
 function ss.CustomPrimary.weapon_splatoonsweps_shooter(weapon)
 	local p = weapon.Parameters
 	weapon.NPCDelay = p.mRepeatFrame
-	weapon.Range = p.mInitVel * p.mStraightFrame
 	weapon.Primary.Automatic = p.mTripleShotSpan == 0
+	weapon.Range = ss.GetRange(p.mInitVel, p.mStraightFrame,
+	p.mGuideCheckCollisionFrame, ss.ShooterAirResist)
 end
 
 function ss.DefaultParams.weapon_splatoonsweps_blaster_base(weapon)
@@ -239,7 +244,8 @@ end
 function ss.CustomPrimary.weapon_splatoonsweps_splatling(weapon)
 	local p = weapon.Parameters
 	ss.CustomPrimary.weapon_splatoonsweps_shooter(weapon)
-	weapon.Range = p.mInitVelSecondPeriodMaxCharge * p.mStraightFrame
+	weapon.Range = ss.GetRange(p.mInitVelSecondPeriodMaxCharge,
+	p.mStraightFrame, p.mGuideCheckCollisionFrame, ss.ShooterAirResist)
 end
 
 function ss.DefaultParams.weapon_splatoonsweps_charger(weapon)
@@ -375,7 +381,8 @@ function ss.CustomPrimary.weapon_splatoonsweps_roller(weapon)
 	local p = weapon.Parameters
 	weapon.Primary.Automatic = false
 	weapon.NPCDelay = p.mSwingLiftFrame
-	weapon.Range = p.mSplashInitSpeedBase * p.mSplashStraightFrame
+	weapon.Range = ss.GetRange(p.mSplashInitSpeedBase,
+	p.mSplashStraightFrame, p.mSplashStraightFrame, ss.RollerAirResist)
 end
 
 function ss.DefaultParams.weapon_splatoonsweps_slosher_base(weapon)
@@ -614,19 +621,15 @@ end
 
 function ss.CustomPrimary.weapon_splatoonsweps_slosher_base(weapon)
 	local p = weapon.Parameters
-	local airresist = p.mFreeStateAirResist
-	local gravity = p.mFreeStateGravity
-	local guideframe = p.mGuideCenterCheckCollisionFrame
 	local number = p.mGuideCenterGroup
 	local order = ({"First", "Second", "Third"})[number]
 	local spawncount = p.mGuideCenterBulletNumInGroup
-	local straightframe = p.mBulletStraightFrame
 	local base = p["m" .. order .. "GroupBulletFirstInitSpeedBase"]
-	local init = base + spawncount * p["m" .. order .. "GroupBulletAfterInitSpeedOffset"]
-	local offset = ss.GetBulletPos(Vector(init), straightframe, airresist, gravity, guideframe)
+	local initvel = base + spawncount * p["m" .. order .. "GroupBulletAfterInitSpeedOffset"]
 	weapon.Primary.Automatic = false
 	weapon.NPCDelay = p.mSwingLiftFrame
-	weapon.Range = offset:Length()
+	weapon.Range = ss.GetRange(initvel, p.mBulletStraightFrame,
+	p.mGuideCenterCheckCollisionFrame, p.mFreeStateAirResist)
 end
 
 ss.DispatchEffect = {}

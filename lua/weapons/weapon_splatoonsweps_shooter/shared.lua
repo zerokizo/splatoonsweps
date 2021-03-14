@@ -101,7 +101,7 @@ function SWEP:SharedInit()
 
 	local p = self.Parameters
 	table.Merge(self.Projectile, {
-		AirResist = 0.75,
+		AirResist = ss.ShooterAirResist,
 		ColRadiusEntity = p.mColRadius,
 		ColRadiusWorld = p.mColRadius,
 		DamageMax = p.mDamageMax,

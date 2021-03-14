@@ -110,8 +110,14 @@ function SWEP:DrawFourLines(t)
 	local right = EyeAngles():Right()
 	local range = self:GetRange()
 	local adjust = not t.IsSplatoon2 and t.HitEntity
+	local dx, dy = 0, 0
+	if not t.IsSplatoon2 then
+		dx = t.HitPosScreen.x - t.EndPosScreen.x
+		dy = t.HitPosScreen.y - t.EndPosScreen.y
+	end
+
 	ss.DrawCrosshair.FourLinesAround(
-	org, right, dir, range, 1, 1, adjust, bgcolor, forecolor)
+	org, right, dir, range, 1, 1, dx, dy, adjust, bgcolor, forecolor)
 end
 
 function SWEP:DrawCenterCircleNoHit(t)

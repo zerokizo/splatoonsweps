@@ -345,7 +345,7 @@ function SWEP:SharedInit()
 	end)
 
 	table.Merge(self.Projectile, {
-		AirResist = 0.15,
+		AirResist = ss.RollerAirResist,
 		Gravity = ss.RollerGravityMul * ss.InkDropGravity,
 		PaintRatioNearDistance = 25 * ss.ToHammerUnits,
 	})
