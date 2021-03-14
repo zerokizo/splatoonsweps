@@ -243,26 +243,6 @@ function SWEP:SetupDrawCrosshair()
 	t.CrosshairColor = ss.GetColor(ss.CrosshairColors[self:GetNWInt "inkcolor"])
 	t.pos, t.dir = self:GetFirePosition(true)
 	t.IsSplatoon2 = ss.GetOption "newstylecrosshair"
-	local res = math.sqrt(ScrW() * ScrH() / originalres)
-	for param, size in pairs {
-		Dot = self.Crosshair.Dot,
-		ExpandHitLine = self.Crosshair.HitLineSize,
-		Inner = self.Crosshair.Inner,
-		Middle = self.Crosshair.Middle,
-		Outer = self.Crosshair.Outer,
-	} do
-		t.Size[param] = math.ceil(size * res)
-	end
-
-	for param, size in pairs {
-		HitLine = {texlinesize, self.Crosshair.HitLine, hitline},
-		HitWidth = {texlinewidth, self.Crosshair.HitWidth, hitwidth},
-		FourLine = {texlinesize, self.Crosshair.Line, line},
-		FourLineWidth = {texlinewidth, self.Crosshair.LineWidth, linewidth},
-	} do
-		t.Size[param] = math.ceil(size[1] * res * size[2] / size[3])
-	end
-
 	self:GetCrosshairTrace(t)
 	return t
 end

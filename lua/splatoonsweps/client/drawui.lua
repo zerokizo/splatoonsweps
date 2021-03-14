@@ -212,10 +212,10 @@ function ss.DrawCrosshair.ChargerBaseCircle(x, y, mul)
 	DrawCircle(x, y, NOHIT_COLOR_BRIGHT, OUTER_DIAMETER, INNER_DIAMETER, mul)
 end
 
+local CHARGER_OUTER_DIAMETER = 40
+local CHARGER_INNER_DIAMETER = 34 + 1
 function ss.DrawCrosshair.ChargerColoredCircle(x, y, mul, color)
-	local OUTER_DIAMETER = 40
-	local INNER_DIAMETER = 34 + 1
-	DrawCircle(x, y, color, OUTER_DIAMETER, INNER_DIAMETER, mul)
+	DrawCircle(x, y, color, CHARGER_OUTER_DIAMETER, CHARGER_INNER_DIAMETER, mul)
 end
 
 local CHARGER_BG_ALPHA = 128
@@ -258,6 +258,22 @@ function ss.DrawCrosshair.ChargerFourLines(x, y, distanceRatio, mul, darkcolor, 
 	SIZE_BG, WIDTH_BG, {{"", darkcolor}})
 	DrawLinesHit(x, y, distanceRatio, SIZE_BG, mul,
 	SIZE_FG, WIDTH_FG, {{"", brightcolor}})
+end
+
+local function Flash(x, y, mul, color, frac, diameter)
+	local ALPHA_MAX = 255
+	local ALPHA_MIN = 0
+	local scale = ScrH() / SCRH_REF * (mul or 1)
+	local diameter = diameter * scale
+	local radius = diameter / 2
+	local alpha = Lerp(frac, ALPHA_MAX, ALPHA_MIN)
+	surface.SetMaterial(ss.Materials.Crosshair.Flash)
+	surface.SetDrawColor(ColorAlpha(color, alpha))
+	surface.DrawTexturedRect(x - radius, y - radius, diameter, diameter)
+end
+
+function ss.DrawCrosshair.ChargerFlash(x, y, mul, color, frac)
+	Flash(x, y, mul, color, frac, CHARGER_OUTER_DIAMETER)
 end
 
 function ss.DrawCrosshair.SplatlingBaseCircle(x, y)
@@ -339,4 +355,8 @@ function ss.DrawCrosshair.SplatlingFourLines(x, y, distanceRatio, darkcolor, bri
 	SIZE_BG, WIDTH_BG, {{"", darkcolor}})
 	DrawLinesHit(x, y, distanceRatio, 40, 1,
 	SIZE_FG, WIDTH_FG, {{"", brightcolor}})
+end
+
+function ss.DrawCrosshair.SplatlingFlash(x, y, color, frac)
+	Flash(x, y, 1, color, frac, SPLATLING_OUTER_DIAMETER)
 end

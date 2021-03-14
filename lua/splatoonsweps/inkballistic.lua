@@ -187,7 +187,7 @@ local function HitEntity(ink, t)
 	local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
 	local time = math.max(CurTime() - ink.InitTime, 0)
 	local d, e, o = DamageInfo(), t.Entity, tr.filter
-	if weapon.IsCharger and time > data.StraightFrame + ss.FrameToSec then return end
+	if weapon.IsCharger and tr.LengthSum > data.Range then return end
 	if ss.LastHitID[e] == data.ID then return end
 	ss.LastHitID[e] = data.ID -- Avoid multiple damages at once
 	
@@ -256,6 +256,7 @@ local function ProcessInkQueue(ply)
 							tr.mins = -tr.maxs
 							tr.mask = ss.SquidSolidMask
 							local trent = util.TraceHull(tr)
+							tr.LengthSum = tr.LengthSum + tr.start:Distance(trent.HitPos)
 							if ink.BlasterRemoval or not (trworld.Hit or ss.IsInWorld(trworld.HitPos)) then
 								removal = true
 							elseif data.DoDamage and IsValid(trent.Entity) and trent.Entity:Health() > 0 then
@@ -510,6 +511,5 @@ function ss.AdvanceBullet(ink)
 	tr.start:Set(tr.endpos)
 	tr.endpos:Set(data.InitPos + ss.GetBulletPos(
 		data.InitVel, data.StraightFrame, data.AirResist, data.Gravity, t))
-	tr.LengthSum = tr.LengthSum + tr.start:Distance(tr.endpos)
 	tr.LifeTime = t
 end

@@ -174,11 +174,10 @@ function SWEP:DrawCenterDot(t) -- Center circle
 end
 
 function SWEP:DrawCrosshairFlash(t)
-	if CurTime() > self.CrosshairFlashTime + self.FlashDuration then return end
-	local s = t.Size.OutsideColored * 2
-	surface.SetMaterial(ss.Materials.Crosshair.Flash)
-	surface.SetDrawColor(ColorAlpha(self:GetInkColor(), (self.CrosshairFlashTime + self.FlashDuration - CurTime()) / self.FlashDuration * 255))
-	surface.DrawTexturedRect(t.HitPosScreen.x - s / 2, t.HitPosScreen.y - s / 2, s, s)
+	local frac = math.TimeFraction(self.CrosshairFlashTime,
+	self.CrosshairFlashTime + self.FlashDuration, CurTime())
+	if frac > 1 then return end
+	ss.DrawCrosshair.SplatlingFlash(t.HitPosScreen.x, t.HitPosScreen.y, self:GetInkColor(), frac)
 end
 
 function SWEP:DrawCrosshair(x, y)
@@ -200,38 +199,4 @@ function SWEP:DrawCrosshair(x, y)
 	self:DrawFourLines(t, self:GetSpreadAmount())
 	self:DrawCrosshairFlash(t)
 	return true
-end
-
-function SWEP:SetupDrawCrosshair()
-	local t = {Size = {}}
-	t.CrosshairColor = ss.GetColor(ss.CrosshairColors[self:GetNWInt "inkcolor"])
-	t.pos, t.dir = self:GetFirePosition()
-	t.IsSplatoon2 = ss.GetOption "newstylecrosshair"
-	local res = math.sqrt(ScrW() * ScrH() / originalres)
-	for param, size in pairs {
-		Dot = self.Crosshair.Dot,
-		ExpandHitLine = self.Crosshair.HitLineSize,
-		Inside1 = self.Crosshair.Inside1,
-		Inside2 = self.Crosshair.Inside2,
-		InsideColored = self.Crosshair.InsideColored,
-		InsideCenter = self.Crosshair.InsideCenter,
-		Outside1 = self.Crosshair.Outside1,
-		Outside2 = self.Crosshair.Outside2,
-		OutsideColored = self.Crosshair.OutsideColored,
-		OutsideCenter = self.Crosshair.OutsideCenter,
-	} do
-		t.Size[param] = math.ceil(size * res)
-	end
-
-	for param, size in pairs {
-		HitLine = {texlinesize, self.Crosshair.HitLine, hitline},
-		HitWidth = {texlinewidth, self.Crosshair.HitWidth, hitwidth},
-		FourLine = {texlinesize, self.Crosshair.Line, line},
-		FourLineWidth = {texlinewidth, self.Crosshair.LineWidth, linewidth},
-	} do
-		t.Size[param] = math.ceil(size[1] * res * size[2] / size[3])
-	end
-
-	self:GetCrosshairTrace(t)
-	return t
 end

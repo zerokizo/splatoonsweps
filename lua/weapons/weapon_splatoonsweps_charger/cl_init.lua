@@ -87,11 +87,12 @@ function SWEP:DrawCenterDot(t) -- Center circle
 end
 
 function SWEP:DrawCrosshairFlash(t)
-	if not self.FullChargeFlag or CurTime() > self.CrosshairFlashTime + self.FlashDuration then return end
-	local s = t.Size.Outer * self:GetScopedSize() * 2
-	surface.SetMaterial(ss.Materials.Crosshair.Flash)
-	surface.SetDrawColor(ColorAlpha(self:GetInkColor(), (self.CrosshairFlashTime + self.FlashDuration - CurTime()) / self.FlashDuration * 128))
-	surface.DrawTexturedRect(t.HitPosScreen.x - s / 2, t.HitPosScreen.y - s / 2, s, s)
+	if not self.FullChargeFlag then return end
+	local frac = math.TimeFraction(self.CrosshairFlashTime,
+	self.CrosshairFlashTime + self.FlashDuration, CurTime())
+	if frac > 1 then return end
+	ss.DrawCrosshair.ChargerFlash(t.HitPosScreen.x, t.HitPosScreen.y,
+	self:GetScopedSize(), self:GetInkColor(), frac)
 end
 
 function SWEP:DrawHitCross(t) -- Hit cross pattern, foreground
