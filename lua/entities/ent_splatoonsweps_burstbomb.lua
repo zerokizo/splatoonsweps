@@ -3,11 +3,13 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
+ENT.SubWeaponName = "burstbomb"
 ENT.Base = "ent_splatoonsweps_throwable"
 ENT.Model = Model "models/props_splatoon/weapons/subs/burst_bombs/burst_bomb.mdl"
-hook.Add("ShouldCollide", "SplatoonSWEPs: Burst bomb filter", function(e1, e2)
-    if e2:GetClass() == "ent_splatoonsweps_burstbomb" then e1, e2 = e2, e1 end
-    if e1:GetClass() ~= "ent_splatoonsweps_burstbomb" then return end
+ENT.UseSubWeaponFilter = true
+hook.Add("ShouldCollide", "SplatoonSWEPs: Sub weapon filter", function(e1, e2)
+    if e2.UseSubWeaponFilter then e1, e2 = e2, e1 end
+    if not e1.UseSubWeaponFilter then return end
     if not IsValid(e1.Owner) then return end
     local w1 = ss.IsValidInkling(e1.Owner)
     local w2 = ss.IsValidInkling(e2)
@@ -16,13 +18,17 @@ hook.Add("ShouldCollide", "SplatoonSWEPs: Burst bomb filter", function(e1, e2)
 end)
 
 function ENT:Initialize()
-    local p = ss.burstbomb.Parameters
+    local p = ss[self.SubWeaponName].Parameters
     self.Parameters = p
     self.StraightFrame = p.Fly_AirFrm
     self.AirResist = p.Fly_VelKd - 1
     self.AngleAirResist = p.Fly_RotKd - 1
     self.Gravity = p.Fly_Gravity
-    self.BaseClass.Initialize(self)
+    local baseclass = self.BaseClass
+    while baseclass.ClassName ~= "ent_splatoonsweps_throwable" do
+        baseclass = baseclass.BaseClass
+    end
+    baseclass.Initialize(self)
     self:SetCollisionGroup(COLLISION_GROUP_PROJECTILE)
     self:SetCustomCollisionCheck(true)
     if CLIENT then return end

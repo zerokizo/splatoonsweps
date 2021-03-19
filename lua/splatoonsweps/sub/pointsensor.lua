@@ -2,7 +2,7 @@
 AddCSLuaFile()
 local ss = SplatoonSWEPs
 if not ss then return {} end
-ss.burstbomb = {
+ss.pointsensor = {
     Merge = {
         IsSubWeaponThrowable = true,
     },
@@ -33,8 +33,7 @@ ss.burstbomb = {
         CrossPaintRayRadius = 1,
         EffectShakeRange = 70,
         Fly_Gravity = 0.16,
-        Fly_InitPit = 0.4,
-        Fly_InitRol = 0.12,
+        Fly_InitYaw = 0.4,
         Fly_RotI = 20,
         Fly_RotKd = 0.98015,
         Fly_VelKd = 0.94134,
@@ -73,8 +72,7 @@ ss.burstbomb = {
         CrossPaintRayRadius = "du",
         EffectShakeRange = "du",
         Fly_Gravity = "du/f^2",
-        Fly_InitPit = "rad",
-        Fly_InitRol = "rad",
+        Fly_InitYaw = "rad",
         Fly_RotI = "-",
         Fly_RotKd = "ratio",
         Fly_VelKd = "ratio",
@@ -85,13 +83,13 @@ ss.burstbomb = {
         Fly_InitVel_Estimated = "du/f",
         Fly_AirFrm = "f",
     },
-    BurstSound = "SplatoonSWEPs.BurstBombExplosion",
+    BurstSound = "SplatoonSWEPs.PointSensor",
 }
 
-ss.ConvertUnits(ss.burstbomb.Parameters, ss.burstbomb.Units)
+ss.ConvertUnits(ss.pointsensor.Parameters, ss.pointsensor.Units)
 
-local module = ss.burstbomb.Merge
-local p = ss.burstbomb.Parameters
+local module = ss.pointsensor.Merge
+local p = ss.pointsensor.Parameters
 function module:CanSecondaryAttack()
     return self:GetInk() > p.InkConsume
 end
@@ -107,7 +105,7 @@ end
 
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
-    local e = ents.Create "ent_splatoonsweps_burstbomb"
+    local e = ents.Create "ent_splatoonsweps_pointsensor"
     e.Owner = self.Owner
     e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
     e:SetInkColorProxy(self:GetInkColorProxy())
@@ -119,8 +117,8 @@ function module:ServerSecondaryAttack(throwable)
     if IsValid(ph) then
         local dir = self:GetAimVector()
         ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())
-        ph:AddAngleVelocity(Vector(-math.deg(p.Fly_InitRol), math.deg(p.Fly_InitPit), 0) * ss.SecToFrame)
-        ph:SetAngles(dir:Angle())
+        ph:AddAngleVelocity(Vector(0, 0, math.deg(p.Fly_InitYaw)) * ss.SecToFrame)
+        ph:SetAngles(Angle(0, dir:Angle().yaw, 0))
     end
 
     self:SetInk(math.max(0, self:GetInk() - p.InkConsume))

@@ -2,7 +2,7 @@
 AddCSLuaFile()
 local ss = SplatoonSWEPs
 if not ss then return {} end
-ss.burstbomb = {
+ss.sprinkler = {
     Merge = {
         IsSubWeaponThrowable = true,
     },
@@ -38,7 +38,7 @@ ss.burstbomb = {
         Fly_RotI = 20,
         Fly_RotKd = 0.98015,
         Fly_VelKd = 0.94134,
-        InkConsume = 0.4,
+        InkConsume = 0.7,
         Shape_SphereD = 5,
         Shape_SphereR = 2,
 
@@ -85,13 +85,13 @@ ss.burstbomb = {
         Fly_InitVel_Estimated = "du/f",
         Fly_AirFrm = "f",
     },
-    BurstSound = "SplatoonSWEPs.BurstBombExplosion",
+    BurstSound = "SplatoonSWEPs.SubWeaponPut",
 }
 
-ss.ConvertUnits(ss.burstbomb.Parameters, ss.burstbomb.Units)
+ss.ConvertUnits(ss.sprinkler.Parameters, ss.sprinkler.Units)
 
-local module = ss.burstbomb.Merge
-local p = ss.burstbomb.Parameters
+local module = ss.sprinkler.Merge
+local p = ss.sprinkler.Parameters
 function module:CanSecondaryAttack()
     return self:GetInk() > p.InkConsume
 end
@@ -107,7 +107,7 @@ end
 
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
-    local e = ents.Create "ent_splatoonsweps_burstbomb"
+    local e = ents.Create "ent_splatoonsweps_sprinkler"
     e.Owner = self.Owner
     e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
     e:SetInkColorProxy(self:GetInkColorProxy())

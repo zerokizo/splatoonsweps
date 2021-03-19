@@ -65,10 +65,6 @@ ss.ConvertUnits(ss.inkmine.Parameters, ss.inkmine.Units)
 
 local module = ss.inkmine.Merge
 local p = ss.inkmine.Parameters
-function module:SharedSecondaryAttack(throwable)
-    
-end
-
 function module:CanSecondaryAttack()
     return self:GetInk() > p.InkConsume
 end
@@ -77,45 +73,36 @@ function module:GetSubWeaponInkConsume()
     return p.InkConsume
 end
 
-if SERVER then
-    function module:ServerSecondaryAttack(throwable)
-        if not self.Owner:OnGround() then return end
-        if self.NumInkmines >= p.MaxInkmines then return end
-        local start = self.Owner:GetPos()
-        local tracedz = -vector_up * 10
-        local tr = util.QuickTrace(start, tracedz, self.Owner)
-        if not tr.Hit then
-            tr = util.TraceHull {
-                start = start,
-                endpos = start + tracedz,
-                filter = self.Owner,
-                mins = self.Owner:OBBMins(),
-                maxs = self.Owner:OBBMaxs(),
-            }
-        end
-
-        local inkcolor = self:GetNWInt "inkcolor"
-        local e = ents.Create "ent_splatoonsweps_inkmine"
-        local ang = (tr.Hit and tr.HitNormal or vector_up):Angle()
-        ang:RotateAroundAxis(ang:Right(), -90)
-        e.Weapon = self
-        e:SetOwner(self.Owner)
-        e:SetNWInt("inkcolor", inkcolor)
-        e:SetPos(tr.HitPos + tr.HitNormal * 9)
-        e:SetAngles(ang)
-        e:Spawn()
-        self.NumInkmines = self.NumInkmines + 1
-        self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
-
-        ss.Paint(tr.HitPos, tr.HitNormal, p.InitInkRadius,
-        inkcolor, ang.yaw, ss.GetDropType(), 1, self.Owner, self:GetClass())
-    end
-else
-    function module:DrawOnSubTriggerDown()
-
+if CLIENT then return end
+function module:ServerSecondaryAttack(throwable)
+    if not self.Owner:OnGround() then return end
+    if self.NumInkmines >= p.MaxInkmines then return end
+    local start = self.Owner:GetPos()
+    local tracedz = -vector_up * 10
+    local tr = util.QuickTrace(start, tracedz, self.Owner)
+    if not tr.Hit then
+        tr = util.TraceHull {
+            start = start,
+            endpos = start + tracedz,
+            filter = self.Owner,
+            mins = self.Owner:OBBMins(),
+            maxs = self.Owner:OBBMaxs(),
+        }
     end
 
-    function module:ClientSecondaryAttack(throwable)
+    local inkcolor = self:GetNWInt "inkcolor"
+    local e = ents.Create "ent_splatoonsweps_inkmine"
+    local ang = (tr.Hit and tr.HitNormal or vector_up):Angle()
+    ang:RotateAroundAxis(ang:Right(), -90)
+    e.Weapon = self
+    e:SetOwner(self.Owner)
+    e:SetNWInt("inkcolor", inkcolor)
+    e:SetPos(tr.HitPos + tr.HitNormal * 9)
+    e:SetAngles(ang)
+    e:Spawn()
+    self.NumInkmines = self.NumInkmines + 1
+    self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
 
-    end
+    ss.Paint(tr.HitPos, tr.HitNormal, p.InitInkRadius,
+    inkcolor, ang.yaw, ss.GetDropType(), 1, self.Owner, self:GetClass())
 end

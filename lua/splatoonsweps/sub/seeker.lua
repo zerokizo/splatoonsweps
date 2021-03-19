@@ -72,10 +72,6 @@ ss.ConvertUnits(ss.seeker.Parameters, ss.seeker.Units)
 
 local module = ss.seeker.Merge
 local p = ss.seeker.Parameters
-function module:SharedSecondaryAttack(throwable)
-    
-end
-
 function module:CanSecondaryAttack()
     return self:GetInk() > p.InkConsume
 end
@@ -153,9 +149,5 @@ else
         ss.DrawCrosshair.LinesHit(x, y, c, 0.4, 1)
         ss.DrawCrosshair.InnerCircle(x, y)
         cam.End2D()
-    end
-
-    function module:ClientSecondaryAttack(throwable)
-
     end
 end

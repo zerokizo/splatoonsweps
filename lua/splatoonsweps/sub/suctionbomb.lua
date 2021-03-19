@@ -111,10 +111,6 @@ ss.ConvertUnits(ss.suctionbomb.Parameters, ss.suctionbomb.Units)
 
 local module = ss.suctionbomb.Merge
 local p = ss.suctionbomb.Parameters
-function module:SharedSecondaryAttack(throwable)
-    
-end
-
 function module:CanSecondaryAttack()
     return self:GetInk() > p.InkConsume
 end
@@ -128,31 +124,22 @@ function module:GetSubWeaponInitVelocity()
     return self:GetAimVector() * initspeed - ss.GetGravityDirection() * initspeed * 0.25
 end
 
-if SERVER then
-    function module:ServerSecondaryAttack(throwable)
-        local e = ents.Create "ent_splatoonsweps_suctionbomb"
-        e.Owner = self.Owner
-        e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
-        e:SetInkColorProxy(self:GetInkColorProxy())
-        e:SetPos(self:GetShootPos() + self:GetAimVector() * 30)
-        e:SetAngles((-self:GetAimVector()):Angle())
-        e:Spawn()
-        e:EmitSound "SplatoonSWEPs.SubWeaponThrown"
+if CLIENT then return end
+function module:ServerSecondaryAttack(throwable)
+    local e = ents.Create "ent_splatoonsweps_suctionbomb"
+    e.Owner = self.Owner
+    e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
+    e:SetInkColorProxy(self:GetInkColorProxy())
+    e:SetPos(self:GetShootPos() + self:GetAimVector() * 30)
+    e:SetAngles((-self:GetAimVector()):Angle())
+    e:Spawn()
+    e:EmitSound "SplatoonSWEPs.SubWeaponThrown"
 
-        local ph = e:GetPhysicsObject()
-        if IsValid(ph) then
-            ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())
-        end
-
-        self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
-        self:SetReloadDelay(60 * ss.FrameToSec)
-    end
-else
-    function module:DrawOnSubTriggerDown()
-
+    local ph = e:GetPhysicsObject()
+    if IsValid(ph) then
+        ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())
     end
 
-    function module:ClientSecondaryAttack(throwable)
-
-    end
+    self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
+    self:SetReloadDelay(60 * ss.FrameToSec)
 end
