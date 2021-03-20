@@ -96,6 +96,7 @@ ss.Particles = {
 	BrushSplash = "splatoonsweps_roller_splash_brush",
 	ChargerFlash = "splatoonsweps_charger_flash",
 	ChargerMuzzleFlash = "splatoonsweps_explosion_impact",
+	Disruptor = "splatoonsweps_disruptor",
 	MuzzleMist = "splatoonsweps_muzzlemist",
 	RollerRolling = "splatoonsweps_roller_rolling",
 	RollerSplash = "splatoonsweps_roller_splash",

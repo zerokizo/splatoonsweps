@@ -22,7 +22,7 @@ function EFFECT:Init(e)
 	self.MinScale = minscale
 	self.Radius = e:GetRadius()
 	if self.IsSubExplosion then return end
-	local p = CreateParticleSystem(game.GetWorld(), ss.Particles.BombExplosion, PATTACH_WORLDORIGIN, 0, self:GetPos())
+	local p = CreateParticleSystem(game.GetWorld(), ss.Particles.Disruptor, PATTACH_WORLDORIGIN, 0, self:GetPos())
 	p:AddControlPoint(1, game.GetWorld(), PATTACH_WORLDORIGIN, nil, color:ToVector())
 	p:AddControlPoint(2, game.GetWorld(), PATTACH_WORLDORIGIN, nil, vector_up * self.Radius)
 end
