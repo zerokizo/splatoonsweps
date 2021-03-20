@@ -3,6 +3,7 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
+ENT.CollisionGroup = COLLISION_GROUP_PROJECTILE
 ENT.SubWeaponName = "burstbomb"
 ENT.Base = "ent_splatoonsweps_throwable"
 ENT.Model = Model "models/props_splatoon/weapons/subs/burst_bombs/burst_bomb.mdl"
@@ -29,7 +30,6 @@ function ENT:Initialize()
         baseclass = baseclass.BaseClass
     end
     baseclass.Initialize(self)
-    self:SetCollisionGroup(COLLISION_GROUP_PROJECTILE)
     self:SetCustomCollisionCheck(true)
     if CLIENT then return end
     self:GetPhysicsObject():SetMass(0.001)

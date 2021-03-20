@@ -3,6 +3,7 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
+ENT.CollisionGroup = COLLISION_GROUP_WEAPON
 ENT.Type = "anim"
 ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
 ENT.WeaponClassName = ""
@@ -13,7 +14,7 @@ function ENT:Initialize()
     end
 
     self:SetModel(self.Model)
-    self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+    self:SetCollisionGroup(self.CollisionGroup)
     self.DragCoeffChangeTime = CurTime() + self.StraightFrame
     if CLIENT then return end
     self:PhysicsInit(SOLID_VPHYSICS)

@@ -76,12 +76,9 @@ ss.TwilightPlayermodels = {
 
 ss.Materials = {
 	Crosshair = {
-		Dot = Material "splatoonsweps/crosshair/dot.vmt",
 		Flash = Material "splatoonsweps/crosshair/charged.vmt",
-		Inner = Material "splatoonsweps/crosshair/inner.vmt",
 		Line = Material "splatoonsweps/crosshair/line.vmt",
 		LineColor = Material "splatoonsweps/crosshair/linecolor.vmt",
-		Outer = Material "splatoonsweps/crosshair/outer.vmt",
 	},
 	Effects = {
 		Hit = Material "splatoonsweps/effects/splatling_muzzleflash",
