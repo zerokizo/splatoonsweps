@@ -23,6 +23,7 @@
 	"$colortint_base"		"{ 248 99 0 }"
 	"$colortint_tmp"		"[0 0 0]"
 	"$color2"		"{ 248 99 0 }"
+	"$selfillumtint" "[1 1 1]"
 
 	"proxies"
 	{
