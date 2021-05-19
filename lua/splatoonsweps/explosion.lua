@@ -338,7 +338,7 @@ function ss.MakeBlasterExplosion(ink)
 		ColRadiusWorld = p.mSphereSplashDropCollisionRadius,
 		DoDamage = false,
 		Gravity = ss.ToHammerUnitsPerSec2,
-		InitPos = ink.Trace.endpos,
+		InitPos = ink.Trace.endpos + vector_up * p.mSphereSplashDropCollisionRadius * 2,
 		InitVel = vector_up * p.mSphereSplashDropInitSpeed,
 		PaintFarDistance = p.mPaintFarDistance,
 		PaintFarRadius = p.mSphereSplashDropPaintRadius,
