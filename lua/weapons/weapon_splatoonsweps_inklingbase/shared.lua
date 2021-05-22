@@ -340,11 +340,17 @@ function SWEP:SharedThinkBase()
 	self:ApplySkinAndBodygroups()
 	ss.ProtectedCall(self.SharedThink, self)
 
-	if self:GetIsDisrupted() and CurTime() > self:GetDisruptorEndTime() then
-		self:SetIsDisrupted(false)
-		if IsValid(self.Owner) then
-			self.Owner:EmitSound "SplatoonSWEPs.DisruptorWornOff"
-		end
+	if not IsValid(self.Owner) then return end
+	if self.Owner:GetNWBool "SplatoonSWEPs: IsDisrupted"
+	and CurTime() > self.Owner:GetNWFloat "SplatoonSWEPs: DisruptorEndTime" then
+		self.Owner:SetNWBool("SplatoonSWEPs: IsDisrupted", false)
+		self.Owner:EmitSound "SplatoonSWEPs.DisruptorWornOff"
+	end
+
+	if self.Owner:GetNWBool "SplatoonSWEPs: IsMarked"
+	and CurTime() > self.Owner:GetNWFloat "SplatoonSWEPs: PointSensorEndTime" then
+		self.Owner:SetNWBool("SplatoonSWEPs: IsMarked", false)
+		self.Owner:EmitSound "SplatoonSWEPs.PointSensorLeft"
 	end
 end
 
@@ -445,7 +451,7 @@ function SWEP:SetupDataTables()
 	self:AddNetworkVar("Bool", "InInk") -- If owner is in ink.
 	self:AddNetworkVar("Bool", "InFence") -- If owner is in fence.
 	self:AddNetworkVar("Bool", "InWallInk") -- If owner is on wall.
-	self:AddNetworkVar("Bool", "IsDisrupted") -- If owner is getting Disruptor mist
+	self:AddNetworkVar("Bool", "IsDisrupted") -- If owner is getting Disruptor mist.
 	self:AddNetworkVar("Bool", "OldCrouching") -- If owner was crouching a tick ago.
 	self:AddNetworkVar("Bool", "OnEnemyInk") -- If owner is on enemy ink.
 	self:AddNetworkVar("Bool", "Holstering") -- The weapon is being holstered.

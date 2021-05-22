@@ -136,6 +136,33 @@ sound.Add {
 
 sound.Add {
     channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.PointSensorHit",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/player/pointsensorhit.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.PointSensorTaken",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/player/pointsensortaken.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.PointSensorLeft",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/player/pointsensorleft.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_WEAPON,
     name = "SplatoonSWEPs.SeekerThrown",
     level = ss.WeaponSoundLevel,
     sound = "splatoonsweps/weapons/sub/seeker/start.wav",

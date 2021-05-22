@@ -9,15 +9,41 @@ ENT.Model = Model "models/props_splatoon/weapons/subs/point_sensor/point_sensor.
 
 if CLIENT then return end
 function ENT:PhysicsCollide(data, collider)
-    local params = ss.pointsensor.Parameters
-    local rnear = params.Burst_Radius_Near
-    local rmid = params.Burst_Radius_Middle
-    local dnear = params.Burst_Damage_Near
-    local dmid = params.Burst_Damage_Middle
-    local dfar = params.Burst_Damage_Far
-    local ddirecthit = dfar + dmid
-    
     self:StopSound "SplatoonSWEPs.SubWeaponThrown"
     self:EmitSound(ss.pointsensor.BurstSound)
     SafeRemoveEntity(self)
+
+    local hit = false
+    local p = ss.pointsensor.Parameters
+    for _, e in ipairs(ents.FindInSphere(self:GetPos(), p.Burst_Radius)) do
+        local w = ss.IsValidInkling(e)
+        if (e:IsPlayer() or e:IsNPC() or e:IsNextBot()) and not (w and ss.IsAlly(self, w)) then
+            hit = true
+            e:EmitSound "SplatoonSWEPs.PointSensorTaken"
+            e:SetNWBool("SplatoonSWEPs: IsMarked", true)
+            e:SetNWFloat("SplatoonSWEPs: PointSensorEndTime", CurTime() + ss.PointSensorDuration)
+            if not w then
+                local name = "SplatoonSWEPs: Timer for Point Sensor duration " .. e:EntIndex()
+                timer.Create(name, 0, 0, function()
+                    if not IsValid(e) then timer.Remove(name) return end
+                    if not e:GetNWBool "SplatoonSWEPs: IsMarked" then timer.Remove(name) return end
+                    if CurTime() < e:GetNWFloat "SplatoonSWEPs: PointSensorEndTime" then return end
+                    e:SetNWBool("SplatoonSWEPs: IsMarked", false)
+                    e:EmitSound "SplatoonSWEPs.PointSensorLeft"
+                    timer.Remove(name)
+                end)
+            end
+        end
+    end
+
+    if not hit then return end
+    local ply = {}
+    for _, e in ipairs(player.GetAll()) do
+        local w = ss.IsValidInkling(e)
+        if w and ss.IsAlly(self, w) then
+            table.insert(ply, e)
+        end
+    end
+
+    ss.EmitSound(ply, "SplatoonSWEPs.PointSensorHit")
 end

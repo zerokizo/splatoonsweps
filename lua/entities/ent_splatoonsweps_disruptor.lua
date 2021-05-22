@@ -16,12 +16,11 @@ function ENT:PhysicsCollide(data, collider)
     SafeRemoveEntity(self)
     for _, e in ipairs(ents.FindInSphere(self:GetPos(), p.Burst_Radius)) do
         local w = ss.IsValidInkling(e)
-        if w then
-            w:SetIsDisrupted(true)
-            w:SetDisruptorEndTime(CurTime() + ss.DisruptorDuration)
-            if IsValid(w.Owner) then
-                w.Owner:EmitSound "SplatoonSWEPs.DisruptorTaken"
-            end
+        if e:IsPlayer() then ss.EmitSound(e, "SplatoonSWEPs.DisruptorTaken") end
+        if not (w and ss.IsAlly(self, w)) then
+            hit = true
+            e:SetNWBool("SplatoonSWEPs: IsDisrupted", true)
+            e:SetNWFloat("SplatoonSWEPs: DisruptorEndTime", CurTime() + ss.DisruptorDuration)
         end
     end
 end

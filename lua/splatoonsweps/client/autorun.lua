@@ -434,6 +434,37 @@ function ss.DrawVCrosshair(self, dodraw, isfirstperson)
 	end
 end
 
+local MarkerLineMaterial = Material "cable/smoke"
+local MarkerLineTipMaterial = Material "sprites/dot"
+function ss.PreDrawHalos(self)
+	local marked = {}
+	local c = ss.GetColor(self:GetNWInt "inkcolor")
+	for _, e in ipairs(ents.GetAll()) do
+		if e:GetNWBool "SplatoonSWEPs: IsMarked" then
+			local w = ss.IsValidInkling(e)
+			if not (w and ss.IsAlly(self, w)) then
+				table.insert(marked, e)
+			end
+		end
+	end
+
+	halo.Add(marked, c, 2, 2, 1, true, true)
+	cam.Start3D()
+	cam.IgnoreZ(true)
+	local size = 2 + math.sin(2 * math.pi * 4 * CurTime()) * 0.75
+	local start = LocalPlayer():GetPos()
+	for _, e in ipairs(marked) do
+		local endpos = e:WorldSpaceCenter()
+		render.SetMaterial(MarkerLineMaterial)
+		render.DrawBeam(start, endpos, 2, -CurTime(), start:Distance(endpos) / 20 - CurTime(), c)
+		render.SetMaterial(MarkerLineTipMaterial)
+		render.DrawSprite(endpos, size, size, c)
+	end
+	render.DrawSprite(start, size, size, c)
+	cam.End3D()
+end
+
+hook.Add("PreDrawHalos", "SplatoonSWEPs: Draw marked enemies", ss.hook "PreDrawHalos")
 hook.Add("PostPlayerDraw", "SplatoonSWEPs: Thirdperson player fadeout", ss.hook "PostPlayerDraw")
 hook.Add("PrePlayerDraw", "SplatoonSWEPs: Hide players on crouch", ss.hook "PrePlayerDraw")
 hook.Add("PostRender", "SplatoonSWEPs: Render a RT scope", ss.hook "PostRender")

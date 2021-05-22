@@ -48,8 +48,8 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
         * [x] Splat Bomb
         * [x] Suction Bomb
     * [ ] Non-explosive sub weapons
-        * [ ] Disruptor
-        * [ ] Point Sensor
+        * [x] Disruptor
+        * [x] Point Sensor
         * [ ] Sprinkler
         * [ ] Splash Wall
         * [ ] Squid Beakon

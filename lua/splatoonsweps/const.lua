@@ -241,6 +241,7 @@ ss.SquidViewOffset = vector_up * 24
 ss.InkGridSize = 12 -- in Hammer Units
 ss.DisruptedSpeed = .45 -- Disruptor's debuff factor
 ss.DisruptorDuration = 5 -- Disruptor lasts this seconds
+ss.PointSensorDuration = 8 -- It was 10 sec. until version 2.1.0.
 ss.InklingJumpPower = 250
 ss.InklingSpeedMulSubWeapon = .75 -- Speed multiplier when holding MOUSE2
 ss.JumpPowerMulOnEnemyInk = .75

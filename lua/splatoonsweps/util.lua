@@ -284,10 +284,10 @@ end
 
 -- Play a sound that only can be heard by one player.
 -- Arguments:
---   Player ply			| The player who can hear it.
+--   Player ply			| The player who can hear it.  Can be a table of players serverside.
 --   string soundName	| The sound to play.
 function ss.EmitSound(ply, soundName, soundLevel, pitchPercent, volume, channel)
-	if not (IsValid(ply) and ply:IsPlayer()) then return end
+	if not (istable(ply) or IsValid(ply) and ply:IsPlayer()) then return end
 	if SERVER and ss.mp then
 		net.Start "SplatoonSWEPs: Send a sound"
 		net.WriteString(soundName)
@@ -296,7 +296,7 @@ function ss.EmitSound(ply, soundName, soundLevel, pitchPercent, volume, channel)
 		net.WriteFloat(volume or 1)
 		net.WriteUInt((channel or CHAN_AUTO) + 1, 8)
 		net.Send(ply)
-	elseif CLIENT and IsFirstTimePredicted() or ss.sp then
+	elseif not istable(ply) and (CLIENT and IsFirstTimePredicted() or ss.sp) then
 		ply:EmitSound(soundName, soundLevel, pitchPercent, volume, channel)
 	end
 end
