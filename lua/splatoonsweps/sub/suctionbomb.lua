@@ -140,6 +140,6 @@ function module:ServerSecondaryAttack(throwable)
         ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())
     end
 
-    self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
+    self:ConsumeInk(p.InkConsume)
     self:SetReloadDelay(60 * ss.FrameToSec)
 end

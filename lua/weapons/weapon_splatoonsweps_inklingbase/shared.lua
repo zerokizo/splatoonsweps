@@ -254,6 +254,11 @@ function SWEP:SetWeaponAnim(act, index)
 	end
 end
 
+function SWEP:ConsumeInk(amount)
+	if self:GetIsDisrupted() then amount = amount * 2 end
+	self:SetInk(math.max(self:GetInk() - amount, 0))
+end
+
 function SWEP:SharedInitBase()
 	self:SetCooldown(CurTime())
 	self:ApplySkinAndBodygroups()
@@ -298,7 +303,6 @@ function SWEP:SharedDeployBase()
 	self.SquidSpeed = self:GetSquidSpeed()
 	self.OnEnemyInkSpeed = ss.OnEnemyInkSpeed
 	self.JumpPower = ss.InklingJumpPower
-	self.OnEnemyInkJumpPower = ss.OnEnemyInkJumpPower
 	self.IgnorePrediction = SERVER and ss.mp and not self.Owner:IsPlayer() or nil
 	self.Owner:SetHealth(self.Owner:Health() * self:GetNWInt "BackupInklingMaxHealth" / self:GetNWInt "BackupHumanMaxHealth")
 	if self.Owner:IsPlayer() then
@@ -335,6 +339,13 @@ function SWEP:SharedThinkBase()
 	self:DrawShadow(not ShouldNoDraw)
 	self:ApplySkinAndBodygroups()
 	ss.ProtectedCall(self.SharedThink, self)
+
+	if self:GetIsDisrupted() and CurTime() > self:GetDisruptorEndTime() then
+		self:SetIsDisrupted(false)
+		if IsValid(self.Owner) then
+			self.Owner:EmitSound "SplatoonSWEPs.DisruptorWornOff"
+		end
+	end
 end
 
 -- Begin to use special weapon.
@@ -434,6 +445,7 @@ function SWEP:SetupDataTables()
 	self:AddNetworkVar("Bool", "InInk") -- If owner is in ink.
 	self:AddNetworkVar("Bool", "InFence") -- If owner is in fence.
 	self:AddNetworkVar("Bool", "InWallInk") -- If owner is on wall.
+	self:AddNetworkVar("Bool", "IsDisrupted") -- If owner is getting Disruptor mist
 	self:AddNetworkVar("Bool", "OldCrouching") -- If owner was crouching a tick ago.
 	self:AddNetworkVar("Bool", "OnEnemyInk") -- If owner is on enemy ink.
 	self:AddNetworkVar("Bool", "Holstering") -- The weapon is being holstered.
@@ -441,6 +453,7 @@ function SWEP:SetupDataTables()
 	self:AddNetworkVar("Entity", "NPCTarget") -- Target entity for NPC.
 	self:AddNetworkVar("Float", "Cooldown") -- Cannot crouch, fire, or use sub weapon.
 	self:AddNetworkVar("Float", "EnemyInkTouchTime") -- Delay timer to force to stand up.
+	self:AddNetworkVar("Float", "DisruptorEndTime") -- The time when Disruptor is worn off
 	self:AddNetworkVar("Float", "Ink") -- Ink remainig. 0 to ss.GetMaxInkAmount()
 	self:AddNetworkVar("Float", "OldSpeed") -- Old Z-velocity of the player.
 	self:AddNetworkVar("Float", "ThrowAnimTime") -- Time to adjust throw anim. speed.
@@ -492,6 +505,7 @@ function SWEP:SetupDataTables()
 			mul = mul / 10 * gain "reloadspeedstand" / 100
 		end
 
+		if self:GetIsDisrupted() then mul = mul * 0.75 end
 		if self:GetNWBool "canreloadstand" or reloadink then
 			local ink = math.Clamp(self:GetInk() + reloadamount * mul, 0, ss.GetMaxInkAmount())
 			if self:GetInk() ~= ink then self:SetInk(ink) end

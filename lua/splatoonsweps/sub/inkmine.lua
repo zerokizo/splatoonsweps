@@ -93,7 +93,7 @@ function module:ServerSecondaryAttack(throwable)
     e:SetAngles(ang)
     e:Spawn()
     self.NumInkmines = self.NumInkmines + 1
-    self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
+    self:ConsumeInk(p.InkConsume)
 
     ss.Paint(tr.HitPos, tr.HitNormal, p.InitInkRadius,
     inkcolor, ang.yaw, ss.GetDropType(), 1, self.Owner, self:GetClass())

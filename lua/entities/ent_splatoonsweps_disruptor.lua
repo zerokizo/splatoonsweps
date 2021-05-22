@@ -9,15 +9,19 @@ ENT.Model = Model "models/props_splatoon/weapons/subs/disruptor/disruptor.mdl"
 
 if CLIENT then return end
 function ENT:PhysicsCollide(data, collider)
-    local params = ss.disruptor.Parameters
-    local rnear = params.Burst_Radius_Near
-    local rmid = params.Burst_Radius_Middle
-    local dnear = params.Burst_Damage_Near
-    local dmid = params.Burst_Damage_Middle
-    local dfar = params.Burst_Damage_Far
-    local ddirecthit = dfar + dmid
+    local p = ss.disruptor.Parameters
     
     self:StopSound "SplatoonSWEPs.SubWeaponThrown"
     self:EmitSound(ss.disruptor.BurstSound)
     SafeRemoveEntity(self)
+    for _, e in ipairs(ents.FindInSphere(self:GetPos(), p.Burst_Radius)) do
+        local w = ss.IsValidInkling(e)
+        if w then
+            w:SetIsDisrupted(true)
+            w:SetDisruptorEndTime(CurTime() + ss.DisruptorDuration)
+            if IsValid(w.Owner) then
+                w.Owner:EmitSound "SplatoonSWEPs.DisruptorTaken"
+            end
+        end
+    end
 end

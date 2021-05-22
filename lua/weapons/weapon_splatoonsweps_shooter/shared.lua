@@ -225,7 +225,7 @@ function SWEP:SharedPrimaryAttack(able, auto)
 	local p = self.Parameters
 	local ts = ss.GetTimeScale(self.Owner)
 	self:SetNextPrimaryFire(CurTime() + p.mRepeatFrame / ts)
-	self:SetInk(math.max(0, self:GetInk() - p.mInkConsume))
+	self:ConsumeInk(p.mInkConsume)
 	self:SetReloadDelay(p.mInkRecoverStop)
 	self:SetCooldown(math.max(self:GetCooldown(),
 	CurTime() + math.min(p.mRepeatFrame, ss.CrouchDelay) / ts))

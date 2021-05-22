@@ -100,6 +100,24 @@ sound.Add {
 
 sound.Add {
     channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.DisruptorTaken",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/player/disruptortaken.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.DisruptorWornOff",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/player/disruptorwornoff.wav",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
+}
+
+sound.Add {
+    channel = CHAN_WEAPON,
     name = "SplatoonSWEPs.InkmineAlert",
     level = ss.WeaponSoundLevel,
     sound = "splatoonsweps/weapons/sub/inkminealert.wav",

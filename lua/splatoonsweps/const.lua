@@ -239,9 +239,12 @@ ss.MaxInkAmount = 100
 ss.SquidBoundHeight = 32
 ss.SquidViewOffset = vector_up * 24
 ss.InkGridSize = 12 -- in Hammer Units
-ss.InklingJumpPower = 250
 ss.DisruptedSpeed = .45 -- Disruptor's debuff factor
-ss.OnEnemyInkJumpPower = ss.InklingJumpPower * .75
+ss.DisruptorDuration = 5 -- Disruptor lasts this seconds
+ss.InklingJumpPower = 250
+ss.InklingSpeedMulSubWeapon = .75 -- Speed multiplier when holding MOUSE2
+ss.JumpPowerMulOnEnemyInk = .75
+ss.JumpPowerMulDisrupted = .6
 ss.ToHammerUnits = .1 * 3.28084 * 16 * (1.00965 / 1.5) -- = 3.53, Splatoon distance units -> Hammer distance units
 ss.ToHammerUnitsPerSec = ss.ToHammerUnits * framepersec -- = 212, Splatoon du/s -> Hammer du/s
 ss.ToHammerUnitsPerSec2 = ss.ToHammerUnitsPerSec * framepersec -- = 12720, Splatoon du/s^2 -> Hammer du/s^2

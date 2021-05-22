@@ -121,7 +121,7 @@ if SERVER then
             ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())
         end
 
-        self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
+        self:ConsumeInk(p.InkConsume)
         self:SetReloadDelay(70 * ss.FrameToSec)
     end
 else

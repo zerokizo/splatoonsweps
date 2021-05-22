@@ -144,7 +144,8 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 		maxspeed = maxspeed * Either(crouching, ss.SquidSpeedOutofInk, 1)
 		maxspeed = w:GetInInk() and w.SquidSpeed or maxspeed
 		maxspeed = w:GetOnEnemyInk() and w.OnEnemyInkSpeed or maxspeed
-		maxspeed = maxspeed * (w.IsDisrupted and ss.DisruptedSpeed or 1)
+		maxspeed = maxspeed * (w:GetThrowing() and ss.InklingSpeedMulSubWeapon or 1)
+		maxspeed = maxspeed * (w:GetIsDisrupted() and ss.DisruptedSpeed or 1)
 		ply:SetWalkSpeed(maxspeed)
 		if w:GetNWBool "allowsprint" and not (crouching or w:GetInInk() or w:GetOnEnemyInk()) then
 			maxspeed = Lerp(0.5, maxspeed, w.SquidSpeed) -- Sprint speed
@@ -161,7 +162,10 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 		ss.PlayerShouldResetCamera[ply] = math.abs(a.p) > 1
 	end
 
-	ply:SetJumpPower(w:GetOnEnemyInk() and w.OnEnemyInkJumpPower or w.JumpPower)
+	local jumppower = w.JumpPower
+	jumppower = jumppower * (w:GetOnEnemyInk() and ss.JumpPowerMulOnEnemyInk or 1)
+	jumppower = jumppower * (w:GetIsDisrupted() and ss.JumpPowerMulDisrupted or 1)
+	ply:SetJumpPower(jumppower)
 	if CLIENT then w:UpdateInkState() end -- Ink state prediction
 
 	for v, i in pairs {

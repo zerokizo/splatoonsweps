@@ -123,6 +123,6 @@ function module:ServerSecondaryAttack(throwable)
         ph:SetAngles(dir:Angle())
     end
 
-    self:SetInk(math.max(0, self:GetInk() - p.InkConsume))
+    self:ConsumeInk(p.InkConsume)
     self:SetReloadDelay(40 * ss.FrameToSec)
 end

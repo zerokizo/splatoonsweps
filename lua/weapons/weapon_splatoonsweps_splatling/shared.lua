@@ -212,7 +212,7 @@ function SWEP:Move(ply)
 		self:SetNextPrimaryFire(CurTime() + p.mRepeatFrame / ts)
 		self:SetAimTimer(CurTime() + ss.AimDuration)
 		self:SetFireInk(self:GetFireInk() - 1)
-		self:SetInk(math.max(0, self:GetInk() - self.TakeAmmo))
+		self:ConsumeInk(self.TakeAmmo)
 		self:SetReloadDelay(p.mInkRecoverStop)
 		self:SetCooldown(math.max(self:GetCooldown(), CurTime() + crouchdelay / ts))
 

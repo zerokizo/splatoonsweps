@@ -56,7 +56,7 @@ function SWEP:Move(ply)
         self:SetAimTimer(math.max(self:GetAimTimer(true), CurTime() + d))
     else
         self:CreateInk()
-        self:SetInk(math.max(0, self:GetInk() - p.mInkConsume))
+        self:ConsumeInk(p.mInkConsume)
         self:SetCooldown(math.max(self:GetCooldown(), CurTime() + d))
         self:SetAimTimer(CurTime() + d)
     end
