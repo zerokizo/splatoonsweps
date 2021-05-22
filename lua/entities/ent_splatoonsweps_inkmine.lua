@@ -6,11 +6,12 @@ AddCSLuaFile()
 ENT.Type = "anim"
 ENT.Model = Model "models/splatoonsweps/subs/inkmine/inkmine.mdl"
 ENT.WeaponClassName = ""
+ENT.AlertSoundPlayed = false
 ENT.AnimFasterTime = 8
 ENT.ExplodeStartTime = 10
 ENT.ExplosionDelay = 1
 ENT.ExplosionTime = ENT.ExplodeStartTime + ENT.ExplosionDelay
-ENT.AlertSoundPlayed = false
+ENT.IsForgotten = false -- If true, it's successfully removed from the item count in the weapon.
 function ENT:Initialize()
     if IsValid(self:GetOwner()) then
         local w = ss.IsValidInkling(self:GetOwner())
@@ -87,17 +88,15 @@ function ENT:ShouldExplode()
     local elapsed = CurTime() - self.InitTime
     if elapsed > self.ExplodeStartTime then return true end
     if self:IsEnemyNearby() then return true end
-    local mins, maxs = self:GetCollisionBounds()
-    local gcolor = ss.GetSurfaceColorArea(self:GetPos(), mins, maxs, 1, 15, 0.5)
+    local p = ss.inkmine.Parameters
+    local maxs = ss.vector_one * 16
+    local mins = -maxs
+    local gcolor = ss.GetSurfaceColorArea(self:GetPos(), mins, maxs, 1, p.CrossPaintRayLength, 0.5)
     if gcolor ~= self:GetNWInt "inkcolor" then return true end
     return false
 end
 
 function ENT:Explode()
-    if IsValid(self.Weapon) and self.Weapon.NumInkmines then
-        self.Weapon.NumInkmines = self.Weapon.NumInkmines - 1
-    end
-    
     ss.MakeBombExplosion(self:GetPos() + self:GetUp() * 10,
     self:GetUp(), self, self:GetNWInt "inkcolor", "inkmine")
 end
@@ -116,6 +115,10 @@ function ENT:Think()
         self:EmitSound "SplatoonSWEPs.InkmineAlert"
         self.AlertSoundPlayed = true
         self.InitTime = CurTime() - self.ExplodeStartTime
+        if IsValid(self.Weapon) and self.Weapon.NumInkmines and not self.IsForgotten then
+            self.Weapon.NumInkmines = self.Weapon.NumInkmines - 1
+            self.IsForgotten = true
+        end
     end
 
     return true

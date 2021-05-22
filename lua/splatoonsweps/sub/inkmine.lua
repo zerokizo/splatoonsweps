@@ -78,17 +78,9 @@ function module:ServerSecondaryAttack(throwable)
     if not self.Owner:OnGround() then return end
     if self.NumInkmines >= p.MaxInkmines then return end
     local start = self.Owner:GetPos()
-    local tracedz = -vector_up * 10
+    local tracedz = -vector_up * p.CrossPaintRayLength
     local tr = util.QuickTrace(start, tracedz, self.Owner)
-    if not tr.Hit then
-        tr = util.TraceHull {
-            start = start,
-            endpos = start + tracedz,
-            filter = self.Owner,
-            mins = self.Owner:OBBMins(),
-            maxs = self.Owner:OBBMaxs(),
-        }
-    end
+    if not tr.Hit then return end
 
     local inkcolor = self:GetNWInt "inkcolor"
     local e = ents.Create "ent_splatoonsweps_inkmine"
