@@ -15,6 +15,12 @@ function ENT:PhysicsCollide(data, collider)
 
     local hit = false
     local p = ss.pointsensor.Parameters
+    local e = EffectData()
+    e:SetOrigin(self:GetPos())
+    e:SetRadius(p.Burst_Radius)
+    e:SetColor(self:GetNWInt "inkcolor")
+    util.Effect("SplatoonSWEPsPointSensor", e)
+
     for _, e in ipairs(ents.FindInSphere(self:GetPos(), p.Burst_Radius)) do
         local w = ss.IsValidInkling(e)
         if (e:IsPlayer() or e:IsNPC() or e:IsNextBot()) and not (w and ss.IsAlly(self, w)) then
@@ -22,17 +28,15 @@ function ENT:PhysicsCollide(data, collider)
             e:EmitSound "SplatoonSWEPs.PointSensorTaken"
             e:SetNWBool("SplatoonSWEPs: IsMarked", true)
             e:SetNWFloat("SplatoonSWEPs: PointSensorEndTime", CurTime() + ss.PointSensorDuration)
-            if not w then
-                local name = "SplatoonSWEPs: Timer for Point Sensor duration " .. e:EntIndex()
-                timer.Create(name, 0, 0, function()
-                    if not IsValid(e) then timer.Remove(name) return end
-                    if not e:GetNWBool "SplatoonSWEPs: IsMarked" then timer.Remove(name) return end
-                    if CurTime() < e:GetNWFloat "SplatoonSWEPs: PointSensorEndTime" then return end
-                    e:SetNWBool("SplatoonSWEPs: IsMarked", false)
-                    e:EmitSound "SplatoonSWEPs.PointSensorLeft"
-                    timer.Remove(name)
-                end)
-            end
+            local name = "SplatoonSWEPs: Timer for Point Sensor duration " .. e:EntIndex()
+            timer.Create(name, 0, 0, function()
+                if not IsValid(e) then timer.Remove(name) return end
+                if not e:GetNWBool "SplatoonSWEPs: IsMarked" then timer.Remove(name) return end
+                if CurTime() < e:GetNWFloat "SplatoonSWEPs: PointSensorEndTime" then return end
+                e:SetNWBool("SplatoonSWEPs: IsMarked", false)
+                e:EmitSound "SplatoonSWEPs.PointSensorLeft"
+                timer.Remove(name)
+            end)
         end
     end
 

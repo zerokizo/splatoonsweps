@@ -339,19 +339,6 @@ function SWEP:SharedThinkBase()
 	self:DrawShadow(not ShouldNoDraw)
 	self:ApplySkinAndBodygroups()
 	ss.ProtectedCall(self.SharedThink, self)
-
-	if not IsValid(self.Owner) then return end
-	if self.Owner:GetNWBool "SplatoonSWEPs: IsDisrupted"
-	and CurTime() > self.Owner:GetNWFloat "SplatoonSWEPs: DisruptorEndTime" then
-		self.Owner:SetNWBool("SplatoonSWEPs: IsDisrupted", false)
-		self.Owner:EmitSound "SplatoonSWEPs.DisruptorWornOff"
-	end
-
-	if self.Owner:GetNWBool "SplatoonSWEPs: IsMarked"
-	and CurTime() > self.Owner:GetNWFloat "SplatoonSWEPs: PointSensorEndTime" then
-		self.Owner:SetNWBool("SplatoonSWEPs: IsMarked", false)
-		self.Owner:EmitSound "SplatoonSWEPs.PointSensorLeft"
-	end
 end
 
 -- Begin to use special weapon.
