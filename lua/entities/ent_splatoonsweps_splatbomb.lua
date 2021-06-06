@@ -64,7 +64,6 @@ function ENT:Think()
         self:SetSkin(pulse > 0 and 1 or 0)
     end
     
-
     if self:GetClass() ~= "ent_splatoonsweps_splatbomb" or p:GetStress() > 0 then
         self:Detonate()
         if t > self.Parameters.Burst_WaitFrm - self.Parameters.Burst_WarnFrm then

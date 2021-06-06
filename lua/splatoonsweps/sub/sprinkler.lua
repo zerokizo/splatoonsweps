@@ -28,6 +28,8 @@ ss.sprinkler = {
         Burst_SplashPitL = 5,
         Burst_SplashVelH = 3.5,
         Burst_SplashVelL = 5.2,
+        Burst_WaitFrm = 30,
+        Burst_WarnFrm = 30,
         CrossPaintRadius = 14,
         CrossPaintRayLength = 14,
         CrossPaintRayRadius = 1,
@@ -68,6 +70,8 @@ ss.sprinkler = {
         Burst_SplashPitL = "deg",
         Burst_SplashVelH = "du/f",
         Burst_SplashVelL = "du/f",
+        Burst_WaitFrm = "f",
+        Burst_WarnFrm = "f",
         CrossPaintRadius = "du",
         CrossPaintRayLength = "du",
         CrossPaintRayRadius = "du",
@@ -119,7 +123,7 @@ function module:ServerSecondaryAttack(throwable)
     if IsValid(ph) then
         local dir = self:GetAimVector()
         ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())
-        ph:AddAngleVelocity(Vector(-math.deg(p.Fly_InitRol), math.deg(p.Fly_InitPit), 0) * ss.SecToFrame)
+        ph:AddAngleVelocity(VectorRand() * 25)
         ph:SetAngles(dir:Angle())
     end
 
