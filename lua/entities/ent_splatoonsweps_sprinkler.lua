@@ -66,7 +66,7 @@ function ENT:PhysicsCollide(data, collider)
 
     local inkcolor = self:GetNWInt "inkcolor"
     ss.Paint(data.HitPos, self.HitNormal, ss.sprinkler.Parameters.InitInkRadius,
-    inkcolor, 0, ss.GetDropType(), 1, self.Owner, self:GetClass())
+    inkcolor, 0, ss.GetDropType(), 1, self.Owner, self.WeaponClassName)
 
     if IsValid(self.DestroyOnLand) then
         local d = DamageInfo()
