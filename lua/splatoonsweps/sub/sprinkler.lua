@@ -40,6 +40,7 @@ ss.sprinkler = {
         Fly_RotI = 20,
         Fly_RotKd = 0.98015,
         Fly_VelKd = 0.94134,
+        InitInkRadius = 8,
         InkConsume = 0.7,
         Shape_SphereD = 5,
         Shape_SphereR = 2,
@@ -82,6 +83,7 @@ ss.sprinkler = {
         Fly_RotI = "-",
         Fly_RotKd = "ratio",
         Fly_VelKd = "ratio",
+        InitInkRadius = "du",
         InkConsume = "ink",
         Shape_SphereD = "du",
         Shape_SphereR = "du",
@@ -113,6 +115,7 @@ if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
     local e = ents.Create "ent_splatoonsweps_sprinkler"
     e.Owner = self.Owner
+    e.DestroyOnLand = self.ExistingSprinkler
     e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
     e:SetInkColorProxy(self:GetInkColorProxy())
     e:SetPos(self:GetShootPos() + self:GetAimVector() * 20)
@@ -123,10 +126,11 @@ function module:ServerSecondaryAttack(throwable)
     if IsValid(ph) then
         local dir = self:GetAimVector()
         ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())
-        ph:AddAngleVelocity(VectorRand() * 25)
+        ph:AddAngleVelocity(Vector(1000, 1000) + VectorRand() * 600)
         ph:SetAngles(dir:Angle())
     end
 
+    self.ExistingSprinkler = e
     self:ConsumeInk(p.InkConsume)
     self:SetReloadDelay(40 * ss.FrameToSec)
 end

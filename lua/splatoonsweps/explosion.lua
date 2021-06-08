@@ -112,7 +112,8 @@ function ss.MakeExplosion(data)
 		for _, e in ipairs(ents.FindInSphere(origin, data.DamageRadius)) do
 			local target_weapon = ss.IsValidInkling(e)
 			if IsValid(e) and e:Health() > 0 and ss.LastHitID[e] ~= projectileID
-			and (not ss.IsAlly(target_weapon, inkcolor) or hurtowner and e == owner) then
+			and (not (ss.IsAlly(target_weapon, inkcolor) or ss.IsAlly(e, inkcolor))
+			or hurtowner and e == owner) then
 				local dist = Vector()
 				local maxs, mins = e:OBBMaxs(), e:OBBMins()
 				local center = e:LocalToWorld(e:OBBCenter())

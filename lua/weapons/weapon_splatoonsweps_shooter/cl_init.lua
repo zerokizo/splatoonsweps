@@ -89,7 +89,7 @@ end
 function SWEP:GetCrosshairTrace(t)
 	local colradius = self.Parameters.mColRadius
 	local range = self:GetRange(true) - colradius
-	local tr = ss.SquidTrace
+	local tr = ss.MakeInkQueueTraceStructure()
 	tr.start, tr.endpos = t.pos, t.pos + t.dir * range
 	tr.filter = {self, self.Owner}
 	tr.maxs = ss.vector_one * colradius
@@ -102,9 +102,7 @@ function SWEP:GetCrosshairTrace(t)
 	t.Distance = t.Trace.HitPos:Distance(t.pos)
 	if t.HitEntity then
 		local w = ss.IsValidInkling(t.Trace.Entity)
-		if w and ss.IsAlly(w, self) then
-			t.HitEntity = false
-		end
+		t.HitEntity = not (ss.IsAlly(t.Trace.Entity, self) or w and ss.IsAlly(w, self))
 	end
 end
 

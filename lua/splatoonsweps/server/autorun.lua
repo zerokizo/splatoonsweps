@@ -249,6 +249,7 @@ hook.Add("EntityTakeDamage", "SplatoonSWEPs: Ink damage manager", function(ent, 
 	if not w then return end
 	if not (IsValid(a) and i.IsSplatoonWeapon) then return end
 	if ss.IsAlly(w, i) then return true end
+	if ss.IsAlly(ent, i) then return true end
 	if not ent:IsPlayer() then return end
 	net.Start "SplatoonSWEPs: Play damage sound"
 	net.Send(ent)

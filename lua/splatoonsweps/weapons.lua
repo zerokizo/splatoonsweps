@@ -97,6 +97,7 @@ end
 
 function ss.MakeInkQueueTraceStructure()
 	return {
+		collisiongroup = COLLISION_GROUP_NONE,
 		endpos = Vector(),
 		filter = NULL,
 		LengthSum = 0,

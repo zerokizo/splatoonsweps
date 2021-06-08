@@ -261,7 +261,9 @@ local function ProcessInkQueue(ply)
 								removal = true
 							elseif data.DoDamage and IsValid(trent.Entity) and trent.Entity:Health() > 0 then
 								local w = ss.IsValidInkling(trent.Entity) -- If ink hits someone
-								if not (w and ss.IsAlly(w, data.Color)) then HitEntity(ink, trent) end
+								if not (ss.IsAlly(trent.Entity, data.Color) or w and ss.IsAlly(w, data.Color)) then
+									HitEntity(ink, trent)
+								end
 								removal = true
 							elseif trworld.Hit then
 								if trworld.StartSolid and tr.LifeTime < ss.FrameToSec then trworld = util.TraceLine(tr) end

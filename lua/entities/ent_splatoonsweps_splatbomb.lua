@@ -11,6 +11,23 @@ ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
 ENT.SubWeaponName = "splatbomb"
 ENT.HitSound = "SplatoonSWEPs.SplatbombHitWorld"
 ENT.ExplosionOffset = 0
+ENT.CollisionGroups = {
+    [true] = COLLISION_GROUP_INTERACTIVE_DEBRIS,
+    [false] = COLLISION_GROUP_PROJECTILE,
+}
+
+function ENT:IsStuck()
+    return IsValid(self.ContactEntity)
+    or isentity(self.ContactEntity) and self.ContactEntity:IsWorld()
+end
+
+function ENT:FindBoneFromPhysObj(ent, physobj)
+    for i = 0, ent:GetPhysicsObjectCount() - 1 do
+        if ent:GetPhysicsObjectNum(i) == physobj then return i end
+    end
+
+    return 0
+end
 
 function ENT:Initialize()
     local p = ss[self.SubWeaponName].Parameters

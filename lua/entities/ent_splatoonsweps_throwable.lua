@@ -7,6 +7,18 @@ ENT.CollisionGroup = COLLISION_GROUP_WEAPON
 ENT.Type = "anim"
 ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
 ENT.WeaponClassName = ""
+ENT.UseSubWeaponFilter = true
+hook.Add("ShouldCollide", "SplatoonSWEPs: Sub weapon filter", function(e1, e2)
+    if e2.UseSubWeaponFilter then e1, e2 = e2, e1 end
+    if e2.UseSubWeaponFilter then return false end
+    if not e1.UseSubWeaponFilter then return end
+    if not IsValid(e1.Owner) then return end
+    local w1 = ss.IsValidInkling(e1.Owner)
+    local w2 = ss.IsValidInkling(e2)
+    if not (w1 and w2) then return end
+    if ss.IsAlly(w1, w2) then return false end
+end)
+
 function ENT:Initialize()
     if IsValid(self.Owner) then
         local w = ss.IsValidInkling(self.Owner)
@@ -15,6 +27,7 @@ function ENT:Initialize()
 
     self:SetModel(self.Model)
     self:SetCollisionGroup(self.CollisionGroup)
+    self:SetCustomCollisionCheck(true)
     self.DragCoeffChangeTime = CurTime() + self.StraightFrame
     if CLIENT then return end
     self:PhysicsInit(SOLID_VPHYSICS)
