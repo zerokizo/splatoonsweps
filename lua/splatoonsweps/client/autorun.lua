@@ -481,10 +481,14 @@ hook.Add("entity_killed", "SplatoonSWEPs: Remove ragdolls on death", function(da
 	local victim = Entity(data.entindex_killed)
 	if not IsValid(victim) then return end
 	if not victim:IsPlayer() then return end
-	print(attacker)
 	local w = ss.IsValidInkling(attacker)
 	if not w then return end
-	victim.IsSplattedBySplatoonSWEPs = true
+	if IsValid(victim:GetRagdollEntity()) then
+		victim:GetRagdollEntity():SetNoDraw(true)
+		victim.IsSplattedBySplatoonSWEPs = nil
+	else
+		victim.IsSplattedBySplatoonSWEPs = true
+	end
 end)
 
 hook.Add("CreateClientsideRagdoll", "SplatooNSWEPs: Remove ragdolls on death", function(ply, rag)

@@ -4,10 +4,11 @@ if not ss then return end
 AddCSLuaFile()
 
 ENT.Base = "ent_splatoonsweps_splatbomb"
+ENT.ExplosionOffset = 10
+ENT.HitSound = "SplatoonSWEPs.SuctionBomb"
+ENT.IsSplatoonBomb = true
 ENT.Model = Model "models/splatoonsweps/subs/suction_bomb/suction_bomb.mdl"
 ENT.SubWeaponName = "suctionbomb"
-ENT.HitSound = "SplatoonSWEPs.SuctionBomb"
-ENT.ExplosionOffset = 10
 
 if CLIENT then
     local Sprite = Material "sprites/light_ignorez"

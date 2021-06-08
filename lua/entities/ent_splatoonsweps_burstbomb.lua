@@ -3,10 +3,11 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
-ENT.CollisionGroup = COLLISION_GROUP_PROJECTILE
-ENT.SubWeaponName = "burstbomb"
 ENT.Base = "ent_splatoonsweps_throwable"
+ENT.CollisionGroup = COLLISION_GROUP_PROJECTILE
+ENT.IsSplatoonBomb = true
 ENT.Model = Model "models/props_splatoon/weapons/subs/burst_bombs/burst_bomb.mdl"
+ENT.SubWeaponName = "burstbomb"
 
 function ENT:Initialize()
     local p = ss[self.SubWeaponName].Parameters

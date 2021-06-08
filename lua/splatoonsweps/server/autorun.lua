@@ -247,7 +247,7 @@ hook.Add("EntityTakeDamage", "SplatoonSWEPs: Ink damage manager", function(ent, 
 	local i = dmg:GetInflictor()
 	if w then w.HealSchedule:SetDelay(ss.HealDelay) end
 	if not w then return end
-	if not (IsValid(a) and i.IsSplatoonWeapon) then return end
+	if not (IsValid(a) and (i.IsSplatoonWeapon or i.IsSplatoonBomb)) then return end
 	if ss.IsAlly(w, i) then return true end
 	if ss.IsAlly(ent, i) then return true end
 	if not ent:IsPlayer() then return end
@@ -265,3 +265,7 @@ end
 
 hook.Add("DoPlayerDeath", "SplatoonSWEPs: Make a death explosion", DeathExplosion)
 hook.Add("OnNPCKilled", "SplatoonSWEPs: Make a death explosion", DeathExplosion)
+hook.Add("OnDamagedByExplosion", "SplatoonSWEPs: No sound effect needed", function(ply, dmg)
+	local inflictor = dmg:GetInflictor()
+	return IsValid(inflictor) and (inflictor.IsSplatoonWeapon or inflictor.IsSplatoonBomb) or nil
+end)

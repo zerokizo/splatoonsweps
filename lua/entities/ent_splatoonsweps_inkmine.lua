@@ -12,6 +12,8 @@ ENT.ExplodeStartTime = 10
 ENT.ExplosionDelay = 1
 ENT.ExplosionTime = ENT.ExplodeStartTime + ENT.ExplosionDelay
 ENT.IsForgotten = false -- If true, it's successfully removed from the item count in the weapon.
+ENT.IsSplatoonBomb = true
+
 function ENT:Initialize()
     if IsValid(self:GetOwner()) then
         local w = ss.IsValidInkling(self:GetOwner())

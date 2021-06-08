@@ -4,10 +4,11 @@ if not ss then return end
 AddCSLuaFile()
 
 ENT.CollisionGroup = COLLISION_GROUP_WEAPON
-ENT.Type = "anim"
 ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
-ENT.WeaponClassName = ""
+ENT.Type = "anim"
 ENT.UseSubWeaponFilter = true
+ENT.WeaponClassName = ""
+
 hook.Add("ShouldCollide", "SplatoonSWEPs: Sub weapon filter", function(e1, e2)
     if e2.UseSubWeaponFilter then e1, e2 = e2, e1 end
     if e2.UseSubWeaponFilter then return false end

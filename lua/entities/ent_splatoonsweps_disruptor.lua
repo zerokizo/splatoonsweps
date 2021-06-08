@@ -3,9 +3,9 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
-ENT.SubWeaponName = "disruptor"
 ENT.Base = "ent_splatoonsweps_burstbomb"
 ENT.Model = Model "models/props_splatoon/weapons/subs/disruptor/disruptor.mdl"
+ENT.SubWeaponName = "disruptor"
 
 if CLIENT then return end
 function ENT:PhysicsCollide(data, collider)

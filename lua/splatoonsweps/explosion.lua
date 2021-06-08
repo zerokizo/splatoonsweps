@@ -106,7 +106,8 @@ function ss.MakeExplosion(data)
 		local hurtowner = data.HurtOwner
 		local projectileID = data.ProjectileID
 		local attacker = IsValid(owner) and owner or game.GetWorld()
-		local inflictor = weapon or game.GetWorld()
+		local inflictor = IsValid(data.BombEntity) and data.BombEntity
+					   or IsValid(weapon) and weapon or game.GetWorld()
 		local IsCarriedByLocalPlayer = data.IsCarriedByLocalPlayer
 		local GetDamage = data.GetDamage
 		for _, e in ipairs(ents.FindInSphere(origin, data.DamageRadius)) do

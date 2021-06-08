@@ -126,6 +126,7 @@ if SERVER then
     end
 else
     function module:DrawOnSubTriggerDown()
+        if not self:IsMine() then return end
         if RealTime() - (self.SeekerTargetSearched or 0) > RealFrameTime() * 2 then
             self.SeekerPreviousTarget = nil
         end

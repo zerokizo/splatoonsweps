@@ -8,13 +8,14 @@ ENT.Model = Model "models/splatoonsweps/subs/seekers/seeker.mdl"
 ENT.SubWeaponName = "seeker"
 ENT.AlertSoundPlayed = false
 ENT.AlertSoundTime = 4
+ENT.DesiredSpeed = 6.65 * ss.ToHammerUnitsPerSec
 ENT.ExplodeTime = 5
 ENT.ExplosionOffset = 16
+ENT.IsSplatoonBomb = true
 ENT.NextTracePaintTime = 0
 ENT.SeekStartTime = 1
 ENT.TracePaintInterval = 2 * ss.FrameToSec
 ENT.TracePaintRadius = 10 * ss.ToHammerUnits
-ENT.DesiredSpeed = 6.65 * ss.ToHammerUnitsPerSec
 
 function ENT:Initialize()
     local p = ss[self.SubWeaponName].Parameters

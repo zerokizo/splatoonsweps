@@ -3,9 +3,9 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
-ENT.SubWeaponName = "pointsensor"
 ENT.Base = "ent_splatoonsweps_burstbomb"
 ENT.Model = Model "models/props_splatoon/weapons/subs/point_sensor/point_sensor.mdl"
+ENT.SubWeaponName = "pointsensor"
 
 if CLIENT then return end
 function ENT:PhysicsCollide(data, collider)

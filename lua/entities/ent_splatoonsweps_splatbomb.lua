@@ -4,17 +4,18 @@ if not ss then return end
 AddCSLuaFile()
 
 ENT.Base = "ent_splatoonsweps_throwable"
-ENT.ContactTotalTime = 0
-ENT.NextPlayHitSE = 0
-ENT.WarnSoundPlayed = false
-ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
-ENT.SubWeaponName = "splatbomb"
-ENT.HitSound = "SplatoonSWEPs.SplatbombHitWorld"
-ENT.ExplosionOffset = 0
 ENT.CollisionGroups = {
     [true] = COLLISION_GROUP_INTERACTIVE_DEBRIS,
     [false] = COLLISION_GROUP_PROJECTILE,
 }
+ENT.ContactTotalTime = 0
+ENT.ExplosionOffset = 0
+ENT.HitSound = "SplatoonSWEPs.SplatbombHitWorld"
+ENT.IsSplatoonBomb = true
+ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
+ENT.NextPlayHitSE = 0
+ENT.SubWeaponName = "splatbomb"
+ENT.WarnSoundPlayed = false
 
 function ENT:IsStuck()
     return IsValid(self.ContactEntity)

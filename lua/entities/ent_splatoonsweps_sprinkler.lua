@@ -3,10 +3,10 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
-ENT.SubWeaponName = "sprinkler"
-ENT.Model = Model "models/splatoonsweps/subs/sprinkler/sprinkler.mdl"
 ENT.Base = "ent_splatoonsweps_splatbomb"
 ENT.HitSound = "SplatoonSWEPs.SubWeaponPut"
+ENT.Model = Model "models/splatoonsweps/subs/sprinkler/sprinkler.mdl"
+ENT.SubWeaponName = "sprinkler"
 
 if CLIENT then return end
 function ENT:Initialize()
