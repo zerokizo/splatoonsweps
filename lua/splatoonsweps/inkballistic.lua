@@ -214,10 +214,12 @@ local function HitEntity(ink, t)
 		if ss.mp and CLIENT then return end
 	end
 
+	local dt = bit.bor(DMG_AIRBOAT, DMG_REMOVENORAGDOLL)
+	if not e:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
 	d:SetDamage(damage)
 	d:SetDamageForce(-t.HitNormal)
 	d:SetDamagePosition(t.HitPos)
-	d:SetDamageType(DMG_GENERIC)
+	d:SetDamageType(dt)
 	d:SetMaxDamage(damage_max)
 	d:SetReportedPosition(t.HitPos)
 	d:SetAttacker(IsValid(o) and o or game.GetWorld())

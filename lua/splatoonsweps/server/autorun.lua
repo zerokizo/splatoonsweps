@@ -260,6 +260,7 @@ local function DeathExplosion(ply, attacker)
 	if not w then return end
 	if ss.GetOption "explodeonlysquids" and not ss.IsValidInkling(ply) then return end
 	ss.MakeDeathExplosion(ply:WorldSpaceCenter(), attacker, w:GetNWInt "inkcolor")
+	for _, e in ipairs(ents.FindByClass "env_entity_dissolver") do print(e) end
 end
 
 hook.Add("DoPlayerDeath", "SplatoonSWEPs: Make a death explosion", DeathExplosion)

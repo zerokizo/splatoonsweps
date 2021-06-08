@@ -143,11 +143,13 @@ function ss.MakeExplosion(data)
 					ss.LastHitID[e] = projectileID -- Avoid multiple damages at once
 					damagedealt = damagedealt or ss.sp or e == owner
 					local dmg = GetDamage(dist:Length(), e)
+					local dt = bit.bor(DMG_BLAST, DMG_AIRBOAT, DMG_REMOVENORAGDOLL)
+					if not e:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
 					
 					d:SetDamage(dmg)
 					d:SetDamageForce((e:WorldSpaceCenter() - origin):GetNormalized() * dmg)
 					d:SetDamagePosition(e:WorldSpaceCenter())
-					d:SetDamageType(DMG_BLAST)
+					d:SetDamageType(dt)
 					d:SetMaxDamage(dmg)
 					d:SetReportedPosition(origin)
 					d:SetAttacker(attacker)

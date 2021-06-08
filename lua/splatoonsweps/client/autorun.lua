@@ -475,3 +475,20 @@ hook.Add("OnCleanup", "SplatoonSWEPs: Cleanup all ink", function(t)
 		net.SendToServer()
 	end
 end)
+
+hook.Add("entity_killed", "SplatoonSWEPs: Remove ragdolls on death", function(data)
+	local attacker = Entity(data.entindex_attacker)
+	local victim = Entity(data.entindex_killed)
+	if not IsValid(victim) then return end
+	if not victim:IsPlayer() then return end
+	print(attacker)
+	local w = ss.IsValidInkling(attacker)
+	if not w then return end
+	victim.IsSplattedBySplatoonSWEPs = true
+end)
+
+hook.Add("CreateClientsideRagdoll", "SplatooNSWEPs: Remove ragdolls on death", function(ply, rag)
+	if not ply.IsSplattedBySplatoonSWEPs then return end
+	rag:SetNoDraw(true)
+	ply.IsSplattedBySplatoonSWEPs = nil
+end)
