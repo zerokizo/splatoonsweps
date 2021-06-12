@@ -78,5 +78,5 @@ function SWEP:TranslateActivity(act)
 end
 
 function SWEP:FireAnimationEvent(pos, ang, event, options)
-	ss.FireAnimationEvent(self, pos, ang, event, options)
+	return ss.FireAnimationEvent(self, pos, ang, event, options)
 end

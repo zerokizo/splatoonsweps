@@ -11,7 +11,7 @@ ENT.SubWeaponName = "sprinkler"
 
 if CLIENT then
     function ENT:FireAnimationEvent(pos, ang, event, options)
-        ss.FireAnimationEvent(self, pos, ang, event, options)
+        return ss.FireAnimationEvent(self, pos, ang, event, options)
     end
 
     function ENT:GetMuzzlePosition()

@@ -23,7 +23,12 @@ end
 
 function EFFECT:GetMuzzlePosition()
 	if not IsValid(self.Weapon) then return self.Pos, self.Angle end
-	local a = self.Weapon:GetAttachment(self.AttachmentIndex)
+	local ent = self.Weapon
+	if self.Weapon.IsSplatoonWeapon and not self.Weapon:IsTPS() then
+		ent = self.Weapon:GetViewModel()
+	end
+
+	local a = ent:GetAttachment(self.AttachmentIndex)
 	local pos, ang = Vector(a.Pos), Angle(a.Ang)
 	ang:RotateAroundAxis(ang:Forward(), self.Angle.z)
 	ang:RotateAroundAxis(ang:Right(), self.Angle.p)
