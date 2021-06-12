@@ -633,6 +633,28 @@ function ss.CustomPrimary.weapon_splatoonsweps_slosher_base(weapon)
 	p.mGuideCenterCheckCollisionFrame, p.mFreeStateAirResist)
 end
 
+-- event = 5xyy, x = option index, yy = effect type
+-- yy = 0 : SplatoonSWEPsMuzzleSplash
+--     x = 0 : Attach to muzzle
+--     x = 1 : Go backward (for charger)
+-- yy = 1 : SplatoonSWEPsMuzzleRing
+-- yy = 2 : SplatoonSWEPsMuzzleMist
+-- yy = 3 : SplatoonSWEPsMuzzleFlash
+-- yy = 4 : SplatoonSWEPsRollerSplash
+-- yy = 5 : SplatoonSWEPsBrushSwing1
+-- yy = 6 : SplatoonSWEPsBrushSwing2
+-- yy = 7 : SplatoonSWEPsSlosherSplash
+function ss.FireAnimationEvent(self, pos, ang, event, options)
+	if 5000 <= event and event < 6000 then
+		event = event - 5000
+		local vararg = options:Split " "
+		ss.tablepush(vararg, math.floor(event / 100))
+		ss.ProtectedCall(ss.DispatchEffect[event % 100], self, vararg, pos, ang)
+	end
+
+	return true
+end
+
 ss.DispatchEffect = {}
 local SplatoonSWEPsMuzzleSplash = 0
 local SplatoonSWEPsMuzzleRing = 1
@@ -644,8 +666,15 @@ local SplatoonSWEPsBrushSwing2 = 6
 local SplatoonSWEPsSlosherSplash = 7
 local sd, e = ss.DispatchEffect, EffectData()
 sd[SplatoonSWEPsMuzzleSplash] = function(self, options, pos, ang)
-	local tpslag = self:IsCarriedByLocalPlayer() and
-	self.Owner:ShouldDrawLocalPlayer() and 128 or 0
+	local tpslag = 0
+	if self.IsSplatoonWeapon and self:IsCarriedByLocalPlayer() and self.Owner:ShouldDrawLocalPlayer() then
+		tpslag = 128
+	end
+
+	local attachment = options[2] or "muzzle"
+	local attindex = self:LookupAttachment(attachment)
+	if attindex <= 0 then attindex = 1 end
+
 	local ang, a, s, r = angle_zero, 7, 2, 25
 	if options[2] == "CHARGER" then
 		r, s = Lerp(self:GetFireAt(), 20, 60) / 2, 6
@@ -659,7 +688,7 @@ sd[SplatoonSWEPsMuzzleSplash] = function(self, options, pos, ang)
 	e:SetAttachment(a) -- Effect duration
 	e:SetColor(self:GetNWInt "inkcolor") -- Splash color
 	e:SetEntity(self) -- Enitity attach to
-	e:SetFlags(tpslag) -- Splash mode
+	e:SetFlags(tpslag + attindex - 1) -- Splash mode
 	e:SetScale(s) -- Splash length
 	e:SetRadius(r) -- Splash radius
 	util.Effect("SplatoonSWEPsMuzzleSplash", e, true, self.IgnorePrediction)

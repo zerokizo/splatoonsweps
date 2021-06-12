@@ -3,12 +3,26 @@ local ss = SplatoonSWEPs
 if not ss then return end
 AddCSLuaFile()
 
+ENT.AutomaticFrameAdvance = true
 ENT.Base = "ent_splatoonsweps_splatbomb"
 ENT.HitSound = "SplatoonSWEPs.SubWeaponPut"
 ENT.Model = Model "models/splatoonsweps/subs/sprinkler/sprinkler.mdl"
 ENT.SubWeaponName = "sprinkler"
 
-if CLIENT then return end
+if CLIENT then
+    function ENT:FireAnimationEvent(pos, ang, event, options)
+        ss.FireAnimationEvent(self, pos, ang, event, options)
+    end
+
+    function ENT:GetMuzzlePosition()
+        local a = self:LookupAttachment "muzzle_1"
+        a = self:GetAttachment(a)
+        return a.Pos, a.Ang
+    end
+
+    return
+end
+
 function ENT:Initialize()
     self.BaseClass.Initialize(self)
     self:SetMaxHealth(100)
@@ -37,7 +51,11 @@ function ENT:OnTakeDamage(d)
     return health
 end
 
-function ENT:Think() end
+function ENT:Think()
+    self:NextThink(CurTime())
+    return true
+end
+
 function ENT:PhysicsCollide(data, collider)
     if self.RemoveFlag then return end
     if self:IsStuck() then return end
@@ -55,12 +73,23 @@ function ENT:PhysicsCollide(data, collider)
     collider:SetPos(data.HitPos)
     collider:SetAngles(ang)
     timer.Simple(0, function()
+        if not IsValid(self) then return end
         constraint.Weld(self, data.HitEntity, 0,
         self:FindBoneFromPhysObj(data.HitEntity, data.HitObject), 0, false, false)
     end)
-    if not self.ContactStartTime then self.ContactStartTime = CurTime() end
+    
+    timer.Simple(0.125, function()
+        if not IsValid(self) then return end
+        self:ResetSequenceInfo()
+    end)
+
+    if not self.ContactStartTime then
+        self.ContactStartTime = CurTime()
+    end
+
     self.HitNormal = -data.HitNormal
     self.ContactEntity = data.HitEntity
+    self:SetSequence "sprinkle"
     self:SetNWFloat("t0", CurTime())
     self:SetNWBool("hit", true)
 

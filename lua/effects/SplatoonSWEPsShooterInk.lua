@@ -171,7 +171,7 @@ function EFFECT:HitEffect(tr) -- World hit effect here
 	e:SetAttachment(6)
 	e:SetColor(self.Ink.Data.Color)
 	e:SetEntity(NULL)
-	e:SetFlags(1)
+	e:SetFlags(16)
 	e:SetOrigin(tr.HitPos - tr.HitNormal * self.DrawRadius)
 	e:SetRadius(self.DrawRadius * 5)
 	e:SetScale(.4)

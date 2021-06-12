@@ -77,24 +77,6 @@ function SWEP:TranslateActivity(act)
 	return translate and translate[act] or -1
 end
 
--- event = 5xyy, x = option index, yy = effect type
--- yy = 0 : SplatoonSWEPsMuzzleSplash
---     x = 0 : Attach to muzzle
---     x = 1 : Go backward (for charger)
--- yy = 1 : SplatoonSWEPsMuzzleRing
--- yy = 2 : SplatoonSWEPsMuzzleMist
--- yy = 3 : SplatoonSWEPsMuzzleFlash
--- yy = 4 : SplatoonSWEPsRollerSplash
--- yy = 5 : SplatoonSWEPsBrushSwing1
--- yy = 6 : SplatoonSWEPsBrushSwing2
--- yy = 7 : SplatoonSWEPsSlosherSplash
 function SWEP:FireAnimationEvent(pos, ang, event, options)
-	if 5000 <= event and event < 6000 then
-		event = event - 5000
-		local vararg = options:Split " "
-		ss.tablepush(vararg, math.floor(event / 100))
-		ss.ProtectedCall(ss.DispatchEffect[event % 100], self, vararg, pos, ang)
-	end
-
-	return true
+	ss.FireAnimationEvent(self, pos, ang, event, options)
 end

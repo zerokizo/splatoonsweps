@@ -23,7 +23,8 @@ end
 
 function EFFECT:GetMuzzlePosition()
 	if not IsValid(self.Weapon) then return self.Pos, self.Angle end
-	local pos, ang = self.Weapon:GetMuzzlePosition()
+	local a = self.Weapon:GetAttachment(self.AttachmentIndex)
+	local pos, ang = Vector(a.Pos), Angle(a.Ang)
 	ang:RotateAroundAxis(ang:Forward(), self.Angle.z)
 	ang:RotateAroundAxis(ang:Right(), self.Angle.p)
 	ang:RotateAroundAxis(ang:Up(), self.Angle.y)
@@ -34,6 +35,12 @@ function EFFECT:GetPosition()
 	return self.Pos, self.Angle
 end
 
+-- Flags:
+-- +128 Lag compensation for local player
+-- +64 play deep dive sound instead of shallow dive sound
+-- +32 play dive sounds
+-- +16 don't stick to attachment
+-- 0--15 attachment index - 1
 function EFFECT:Init(e)
 	self:SetModel(mdl)
 	self:SetMaterial(ss.Materials.Effects.Invisible:GetName())
@@ -48,19 +55,20 @@ function EFFECT:Init(e)
 	self.InitTime = CurTime() - ping * bit.band(f, 128) / 128
 	self.LifeTime = e:GetAttachment() * ss.FrameToSec
 	self.Pos, self.Angle = e:GetOrigin(), e:GetAngles()
-	self.IsTPS = IsValid(self.Weapon) and self.Weapon:IsTPS()
+	self.IsTPS = IsValid(self.Weapon) and self.Weapon.IsSplatoonWeapon and self.Weapon:IsTPS()
 	if not IsValid(self.Weapon) then self.Weapon = nil end
-	if bit.band(f, 1) == 0 then
+	if bit.band(f, 16) == 0 then
 		self.GetPosition = self.GetMuzzlePosition
+		self.AttachmentIndex = bit.band(f, 15) + 1
 	end
 
 	local pos, ang = self:GetPosition()
 	self:SetPos(pos)
 	self:SetAngles(ang)
 
-	if bit.band(f, 2) == 0 then return end
-	local track = bit.band(f, 4) > 0 and deep or shallow
-	if IsValid(self.Weapon) and self.Weapon:IsCarriedByLocalPlayer() then
+	if bit.band(f, 32) == 0 then return end
+	local track = bit.band(f, 64) > 0 and deep or shallow
+	if IsValid(self.Weapon) and self.Weapon.IsSplatoonWeapon and self.Weapon:IsCarriedByLocalPlayer() then
 		self:EmitSound(track)
 	else
 		sound.Play(track, self.Pos)
@@ -139,7 +147,7 @@ function EFFECT:Think()
 	and isvector(self.Pos)
 	and isangle(self.Angle)
 	and CurTime() < self.InitTime + self.LifeTime
-	if IsValid(self.Weapon) then
+	if IsValid(self.Weapon) and self.Weapon.IsSplatoonWeapon then
 		return valid and IsValid(self.Weapon.Owner)
 		and self.Weapon.Owner:GetActiveWeapon() == self.Weapon
 	else
