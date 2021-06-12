@@ -7,6 +7,7 @@ ENT.AutomaticFrameAdvance = true
 ENT.Base = "ent_splatoonsweps_splatbomb"
 ENT.HitSound = "SplatoonSWEPs.SubWeaponPut"
 ENT.Model = Model "models/splatoonsweps/subs/sprinkler/sprinkler.mdl"
+ENT.RunningSoundID = -1
 ENT.SubWeaponName = "sprinkler"
 
 if CLIENT then
@@ -29,25 +30,26 @@ function ENT:Initialize()
     self:SetHealth(self:GetMaxHealth())
 end
 
+function ENT:OnRemove()
+    local p = self:GetPos()
+    local n = self.HitNormal
+    local e = EffectData()
+    e:SetOrigin(p)
+    e:SetNormal(n)
+    e:SetScale(3)
+    e:SetMagnitude(2)
+    e:SetRadius(5)
+    util.Effect("Sparks", e)
+    self:EmitSound "SplatoonSWEPs.SubWeaponDestroy"
+    if self.RunningSoundID < 0 then return end
+    self:StopLoopingSound(self.RunningSoundID)
+end
+
 function ENT:OnTakeDamage(d)
     local health = self:Health()
     self:SetHealth(math.max(0, health - d:GetDamage()))
     if self:Health() > 0 then return d:GetDamage() end
-    self:EmitSound "SplatoonSWEPs.SubWeaponDestroy"
     SafeRemoveEntity(self)
-
-    local p = self:GetPos()
-    local n = self.HitNormal
-    timer.Simple(0, function()
-        local e = EffectData()
-        e:SetOrigin(p)
-        e:SetNormal(n)
-        e:SetScale(3)
-        e:SetMagnitude(2)
-        e:SetRadius(5)
-        util.Effect("Sparks", e)
-    end)
-    
     return health
 end
 
@@ -81,6 +83,7 @@ function ENT:PhysicsCollide(data, collider)
     timer.Simple(0.125, function()
         if not IsValid(self) then return end
         self:ResetSequenceInfo()
+        self.RunningSoundID = self:StartLoopingSound(ss.SprinklerRunning)
     end)
 
     if not self.ContactStartTime then
