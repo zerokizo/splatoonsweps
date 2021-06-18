@@ -314,7 +314,7 @@ if SERVER then
 else
 	net.Receive("SplatoonSWEPs: Create hit effect", function()
 		local color = net.ReadUInt(ss.COLOR_BITS)
-		local flags = net.ReadUInt(1)
+		local flags = net.ReadUInt(3)
 		local pos = net.ReadVector()
 		local e = EffectData()
 		e:SetColor(color)
@@ -329,7 +329,7 @@ function ss.CreateHitEffect(color, flags, pos, normal, owner)
 	if SERVER and IsValid(owner) and owner:IsPlayer() then
 		net.Start "SplatoonSWEPs: Create hit effect"
 		net.WriteUInt(color, ss.COLOR_BITS)
-		net.WriteUInt(flags, 1)
+		net.WriteUInt(flags, 3)
 		net.WriteVector(pos)
 		net.Send(owner)
 	else

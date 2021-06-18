@@ -41,6 +41,9 @@ ss.burstbomb = {
         InkConsume = 0.4,
         Shape_SphereD = 5,
         Shape_SphereR = 2,
+        
+        -- Added by me
+        PerformHitEffect = true,
 
         -- Taken from Splat bomb
         Fly_InitVel_Estimated = 9.5,

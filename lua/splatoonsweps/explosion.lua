@@ -76,12 +76,12 @@ function ss.MakeExplosionStructure()
 		GetTracePaintRadius = function(dist) return 0 end,
 		HurtOwner = false,
 		IgnorePrediction = nil,
-		IsCarriedByLocalPlayer = false,
 		IsPredicted = nil,
 		InkColor = 1,
 		Origin = Vector(),
 		Owner = NULL,
 		ProjectileID = 0,
+		ShouldPerformEffect = false,
 		SplashNum = 0,
 		SplashHeightOffset = 0,
 		SplashPaintRadius = 0,
@@ -108,13 +108,13 @@ function ss.MakeExplosion(data)
 		local attacker = IsValid(owner) and owner or game.GetWorld()
 		local inflictor = IsValid(data.BombEntity) and data.BombEntity
 					   or IsValid(weapon) and weapon or game.GetWorld()
-		local IsCarriedByLocalPlayer = data.IsCarriedByLocalPlayer
+		local ShouldPerformEffect = data.ShouldPerformEffect
 		local GetDamage = data.GetDamage
 		for _, e in ipairs(ents.FindInSphere(origin, data.DamageRadius)) do
 			local target_weapon = ss.IsValidInkling(e)
-			if IsValid(e) and e:Health() > 0 and ss.LastHitID[e] ~= projectileID
-			and (not (ss.IsAlly(target_weapon, inkcolor) or ss.IsAlly(e, inkcolor))
-			or hurtowner and e == owner) then
+			local shouldhit = IsValid(e) and e:Health() > 0 and ss.LastHitID[e] ~= projectileID
+			local isally = ss.IsAlly(target_weapon, inkcolor) or ss.IsAlly(e, inkcolor)
+			if shouldhit and (not isally or hurtowner and e == owner) then
 				local dist = Vector()
 				local maxs, mins = e:OBBMaxs(), e:OBBMins()
 				local center = e:LocalToWorld(e:OBBCenter())
@@ -136,7 +136,7 @@ function ss.MakeExplosion(data)
 				t.filter = {data.BombEntity, not hurtowner and owner or nil}
 				t = util.TraceLine(t)
 				if not t.Hit or t.Entity == e then
-					if IsCarriedByLocalPlayer then
+					if ShouldPerformEffect then
 						ss.CreateHitEffect(inkcolor, damagedealt and 6 or 2, origin + dist, -dist)
 						if CLIENT and e ~= owner then damagedealt = true break end
 					end
@@ -250,6 +250,7 @@ function ss.MakeBombExplosion(org, normal, ent, color, subweapon)
 		Origin = org,
 		Owner = IsValid(ent.Owner) and ent.Owner or ent,
 		ProjectileID = CurTime(),
+		ShouldPerformEffect = params.PerformHitEffect,
 		SplashAirResist = 1 - params.Fly_VelKd,
 		SplashGravity = params.Fly_Gravity,
 		SplashNum = params.Burst_SplashNum,
@@ -316,7 +317,7 @@ function ss.MakeBlasterExplosion(ink)
 		end,
 		HurtOwner = ss.GetOption "hurtowner",
 		IgnorePrediction = data.Weapon.IgnorePrediction,
-		IsCarriedByLocalPlayer = ink.IsCarriedByLocalPlayer,
+		ShouldPerformEffect = ink.IsCarriedByLocalPlayer,
 		IsPredicted = true,
 		InkColor = data.Color,
 		Origin = ink.Trace.endpos,
