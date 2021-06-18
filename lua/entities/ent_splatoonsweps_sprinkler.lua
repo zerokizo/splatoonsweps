@@ -7,7 +7,7 @@ ENT.AutomaticFrameAdvance = true
 ENT.Base = "ent_splatoonsweps_splatbomb"
 ENT.HitSound = "SplatoonSWEPs.SubWeaponPut"
 ENT.Model = Model "models/splatoonsweps/subs/sprinkler/sprinkler.mdl"
-ENT.RunningSoundID = -1
+ENT.RunningSound = nil
 ENT.SubWeaponName = "sprinkler"
 ENT.NextSpoutTime = CurTime()
 
@@ -42,8 +42,7 @@ function ENT:OnRemove()
     e:SetRadius(5)
     util.Effect("Sparks", e)
     self:EmitSound "SplatoonSWEPs.SubWeaponDestroy"
-    if self.RunningSoundID < 0 then return end
-    self:StopLoopingSound(self.RunningSoundID)
+    if self.RunningSound then self.RunningSound:Stop() end
 end
 
 function ENT:OnTakeDamage(d)
@@ -101,6 +100,7 @@ function ENT:Spout()
         ink.Yaw     = ang.yaw
         local t = ss.AddInk({}, ink)
         if t.Trace then t.Trace.filter = self end
+        t.SprinklerHitEffect = true
         
         local e = EffectData()
         ss.SetEffectColor(e, ink.Color)
@@ -158,7 +158,8 @@ function ENT:PhysicsCollide(data, collider)
     timer.Simple(0.125, function()
         if not IsValid(self) then return end
         self:ResetSequenceInfo()
-        self.RunningSoundID = self:StartLoopingSound(ss.SprinklerRunning)
+        self.RunningSound = CreateSound(self, ss.SprinklerRunning)
+        self.RunningSound:Play()
     end)
 
     if not self.ContactStartTime then

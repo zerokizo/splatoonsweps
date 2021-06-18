@@ -392,10 +392,16 @@ function SWEP:SecondaryAttack() -- Use sub weapon
 		self:SetWeaponAnim(ss.ViewModel.Throwing)
 
 		if self.IsSubWeaponThrowable then
+			local filter = self.IgnorePrediction
+			if SERVER and ss.mp and self.Owner:IsPlayer() then
+				filter = RecipientFilter()
+				filter:AddPlayer(self.Owner)
+			end
+
 			local e = EffectData()
 			e:SetEntity(self)
 			e:SetScale(1.5)
-			ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsLandingPoint", e, true, self.IgnorePrediction)
+			ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsLandingPoint", e, true, filter)
 		end
 
 		if not self:IsFirstTimePredicted() then return end

@@ -341,6 +341,10 @@ function SWEP:DrawWorldModelTranslucent()
 	if self:IsCarriedByLocalPlayer() then
 		cameradistance = self:GetCameraFade()
 	end
+	if self:GetThrowing() and CurTime() > self:GetNextSecondaryFire() then
+		ss.ProtectedCall(self.DrawOnSubTriggerDown, self)
+	end
+
 
 	for k, name in pairs(self.wRenderOrder) do
 		local v = self.WElements[name]

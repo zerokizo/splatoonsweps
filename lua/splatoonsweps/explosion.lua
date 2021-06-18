@@ -137,7 +137,7 @@ function ss.MakeExplosion(data)
 				t = util.TraceLine(t)
 				if not t.Hit or t.Entity == e then
 					if ShouldPerformEffect then
-						ss.CreateHitEffect(inkcolor, damagedealt and 6 or 2, origin + dist, -dist)
+						ss.CreateHitEffect(inkcolor, damagedealt and 6 or 2, origin + dist, -dist, owner)
 						if CLIENT and e ~= owner then damagedealt = true break end
 					end
 					

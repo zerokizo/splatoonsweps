@@ -93,12 +93,20 @@ function module:SearchTarget()
         if (not w and e:Health() > 0
         and (e:IsPlayer() or e:IsNPC() or e:IsNextBot()))
         or w and not ss.IsAlly(self, w) then
-            local dir = e:WorldSpaceCenter() - self:GetShootPos()
-            dir:Normalize()
-            local dot = dir:Dot(self:GetAimVector())
-            if dot > maxdot then
-                maxdot = dot
-                ent = e
+            local t = util.TraceLine {
+                start = self:GetShootPos(),
+                endpos = e:WorldSpaceCenter(),
+                filter = {self, self.Owner, e},
+                mask = MASK_VISIBLE,
+            }
+            if not t.Hit then
+                local dir = e:WorldSpaceCenter() - self:GetShootPos()
+                dir:Normalize()
+                local dot = dir:Dot(self:GetAimVector())
+                if dot > maxdot then
+                    maxdot = dot
+                    ent = e
+                end
             end
         end
     end
@@ -139,6 +147,7 @@ else
         end
         if not ent then return end
 
+        cam.IgnoreZ(true)
         cam.Start2D()
         local c = ss.GetColor(ss.CrosshairColors[self:GetNWInt "inkcolor"])
         local p = self:TranslateToWorldmodelPos(ent:WorldSpaceCenter())
@@ -150,5 +159,6 @@ else
         ss.DrawCrosshair.LinesHit(x, y, c, 0.4, 1)
         ss.DrawCrosshair.InnerCircle(x, y)
         cam.End2D()
+        cam.IgnoreZ(false)
     end
 end

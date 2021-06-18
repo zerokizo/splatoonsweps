@@ -207,12 +207,11 @@ local function HitEntity(ink, t)
 		local frac = math.Remap(value, decay_start, decay_end, 0, 1)
 		damage = Lerp(frac, damage_max, damage_min)
 	end
-
-	if ink.IsCarriedByLocalPlayer then
-		local te = util.TraceLine {start = t.HitPos, endpos = e:WorldSpaceCenter()}
-		ss.CreateHitEffect(data.Color, data.IsCritical and 1 or 0, te.HitPos, te.HitNormal, o)
-		if ss.mp and CLIENT then return end
-	end
+	
+	local te = util.TraceLine {start = t.HitPos, endpos = e:WorldSpaceCenter()}
+	local flags = (data.IsCritical and 1 or 0) + (ink.IsCarriedByLocalPlayer and 128 or 0)
+	ss.CreateHitEffect(data.Color, flags, te.HitPos, te.HitNormal, ink.SprinklerHitEffect and o)
+	if ss.mp and CLIENT then return end
 
 	local dt = bit.bor(DMG_AIRBOAT, DMG_REMOVENORAGDOLL)
 	if not e:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
@@ -309,35 +308,22 @@ local function ProcessInkQueue(ply)
 	end
 end
 
-if SERVER then
-	util.AddNetworkString "SplatoonSWEPs: Create hit effect"
-else
-	net.Receive("SplatoonSWEPs: Create hit effect", function()
-		local color = net.ReadUInt(ss.COLOR_BITS)
-		local flags = net.ReadUInt(3)
-		local pos = net.ReadVector()
-		local e = EffectData()
-		e:SetColor(color)
-		e:SetFlags(flags)
-		e:SetOrigin(pos)
-		util.Effect("SplatoonSWEPsOnHit", e)
-	end)
-end
-
 function ss.CreateHitEffect(color, flags, pos, normal, owner)
-	local e = EffectData()
+	local filter = nil
 	if SERVER and IsValid(owner) and owner:IsPlayer() then
-		net.Start "SplatoonSWEPs: Create hit effect"
-		net.WriteUInt(color, ss.COLOR_BITS)
-		net.WriteUInt(flags, 3)
-		net.WriteVector(pos)
-		net.Send(owner)
-	else
-		e:SetColor(color)
-		e:SetFlags(flags)
-		e:SetOrigin(pos)
-		util.Effect("SplatoonSWEPsOnHit", e)
+		if player.GetCount() == 1 then
+			filter = true
+		else
+			filter = RecipientFilter()
+			filter:AddPlayer(owner)
+		end
 	end
+
+	local e = EffectData()
+	e:SetColor(color)
+	e:SetFlags(flags)
+	e:SetOrigin(pos)
+	util.Effect("SplatoonSWEPsOnHit", e, true, filter)
 
 	e:SetAngles(normal:Angle())
 	e:SetAttachment(6)
@@ -477,7 +463,7 @@ function ss.AddInk(parameters, data)
 	local ply = w.Owner
 	local t = ss.MakeInkQueueStructure()
 	t.Data = table.Copy(data)
-	t.IsCarriedByLocalPlayer = Either(SERVER, ply:IsPlayer(), ss.ProtectedCall(w.IsCarriedByLocalPlayer, w))
+	t.IsCarriedByLocalPlayer = Either(SERVER, false, ss.ProtectedCall(w.IsCarriedByLocalPlayer, w))
 	t.Parameters = parameters
 	t.Trace.filter = ply
 	t.Trace.endpos:Set(data.InitPos)

@@ -48,7 +48,7 @@ function EFFECT:Animate(t)
 end
 
 function EFFECT:Init(e)
-	local ping = ss.mp and LocalPlayer():Ping() / 1000 or 0
+	local ping = ss.mp and bit.band(e:GetFlags(), 128) > 0 and LocalPlayer():Ping() / 1000 or 0
 	local c = ss.GetColor(e:GetColor())
 	self:SetModel(mdl)
 	self:SetMaterial(ss.Materials.Effects.Invisible:GetName())

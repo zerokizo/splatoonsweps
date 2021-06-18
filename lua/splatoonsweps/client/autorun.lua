@@ -213,6 +213,7 @@ end
 local IMAGE_FORMAT_BGRA5551 = 21
 local IMAGE_FORMAT_BGRA4444 = 19
 hook.Add("InitPostEntity", "SplatoonSWEPs: Clientside initialization", function()
+	gameevent.Listen "entity_killed"
 	if not file.Exists("splatoonsweps", "DATA") then file.CreateDir "splatoonsweps" end
 	if ss.mp and file.Exists(crashpath, "DATA") then -- If the client has crashed before, RT shrinks.
 		local res = ss.GetConVar "rtresolution"
@@ -494,5 +495,6 @@ end)
 hook.Add("CreateClientsideRagdoll", "SplatooNSWEPs: Remove ragdolls on death", function(ply, rag)
 	if not ply.IsSplattedBySplatoonSWEPs then return end
 	rag:SetNoDraw(true)
+	print("nodraw")
 	ply.IsSplattedBySplatoonSWEPs = nil
 end)
