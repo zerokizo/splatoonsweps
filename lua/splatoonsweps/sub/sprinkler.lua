@@ -188,6 +188,7 @@ if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
     local e = ents.Create "ent_splatoonsweps_sprinkler"
     e.Owner = self.Owner
+    e.Weapon = self
     e.DestroyOnLand = self.ExistingSprinkler
     e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
     e:SetInkColorProxy(self:GetInkColorProxy())

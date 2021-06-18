@@ -197,7 +197,7 @@ function ss.PrepareInkSurface(data)
 	ss.ClearAllInk()
 	ss.InitializeMoveEmulation(LocalPlayer())
 	net.Start "SplatoonSWEPs: Ready to splat"
-	net.WriteString(LocalPlayer():SteamID64())
+	net.WriteString(LocalPlayer():SteamID64() or "")
 	net.SendToServer()
 	ss.WeaponRecord[LocalPlayer()] = util.JSONToTable(
 	util.Decompress(file.Read "splatoonsweps/record/stats.txt" or "") or "") or {

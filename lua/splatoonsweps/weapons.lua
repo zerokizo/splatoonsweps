@@ -58,11 +58,12 @@ function ss.MakeProjectileStructure()
 		ColRadiusEntity = 1,              -- Collision radius against entities
 		ColRadiusWorld = 1,               -- Collision radius against the world
 		DoDamage = true,                  -- Whether or not the ink deals damage
-		DamageMax = nil,                  -- Maximum damage
-		DamageMaxDistance = nil,          -- Ink travel distance to start decaying damage
-		DamageMin = nil,                  -- Minimum damage
-		DamageMinDistance = nil,          -- Ink travel distance to end decaying damage
+		DamageMax = 0,                    -- Maximum damage
+		DamageMaxDistance = 0,            -- Ink travel distance to start decaying damage
+		DamageMin = 0,                    -- Minimum damage
+		DamageMinDistance = 0,            -- Ink travel distance to end decaying damage
 		Gravity = 0,                      -- Gravity acceleration
+		ID = CurTime(),                   -- Ink identifier to avoid multiple damages at once 
 		InitDir = Vector(),               -- (Auto set) Initial direction of velocity
 		InitPos = Vector(),               -- Initial position
 		InitSpeed = 0,                    -- (Auto set) Initial speed

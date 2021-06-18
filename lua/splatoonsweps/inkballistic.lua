@@ -186,7 +186,7 @@ end
 local function HitEntity(ink, t)
 	local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
 	local time = math.max(CurTime() - ink.InitTime, 0)
-	local d, e, o = DamageInfo(), t.Entity, tr.filter
+	local d, e, o = DamageInfo(), t.Entity, weapon.Owner
 	if weapon.IsCharger and tr.LengthSum > data.Range then return end
 	if ss.LastHitID[e] == data.ID then return end
 	ss.LastHitID[e] = data.ID -- Avoid multiple damages at once
@@ -210,7 +210,7 @@ local function HitEntity(ink, t)
 
 	if ink.IsCarriedByLocalPlayer then
 		local te = util.TraceLine {start = t.HitPos, endpos = e:WorldSpaceCenter()}
-		ss.CreateHitEffect(data.Color, data.IsCritical and 1 or 0, te.HitPos, te.HitNormal)
+		ss.CreateHitEffect(data.Color, data.IsCritical and 1 or 0, te.HitPos, te.HitNormal, o)
 		if ss.mp and CLIENT then return end
 	end
 
@@ -244,7 +244,6 @@ local function ProcessInkQueue(ply)
 						removal = not IsValid(tr.filter)
 						or not IsValid(data.Weapon)
 						or not IsValid(data.Weapon.Owner)
-						or data.Weapon.Owner:GetActiveWeapon() ~= data.Weapon
 					end
 
 					if not removal and (not tr.filter:IsPlayer() or tr.filter == ply) then
@@ -310,13 +309,36 @@ local function ProcessInkQueue(ply)
 	end
 end
 
-function ss.CreateHitEffect(color, flags, pos, normal)
-	if ss.mp and (SERVER or not IsFirstTimePredicted()) then return end
+if SERVER then
+	util.AddNetworkString "SplatoonSWEPs: Create hit effect"
+else
+	net.Receive("SplatoonSWEPs: Create hit effect", function()
+		local color = net.ReadUInt(ss.COLOR_BITS)
+		local flags = net.ReadUInt(1)
+		local pos = net.ReadVector()
+		local e = EffectData()
+		e:SetColor(color)
+		e:SetFlags(flags)
+		e:SetOrigin(pos)
+		util.Effect("SplatoonSWEPsOnHit", e)
+	end)
+end
+
+function ss.CreateHitEffect(color, flags, pos, normal, owner)
 	local e = EffectData()
-	e:SetColor(color)
-	e:SetFlags(flags)
-	e:SetOrigin(pos)
-	util.Effect("SplatoonSWEPsOnHit", e)
+	if SERVER and IsValid(owner) and owner:IsPlayer() then
+		net.Start "SplatoonSWEPs: Create hit effect"
+		net.WriteUInt(color, ss.COLOR_BITS)
+		net.WriteUInt(flags, 1)
+		net.WriteVector(pos)
+		net.Send(owner)
+	else
+		e:SetColor(color)
+		e:SetFlags(flags)
+		e:SetOrigin(pos)
+		util.Effect("SplatoonSWEPsOnHit", e)
+	end
+
 	e:SetAngles(normal:Angle())
 	e:SetAttachment(6)
 	e:SetEntity(NULL)
@@ -324,7 +346,7 @@ function ss.CreateHitEffect(color, flags, pos, normal)
 	e:SetOrigin(pos)
 	e:SetRadius(50)
 	e:SetScale(.4)
-	util.Effect("SplatoonSWEPsMuzzleSplash", e)
+	util.Effect("SplatoonSWEPsMuzzleSplash", e, true, SERVER)
 end
 
 function ss.GetDropType(offset) -- math.floor(1 <= x < 4) -> 1, 2, 3

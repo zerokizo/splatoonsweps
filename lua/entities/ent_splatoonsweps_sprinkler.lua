@@ -55,10 +55,9 @@ function ENT:OnTakeDamage(d)
 end
 
 function ENT:Spout()
+    if not IsValid(self.Weapon) then return end
     local ink = ss.MakeProjectileStructure()
     local p = self.Parameters
-    local w = ss.IsValidInkling(self.Owner)
-    if not w then return end
     table.Merge(ink, {
 		AirResist = p.Spout_AirResist,
 		Color = self:GetNWInt "inkcolor",
@@ -68,6 +67,7 @@ function ENT:Spout()
 		DamageMax = p.Spout_SplashDamage,
 		DamageMin = p.Spout_SplashDamage,
 		Gravity = p.Spout_Gravity,
+		ID = CurTime() + self:EntIndex(),
 		PaintFarDistance = p.Spout_SplashPaintR_MinHeight,
 		PaintFarRadius = p.Spout_SplashPaintR_First * p.Spout_SplashPaintR_MinRate,
 		PaintFarRatio = p.Spout_FarRatio,
@@ -78,7 +78,7 @@ function ENT:Spout()
         PaintRatioNearDistance = p.Spout_NearRatioD,
 		StraightFrame = p.Spout_StraightFrame,
 		Type = ss.GetShooterInkType(),
-		Weapon = w,
+		Weapon = self.Weapon,
     })
 
     local DegBias = p.Spout_SplashDegBias
@@ -100,7 +100,7 @@ function ENT:Spout()
         ink.InitVel = dir * math.Rand(VelL, VelH)
         ink.Yaw     = ang.yaw
         local t = ss.AddInk({}, ink)
-        t.Trace.filter = self
+        if t.Trace then t.Trace.filter = self end
         
         local e = EffectData()
         ss.SetEffectColor(e, ink.Color)
@@ -119,6 +119,12 @@ function ENT:Spout()
 end
 
 function ENT:Think()
+    if not IsValid(self.Weapon)
+    or not IsValid(self.Owner)
+    or self.Owner:Health() == 0 then
+        SafeRemoveEntity(self)
+    end
+
     self:NextThink(CurTime())
     if not self.ContactStartTime then return true end
     if CurTime() < self.NextSpoutTime then return true end
