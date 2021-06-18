@@ -33,11 +33,11 @@ end
 function ENT:Initialize()
     local p = ss[self.SubWeaponName].Parameters
     self.Parameters = p
-    self.StraightFrame = p.Fly_AirFrm
-    self.AirResist = p.Fly_VelKd - 1
-    self.AngleAirResist = p.Fly_RotKd - 1
-    self.Gravity = p.Fly_Gravity
-    self.BurstTotalFrame = p.Burst_WaitFrm + p.Burst_WarnFrm
+    self.StraightFrame = p.Fly_AirFrm or 0
+    self.AirResist = (p.Fly_VelKd - 1) or 0
+    self.AngleAirResist = (p.Fly_RotKd - 1) or 0
+    self.Gravity = p.Fly_Gravity or 0
+    self.BurstTotalFrame = (p.Burst_WaitFrm or 0) + (p.Burst_WarnFrm or 0)
     self.HitNormal = vector_up
     self.CollisionSeSilentFrame = p.CollisionSeSilentFrame or math.huge
 

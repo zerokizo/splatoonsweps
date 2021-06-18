@@ -16,7 +16,7 @@ end
 local rand = "SplatoonSWEPs: Spread"
 function SWEP:GetInitVelocity(nospread)
 	local p = self.Parameters
-	local frac = ss.GetBiasedRandom(rand, self:GetBiasVelocity())
+	local frac = ss.GetBiasedRandom(self:GetBiasVelocity(), rand)
 	local v = 1 + (nospread and 0 or frac * p.mInitVelSpeedRateRandom)
 	local prog = self:GetFireInk() > 0 and self:GetFireAt() or self:GetChargeProgress(CLIENT)
 	if prog < self.MediumCharge then

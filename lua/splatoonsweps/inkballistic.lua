@@ -503,7 +503,7 @@ function ss.GetBulletPos(InitVel, StraightFrame, AirResist, Gravity, t)
 	local f = tf * ss.SecToFrame -- Frames for air resistance
 	local ratio = 1 - AirResist
 	local resist = (ratio^f - 1) / math.log(ratio) * ss.FrameToSec
-	if resist ~= resist then resist = 0 end
+	if resist ~= resist then resist = t - tlim end
 
 	-- Additional pos = integral[ts -> t] InitVel * AirResist^u du (ts < t)
 	return InitVel * (tlim + resist) + g * tg

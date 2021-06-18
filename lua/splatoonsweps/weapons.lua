@@ -50,48 +50,49 @@ function ss.SetNormalEye(self)
 end
 
 function ss.MakeProjectileStructure()
+	local PRFarD  = 100 * ss.ToHammerUnits
+	local PRNearD =  50 * ss.ToHammerUnits
 	return { -- Used in ss.AddInk(), describes how a projectile is.
-		AirResist = 0,
-		Charge = nil,
-		Color = 1,
-		ColRadiusEntity = 1,
-		ColRadiusWorld = 1,
-		DoDamage = true,
-		DamageMax = nil,
-		DamageMaxDistance = nil,
-		DamageMin = nil,
-		DamageMinDistance = nil,
-		Gravity = 0,
-		InitDir = Vector(),
-		InitPos = Vector(),
-		InitSpeed = 0,
-		InitVel = Vector(),
-		IsCritical = false,
-		PaintRatioFarDistance = 100 * ss.ToHammerUnits,
-		PaintFarDistance = 0,
-		PaintFarRadius = 0,
-		PaintFarRatio = 3,
-		PaintRatioNearDistance = 50 * ss.ToHammerUnits,
-		PaintNearDistance = 0,
-		PaintNearRadius = 0,
-		PaintNearRatio = 1,
-		Range = nil,
-		SplashColRadius = 0,
-		SplashCount = 0,
-		SplashInitRate = 0,
-		SplashLength = 0,
-		SplashNum = 0,
-		SplashPaintRadius = 0,
-		SplashRatio = 1,
-		StraightFrame = 0,
-		Type = 1,
-		WallPaintFirstLength = 0,
-		WallPaintLength = 0,
-		WallPaintMaxNum = 0,
-		WallPaintRadius = 0,
-		WallPaintUseSplashNum = false,
-		Weapon = NULL,
-		Yaw = 0,
+		AirResist = 0,                    -- Air resistance.  Horizontal velocity at next frame = Current horizontal velocity * AirResist
+		Color = 1,                        -- Ink color ID
+		ColRadiusEntity = 1,              -- Collision radius against entities
+		ColRadiusWorld = 1,               -- Collision radius against the world
+		DoDamage = true,                  -- Whether or not the ink deals damage
+		DamageMax = nil,                  -- Maximum damage
+		DamageMaxDistance = nil,          -- Ink travel distance to start decaying damage
+		DamageMin = nil,                  -- Minimum damage
+		DamageMinDistance = nil,          -- Ink travel distance to end decaying damage
+		Gravity = 0,                      -- Gravity acceleration
+		InitDir = Vector(),               -- (Auto set) Initial direction of velocity
+		InitPos = Vector(),               -- Initial position
+		InitSpeed = 0,                    -- (Auto set) Initial speed
+		InitVel = Vector(),               -- Initial velocity
+		IsCritical = false,               -- Whether or not the ink is critical (true to change the hit effect)
+		PaintFarDistance = 0,             -- Ink travel distance to end shrinking paint radius
+		PaintFarRadius = 0,               -- Painting radius when hit
+		PaintFarRatio = 3,                -- Painting aspect ratio at the end
+		PaintNearDistance = 0,            -- Ink travel distance to start shrinking paint radius
+		PaintNearRadius = 0,              -- Painting radius when hit
+		PaintNearRatio = 1,               -- Painting aspect ratio at the beginning
+		PaintRatioFarDistance = PRFarD,   -- Ink travel distance to end changing paint aspect ratio
+		PaintRatioNearDistance = PRNearD, -- Ink travel distance to start changing paint aspect ratio
+		Range = nil,                      -- (For Chargers) Ink travel distance limit
+		SplashColRadius = 0,              -- Collision radius against entities/world for splashes created from the ink
+		SplashCount = 0,                  -- (Variable) Current number of splashes the ink has dropped so far
+		SplashInitRate = 0,               -- Determines the position of the first splash the ink drops = SplashLength * SplashInitRate
+		SplashLength = 0,                 -- Length between two splashes from the ink
+		SplashNum = 0,                    -- Number of total splashes the ink will drop
+		SplashPaintRadius = 0,            -- Painting radius splashes will paint
+		SplashRatio = 1,                  -- Painting aspect ratio for splashes
+		StraightFrame = 0,                -- The ink travels without affecting gravity for this frames
+		Type = 1,                         -- The shape of the paintings
+		WallPaintFirstLength = 0,         -- (For Chargers) Determines the position of the first paint for the vertical wall paint
+		WallPaintLength = 0,              -- (For Chargers) Length between two paints for the vertical wall paint
+		WallPaintMaxNum = 0,              -- (For Chargers) Number of paints for the vertical wall paint
+		WallPaintRadius = 0,              -- (For Chargers) Painting radius for the vertical wall paint
+		WallPaintUseSplashNum = false,    -- (For Chargers) True to use the rest of splash count (SplashNum - SplashCount) instead of WallPaintMaxNum
+		Weapon = NULL,                    -- The weapon entity which created the ink
+		Yaw = 0,                          -- Determines the angle of the paintings in degrees
 	}
 end
 

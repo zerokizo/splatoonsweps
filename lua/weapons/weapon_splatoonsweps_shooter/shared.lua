@@ -130,8 +130,8 @@ end
 
 function SWEP:GetSpread()
 	local DegRandX, DegRandY = self:GetSpreadAmount()
-	local rx = ss.GetBiasedRandom("SplatoonSWEPs: Spread X", self:GetBias()) * DegRandX
-	local ry = ss.GetBiasedRandom("SplatoonSWEPs: Spread Y", self:GetBias()) * DegRandY
+	local rx = ss.GetBiasedRandom(self:GetBias(), "SplatoonSWEPs: Spread X") * DegRandX
+	local ry = ss.GetBiasedRandom(self:GetBias(), "SplatoonSWEPs: Spread Y") * DegRandY
 	return rx, ry
 end
 

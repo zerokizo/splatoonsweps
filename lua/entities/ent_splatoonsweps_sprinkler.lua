@@ -9,6 +9,7 @@ ENT.HitSound = "SplatoonSWEPs.SubWeaponPut"
 ENT.Model = Model "models/splatoonsweps/subs/sprinkler/sprinkler.mdl"
 ENT.RunningSoundID = -1
 ENT.SubWeaponName = "sprinkler"
+ENT.NextSpoutTime = CurTime()
 
 if CLIENT then
     function ENT:FireAnimationEvent(pos, ang, event, options)
@@ -53,8 +54,76 @@ function ENT:OnTakeDamage(d)
     return health
 end
 
+function ENT:Spout()
+    local ink = ss.MakeProjectileStructure()
+    local p = self.Parameters
+    local w = ss.IsValidInkling(self.Owner)
+    if not w then return end
+    table.Merge(ink, {
+		AirResist = p.Spout_AirResist,
+		Color = self:GetNWInt "inkcolor",
+		ColRadiusEntity = p.Spout_SplashCollisionR_First,
+		ColRadiusWorld = p.Spout_SplashCollisionR_First,
+		DoDamage = true,
+		DamageMax = p.Spout_SplashDamage,
+		DamageMin = p.Spout_SplashDamage,
+		Gravity = p.Spout_Gravity,
+		PaintFarDistance = p.Spout_SplashPaintR_MinHeight,
+		PaintFarRadius = p.Spout_SplashPaintR_First * p.Spout_SplashPaintR_MinRate,
+		PaintFarRatio = p.Spout_FarRatio,
+		PaintNearDistance = p.Spout_SplashPaintR_MaxHeight,
+		PaintNearRadius = p.Spout_SplashPaintR_First,
+		PaintNearRatio = p.Spout_NearRatio,
+        PaintRatioFarDistance = p.Spout_FarRatioD,
+        PaintRatioNearDistance = p.Spout_NearRatioD,
+		StraightFrame = p.Spout_StraightFrame,
+		Type = ss.GetShooterInkType(),
+		Weapon = w,
+    })
+
+    local DegBias = p.Spout_SplashDegBias
+    local DegRand = p.Spout_RandomDeg
+    local PitchH = p.Spout_SplashPitH
+    local PitchL = p.Spout_SplashPitL
+    local VelH = p.Spout_SplashVelH_First
+    local VelL = p.Spout_SplashVelL_First
+    for i = 1, 2 do
+        local an = string.format("muzzle_%d", i)
+        local ai = self:LookupAttachment(an)
+        local a = self:GetAttachment(ai)
+        local _, localang = WorldToLocal(Vector(), a.Ang, Vector(), self:GetAngles())
+        localang.pitch = -math.Rand(PitchL, PitchH)
+        localang.yaw = localang.yaw + ss.GetBiasedRandom(DegBias) * DegRand
+        local _, ang = LocalToWorld(Vector(), localang, Vector(), self:GetAngles())
+        local dir = ang:Forward()
+        ink.InitPos = a.Pos
+        ink.InitVel = dir * math.Rand(VelL, VelH)
+        ink.Yaw     = ang.yaw
+        local t = ss.AddInk({}, ink)
+        t.Trace.filter = self
+        
+        local e = EffectData()
+        ss.SetEffectColor(e, ink.Color)
+        ss.SetEffectColRadius(e, ink.ColRadiusWorld)
+        ss.SetEffectDrawRadius(e, p.Spout_SplashDrawR_First)
+        ss.SetEffectEntity(e, ink.Weapon)
+        ss.SetEffectFlags(e, ink.Weapon, 8)
+        ss.SetEffectInitPos(e, ink.InitPos)
+        ss.SetEffectInitVel(e, ink.InitVel)
+        ss.SetEffectSplash(e, Angle(ink.AirResist * 180, ink.Gravity / ss.InkDropGravity * 180))
+        ss.SetEffectSplashInitRate(e, Vector(0))
+        ss.SetEffectSplashNum(e, 0)
+        ss.SetEffectStraightFrame(e, ink.StraightFrame)
+        util.Effect("SplatoonSWEPsShooterInk", e)
+    end
+end
+
 function ENT:Think()
     self:NextThink(CurTime())
+    if not self.ContactStartTime then return true end
+    if CurTime() < self.NextSpoutTime then return true end
+    self.NextSpoutTime = CurTime() + self.Parameters.Spout_Span_First
+    self:Spout()
     return true
 end
 
@@ -97,7 +166,7 @@ function ENT:PhysicsCollide(data, collider)
     self:SetNWBool("hit", true)
 
     local inkcolor = self:GetNWInt "inkcolor"
-    ss.Paint(data.HitPos, self.HitNormal, ss.sprinkler.Parameters.InitInkRadius,
+    ss.Paint(data.HitPos, self.HitNormal, self.Parameters.InitInkRadius,
     inkcolor, 0, ss.GetDropType(), 1, self.Owner, self.WeaponClassName)
 
     if IsValid(self.DestroyOnLand) then

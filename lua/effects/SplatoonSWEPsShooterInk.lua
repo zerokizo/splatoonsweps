@@ -245,7 +245,7 @@ end
 local cable = Material "splatoonsweps/crosshair/line"
 local cabletip = Material "splatoonsweps/crosshair/dot"
 function EFFECT:RenderGeneral()
-	local sizetip = self.DrawRadius * 0.8
+	local sizetip = self.DrawRadius * 0.75
 	local AppPos = self:GetPos()
     local TailPos = self.TrailPos
 	render.SetMaterial(cabletip)

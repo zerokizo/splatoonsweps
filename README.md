@@ -28,6 +28,12 @@ The aim of this rework is the following:
 They're located in *garrysmod/data/splatoonsweps/mapname.txt* for singleplayer and listen server host,  
 and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
 
+## Known issues
+* Loading some large maps with this SWEPs causes GMOD to crash in 32-bit build.
+    You can still load them in 64-bit build so I recommend to switch to it.
+* You may experience major frame drops if your VRAM amount is not enough.
+    Make sure to set the ink resolution option (found in where you change playermodel for the SWEPs) correctly.
+
 ***
 ## Done
 * A new ink system
@@ -50,7 +56,7 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
     * [ ] Non-explosive sub weapons
         * [x] Disruptor
         * [x] Point Sensor
-        * [ ] Sprinkler
+        * [x] Sprinkler
         * [ ] Splash Wall
         * [ ] Squid Beakon
 

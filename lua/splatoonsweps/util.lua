@@ -198,26 +198,28 @@ end
 
 -- Get either -1 or +1.
 -- Argument:
---   string seed | The random seed used by util.SharedRandom().
+--   string seed | The random seed used by util.SharedRandom(), which can be nil.
 -- Returning:
 --   number sign | Either -1 or +1.
 function ss.RandomSign(seed)
-	return math.Round(util.SharedRandom(seed, 0, 1, CurTime())) * 2 - 1
+	local rand = seed and util.SharedRandom(seed, 0, 1, CurTime()) or math.random()
+	return math.Round(rand) * 2 - 1
 end
 
--- Generates a biased random value ranges from 0 to 1, used by weapon's spread.
+-- Generates a biased random value ranges from 0 to 1, used by weapon spread.
 -- Arguments:
---   string seed | The random seed used by util.SharedRandom().
 --   number bias | How much the bias is.
 --                 0 makes it always return 0.
 --                 0.5 means non-biased.
 --                 1 makes it return either 1 or -1.
-function ss.GetBiasedRandom(seed, bias)
+--   string seed | The random seed used by util.SharedRandom(), which can be nil.
+function ss.GetBiasedRandom(bias, seed)
 	local sign = ss.RandomSign(seed)
-	local select = bias > util.SharedRandom(seed, 0, 1, CurTime() * 2)
+	local selectrand = seed and util.SharedRandom(seed, 0, 1, CurTime() * 2) or math.random()
+	local select = bias > selectrand
 	local fracmin = select and bias or 0
 	local fracmax = select and 1    or bias
-	local frac = util.SharedRandom(seed, fracmin, fracmax, CurTime() * 3)
+	local frac = seed and util.SharedRandom(seed, fracmin, fracmax, CurTime() * 3) or math.Rand(fracmin, fracmax)
 	return sign * frac
 end
 
