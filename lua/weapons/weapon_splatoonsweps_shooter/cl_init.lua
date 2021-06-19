@@ -83,7 +83,8 @@ end
 function SWEP:GetMuzzlePosition()
 	local ent = self:IsTPS() and self or self:GetViewModel()
 	local a = ent:GetAttachment(ent:LookupAttachment "muzzle")
-	return assert(a, "SplatoonSWEPs: Attachment \"muzzle\" is not found").Pos, a.Ang
+	if not a then return self:WorldSpaceCenter(), self:GetAngles() end
+	return a.Pos, a.Ang
 end
 
 function SWEP:GetCrosshairTrace(t)

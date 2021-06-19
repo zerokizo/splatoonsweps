@@ -40,6 +40,7 @@ end
 
 function ENT:PhysicsUpdate(p)
     if self.RemoveFlag then return end
+    if self:IsStuck() then return end
     self.BaseClass.PhysicsUpdate(self, p)
     local desired = p:GetVelocity()
     if desired:LengthSqr() < 100 then return end
@@ -52,6 +53,7 @@ end
 
 function ENT:PhysicsCollide(data, collider)
     if self.RemoveFlag then return end
+    if self:IsStuck() then return end
     self.BaseClass.PhysicsCollide(self, data, collider)
     local n = -data.HitNormal
     local ang = n:Angle()
@@ -62,13 +64,18 @@ function ENT:PhysicsCollide(data, collider)
     local sign = vn:Dot(ang:Up()) > 0 and -1 or 1
     local deg = math.deg(math.acos(dot)) * sign
     ang:RotateAroundAxis(ang:Forward(), deg)
+    collider:EnableMotion(not data.HitEntity:IsWorld())
     collider:SetPos(data.HitPos)
     collider:SetAngles(ang)
     timer.Simple(0, function()
+        if not IsValid(self) then return end
+        if not IsValid(data.HitEntity) then return end
         constraint.Weld(self, data.HitEntity, 0,
         self:FindBoneFromPhysObj(data.HitEntity, data.HitObject), 0, false, false)
     end)
-    if not self.ContactStartTime then self.ContactStartTime = CurTime() end
+    if not self.ContactStartTime then
+        self.ContactStartTime = CurTime()
+    end
     self.HitNormal = -data.HitNormal
     self.ContactEntity = data.HitEntity
     self:SetNWFloat("t0", CurTime())

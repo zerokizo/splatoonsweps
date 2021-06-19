@@ -435,37 +435,114 @@ function ss.DrawVCrosshair(self, dodraw, isfirstperson)
 	end
 end
 
-local MarkerLineMaterial = Material "cable/smoke"
-local MarkerLineTipMaterial = Material "sprites/dot"
-function ss.PreDrawHalos(self)
+local mat_Copy = Material "pp/copy"
+local mat_Add  = Material "pp/add"
+local mat_Sub  = Material "pp/sub"
+local rt_Store = render.GetScreenEffectTexture(0)
+local rt_Blur  = render.GetScreenEffectTexture(1)
+local PreventRecursive = false
+local BlurX, BlurY, BlurStep = 0.08, 0.08, 0.16
+function ss.DrawSolidHalo(ent, color)
+	if PreventRecursive then return end
+	render.SetStencilEnable(true)
+	render.SetStencilWriteMask(3)
+	render.SetStencilTestMask(3)
+	render.SetStencilReferenceValue(3)
+	render.ClearStencil()
+
+	render.SetStencilCompareFunction(STENCIL_NEVER)
+	render.SetStencilPassOperation(STENCIL_KEEP)
+	render.SetStencilFailOperation(STENCIL_REPLACE)
+	render.SetStencilZFailOperation(STENCIL_KEEP)
+
+	PreventRecursive = true
+	ent:DrawModel()
+
+	render.SetStencilCompareFunction(STENCIL_NOTEQUAL)
+	render.SetStencilPassOperation(STENCIL_REPLACE)
+	render.SetStencilFailOperation(STENCIL_KEEP)
+	render.SetStencilWriteMask(2)
+	local org = ent:GetPos()
+	local r, u = EyeAngles():Right(), EyeAngles():Up()
+	for x = -BlurX, BlurX, BlurStep do
+		for y = -BlurY, BlurY, BlurStep do
+			local dxdy = r * x + u * y
+			ent:SetPos(org + dxdy)
+			ent:SetupBones()
+			for _, e in ipairs(ent:GetChildren()) do e:SetupBones() end
+			ent:DrawModel()
+		end
+	end
+
+	ent:SetPos(org)
+	ent:SetupBones()
+	for _, e in ipairs(ent:GetChildren()) do e:SetupBones() end
+	PreventRecursive = false
+			
+	render.SetStencilReferenceValue(2)
+	render.SetStencilCompareFunction(STENCIL_EQUAL)
+	render.SetStencilPassOperation(STENCIL_KEEP)
+
+	cam.Start2D()
+	surface.SetDrawColor(color)
+	surface.DrawRect(0, 0, ScrW(), ScrH())
+	cam.End2D()
+	render.SetStencilEnable(false)
+end
+
+local MarkerLineMaterial = Material "cable/new_cable_lit"
+local MarkerLineTipMaterial = Material "sprites/sent_ball"
+hook.Add("PostDrawEffects", "SplatoonSWEPs: Draw marked enemies", function()
+	local lp = LocalPlayer()
+	if lp:ShouldDrawLocalPlayer() and lp:GetNWBool "SplatoonSWEPs: IsMarked" then
+		local c = ss.GetColor(lp:GetNWInt "SplatoonSWEPs: PointSensorMarkedBy")
+		local additive = c:ToVector():Dot(ss.GrayScaleFactor) > 0.5
+		halo.Add({lp}, c, 2, 2, 1, additive, true)
+	end
+	
+	local lpw = ss.IsValidInkling(lp)
+	if not lpw then return end
+
 	local marked = {}
-	local c = ss.GetColor(self:GetNWInt "inkcolor")
+	local c = ss.GetColor(lpw:GetNWInt "inkcolor")
+	local additive = c:ToVector():Dot(ss.GrayScaleFactor) > 0.5
+
 	for _, e in ipairs(ents.GetAll()) do
 		if e:GetNWBool "SplatoonSWEPs: IsMarked" then
 			local w = ss.IsValidInkling(e)
-			if not (w and ss.IsAlly(self, w)) then
+			if not (w and ss.IsAlly(lpw, w)) then
 				table.insert(marked, e)
 			end
 		end
 	end
 
-	halo.Add(marked, c, 2, 2, 1, true, true)
+	if #marked == 0 then return end
+	halo.Add(marked, c, 2, 2, 1, additive, true)
+
 	cam.Start3D()
 	cam.IgnoreZ(true)
 	local size = 2 + math.sin(2 * math.pi * 4 * CurTime()) * 0.75
-	local start = LocalPlayer():GetPos()
+	local start = lp:GetPos()
 	for _, e in ipairs(marked) do
 		local endpos = e:WorldSpaceCenter()
 		render.SetMaterial(MarkerLineMaterial)
-		render.DrawBeam(start, endpos, 2, -CurTime(), start:Distance(endpos) / 20 - CurTime(), c)
+		render.DrawBeam(start, endpos, 1, -CurTime(), start:Distance(endpos) / 20 - CurTime(), c)
 		render.SetMaterial(MarkerLineTipMaterial)
-		render.DrawSprite(endpos, size, size, c)
+		render.DrawQuadEasy(endpos, EyeAngles():Forward(), size, size, c)
 	end
+	render.SetMaterial(MarkerLineTipMaterial)
 	render.DrawSprite(start, size, size, c)
+	cam.IgnoreZ(false)
 	cam.End3D()
-end
+end)
 
-hook.Add("PreDrawHalos", "SplatoonSWEPs: Draw marked enemies", ss.hook "PreDrawHalos")
+hook.Add("PostDrawPlayerHands", "SplatoonSWEPs: Draw halo for viewmodel", function(hands, vm, ply, weapon)
+	if LocalPlayer():ShouldDrawLocalPlayer() then return end
+	if not LocalPlayer():GetNWBool "SplatoonSWEPs: IsMarked" then return end
+	local c = ss.GetColor(LocalPlayer():GetNWInt "SplatoonSWEPs: PointSensorMarkedBy")
+	ss.DrawSolidHalo(vm, c)
+end)
+
 hook.Add("PostPlayerDraw", "SplatoonSWEPs: Thirdperson player fadeout", ss.hook "PostPlayerDraw")
 hook.Add("PrePlayerDraw", "SplatoonSWEPs: Hide players on crouch", ss.hook "PrePlayerDraw")
 hook.Add("PostRender", "SplatoonSWEPs: Render a RT scope", ss.hook "PostRender")
@@ -495,6 +572,5 @@ end)
 hook.Add("CreateClientsideRagdoll", "SplatooNSWEPs: Remove ragdolls on death", function(ply, rag)
 	if not ply.IsSplattedBySplatoonSWEPs then return end
 	rag:SetNoDraw(true)
-	print("nodraw")
 	ply.IsSplattedBySplatoonSWEPs = nil
 end)

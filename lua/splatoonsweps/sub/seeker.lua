@@ -90,9 +90,9 @@ function module:SearchTarget()
     local maxdot, ent = math.cos(math.rad(seeker_search_deg)), nil
     for _, e in ipairs(ents.GetAll()) do
         local w = ss.IsValidInkling(e)
-        if (not w and e:Health() > 0
-        and (e:IsPlayer() or e:IsNPC() or e:IsNextBot()))
-        or w and not ss.IsAlly(self, w) then
+        local isvalident = e:Health() > 0 and (e:IsPlayer() or e:IsNPC() or e:IsNextBot())
+        local inklingexception = w and (ss.IsAlly(self, w) or w:GetInInk())
+        if Either(w, inklingexception, isvalident) then
             local t = util.TraceLine {
                 start = self:GetShootPos(),
                 endpos = e:WorldSpaceCenter(),

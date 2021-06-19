@@ -190,6 +190,7 @@ function SWEP:GetMuzzlePosition()
 	local ent = self:IsTPS() and self or self:GetViewModel()
 	local i = self.IsBrush and ent:LookupAttachment "tip" or ent:LookupAttachment "roll"
 	local a = ent:GetAttachment(i)
+	if not a then return self:WorldSpaceCenter(), self:GetAngles() end
 	return a.Pos, a.Ang
 end
 

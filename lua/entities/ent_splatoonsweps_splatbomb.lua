@@ -17,6 +17,11 @@ ENT.NextPlayHitSE = 0
 ENT.SubWeaponName = "splatbomb"
 ENT.WarnSoundPlayed = false
 
+function ENT:OnRemove()
+    if not self.WarnSound then return end
+    self.WarnSound:Stop()
+end
+
 function ENT:IsStuck()
     return IsValid(self.ContactEntity)
     or isentity(self.ContactEntity) and self.ContactEntity:IsWorld()
@@ -90,7 +95,7 @@ function ENT:Think()
     else
         self.ContactStartTime = nil
         self.ContactTotalTime = t
-        self.WarnSound:PlayEx(1, 0)
+        self.WarnSound:PlayEx(0, 100)
     end
     
     if not self.RemoveFlag then return true end

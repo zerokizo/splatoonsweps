@@ -7,7 +7,7 @@ SWEP.SwingSound = "SplatoonSWEPs.RollerSwing"
 SWEP.SplashSound = "SplatoonSWEPs.RollerSplashMedium"
 SWEP.RollSoundName = ss.DynamoRollerRoll
 SWEP.Special = "echolocator"
-SWEP.Sub = "sprinker"
+SWEP.Sub = "sprinkler"
 SWEP.Variations = {
 	{
 		Customized = true,

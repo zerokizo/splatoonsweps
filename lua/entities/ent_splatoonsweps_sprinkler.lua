@@ -147,10 +147,12 @@ function ENT:PhysicsCollide(data, collider)
     local deg = math.deg(math.acos(dot)) * sign
     ang:RotateAroundAxis(ang:Forward(), deg)
     ang:RotateAroundAxis(ang:Right(), -90)
+    collider:EnableMotion(not data.HitEntity:IsWorld())
     collider:SetPos(data.HitPos)
     collider:SetAngles(ang)
     timer.Simple(0, function()
         if not IsValid(self) then return end
+        if not IsValid(data.HitEntity) then return end
         constraint.Weld(self, data.HitEntity, 0,
         self:FindBoneFromPhysObj(data.HitEntity, data.HitObject), 0, false, false)
     end)
@@ -158,6 +160,7 @@ function ENT:PhysicsCollide(data, collider)
     timer.Simple(0.125, function()
         if not IsValid(self) then return end
         self:ResetSequenceInfo()
+        if self.RunningSound then return end
         self.RunningSound = CreateSound(self, ss.SprinklerRunning)
         self.RunningSound:Play()
     end)

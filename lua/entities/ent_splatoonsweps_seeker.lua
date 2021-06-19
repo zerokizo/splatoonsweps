@@ -13,7 +13,7 @@ ENT.ExplodeTime = 5
 ENT.ExplosionOffset = 16
 ENT.IsSplatoonBomb = true
 ENT.NextTracePaintTime = 0
-ENT.SeekStartTime = 1
+ENT.SeekStartTime = 0.5
 ENT.TracePaintInterval = 2 * ss.FrameToSec
 ENT.TracePaintRadius = 10 * ss.ToHammerUnits
 

@@ -9,7 +9,7 @@ function ss.GetRange(initvel, straightframe, guideframe, airresist)
 end
 
 function ss.SetChargingEye(self)
-	local ply = self.Owner
+	local ply = self:GetOwner()
 	local mdl = ply:GetModel()
 	local skin = ss.ChargingEyeSkin[mdl]
 	if skin and ply:GetSkin() ~= skin then

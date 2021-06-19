@@ -27,6 +27,7 @@ function ENT:PhysicsCollide(data, collider)
             hit = true
             e:EmitSound "SplatoonSWEPs.PointSensorTaken"
             e:SetNWBool("SplatoonSWEPs: IsMarked", true)
+            e:SetNWInt("SplatoonSWEPs: PointSensorMarkedBy", self:GetNWInt "inkcolor")
             e:SetNWFloat("SplatoonSWEPs: PointSensorEndTime", CurTime() + ss.PointSensorDuration)
             local name = "SplatoonSWEPs: Timer for Point Sensor duration " .. e:EntIndex()
             timer.Create(name, 0, 0, function()

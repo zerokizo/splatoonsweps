@@ -116,9 +116,9 @@ local function HitPaint(ink, t)
 	if data.DoDamage then
 		if weapon.IsCharger then
 			-- HitSmoke(ink, t) -- TODO: Add smoke if the surface is not paintable
-			local radiusmul = ink.Parameters.mPaintRateLastSplash
-			if not hitfloor then radius = radius * Lerp(data.Charge, radiusmul, 1) end
-			if tr.LengthSum < data.Range then
+			local radiusmul = ink.Parameters.mPaintRateLastSplash or 1
+			if not hitfloor then radius = radius * Lerp(data.Charge or 0, radiusmul, 1) end
+			if tr.LengthSum < (data.Range or 0) then
 				local cos = math.Clamp(-data.InitDir.z, ss.MAX_COS_DIFF, 1)
 				ratio = math.Remap(cos, ss.MAX_COS_DIFF, 1, ratio, 1)
 			elseif hitfloor then
@@ -187,7 +187,7 @@ local function HitEntity(ink, t)
 	local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
 	local time = math.max(CurTime() - ink.InitTime, 0)
 	local d, e, o = DamageInfo(), t.Entity, weapon.Owner
-	if weapon.IsCharger and tr.LengthSum > data.Range then return end
+	if weapon.IsCharger and data.Range and tr.LengthSum > data.Range then return end
 	if ss.LastHitID[e] == data.ID then return end
 	ss.LastHitID[e] = data.ID -- Avoid multiple damages at once
 	
