@@ -1,6 +1,7 @@
 # SplatoonSWEPs
 This is a huge rework of my existing addon, [SplatoonSWEPs][1].  
-You may support me on [Patreon][9].  If you do, you can see my latest progress there, which is exclusive to my patron.
+If you are interested in this project, watch this the following video for a brief introduction. 
+[![Youtube](https://img.youtube.com/vi/2ca3UeLlCZs/0.jpg)](https://www.youtube.com/watch?v=2ca3UeLlCZs)
 
 The aim of this rework is the following:
 * Working fine on multiplayer game (especially on dedicated servers)
@@ -95,4 +96,3 @@ Playermodels are optional, but I recommend to install them, too.
 [6]:https://steamcommunity.com/sharedfiles/filedetails/?id=478059724
 [7]:https://steamcommunity.com/sharedfiles/filedetails/?id=476149543
 [8]:https://steamcommunity.com/sharedfiles/filedetails/?id=1544841933
-[9]:https://www.patreon.com/ZenkakuHiragana
