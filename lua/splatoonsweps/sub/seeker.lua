@@ -29,6 +29,7 @@ ss.seeker = {
         Fly_VelKd = 0.94134,
         InitInkRadius = 10,
         InkConsume = 0.8,
+        InkRecoverStop = 70,
         
         Fly_InitVel_Estimated = 1.5,
         SeThreshold = 150,
@@ -54,6 +55,7 @@ ss.seeker = {
         Fly_VelKd = "ratio",
         InitInkRadius = "du",
         InkConsume = "ink",
+        InkRecoverStop = "f",
         
         Fly_InitVel_Estimated = "du/f",
         SeThreshold = "du",
@@ -130,7 +132,7 @@ if SERVER then
         end
 
         self:ConsumeInk(p.InkConsume)
-        self:SetReloadDelay(70 * ss.FrameToSec)
+        self:SetReloadDelay(p.InkRecoverStop)
     end
 else
     function module:DrawOnSubTriggerDown()

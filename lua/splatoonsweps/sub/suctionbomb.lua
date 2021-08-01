@@ -46,6 +46,7 @@ ss.suctionbomb = {
         Fly_RotKd = 0.98015,
         Fly_VelKd = 0.94134,
         InkConsume = 0.7,
+        InkRecoverStop = 60,
         Shape_SphereD = 5,
         Shape_SphereR = 2,
         WallCheckOffsetY = 4.5,
@@ -91,6 +92,7 @@ ss.suctionbomb = {
         Fly_RotKd = "ratio",
         Fly_VelKd = "ratio",
         InkConsume = "ink",
+        InkRecoverStop = "f",
         Shape_SphereD = "du",
         Shape_SphereR = "du",
         WallCheckOffsetY = "du",
@@ -141,5 +143,5 @@ function module:ServerSecondaryAttack(throwable)
     end
 
     self:ConsumeInk(p.InkConsume)
-    self:SetReloadDelay(60 * ss.FrameToSec)
+    self:SetReloadDelay(p.InkRecoverStop)
 end

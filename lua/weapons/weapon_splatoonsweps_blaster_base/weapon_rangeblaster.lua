@@ -11,8 +11,8 @@ SWEP.Variations = {
 	{
 		Customized = true,
 		Skin = 1,
-		Special = "splatbomb",
-		Sub = "kraken",
+		Special = "kraken",
+		Sub = "splatbomb",
 		Suffix = "custom",
 	},
 	{

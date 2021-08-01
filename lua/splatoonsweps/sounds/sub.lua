@@ -14,7 +14,7 @@ ss.SeekerRunning = Sound "splatoonsweps/weapons/sub/seeker/running.wav"
 ss.SeekerFar = Sound "splatoonsweps/weapons/sub/seeker/seekfar.wav"
 ss.SeekerNear = Sound "splatoonsweps/weapons/sub/seeker/seeknear.wav"
 ss.SeekerTargetChanged = Sound "splatoonsweps/weapons/beep.mp3" -- TODO: Get a correct sound
-ss.SplashShieldRunning = Sound "splatoonsweps/weapons/sub/splashshield/running.wav"
+ss.SplashWallRunning = Sound "splatoonsweps/weapons/sub/splashwall/running.wav"
 ss.SprinklerRunning = Sound "splatoonsweps/weapons/sub/sprinkler/running.wav"
 
 sound.Add {
@@ -217,9 +217,9 @@ sound.Add {
 
 sound.Add {
     channel = CHAN_WEAPON,
-    name = "SplatoonSWEPs.SplashShieldDeproy",
+    name = "SplatoonSWEPs.SplashWallDeploy",
     level = ss.WeaponSoundLevel,
-    sound = "splatoonsweps/weapons/sub/splashshield/deploy.wav",
+    sound = "splatoonsweps/weapons/sub/splashwall/deploy.wav",
     volume = ss.WeaponSoundVolume,
     pitch = 100,
 }

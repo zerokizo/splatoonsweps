@@ -39,6 +39,7 @@ ss.burstbomb = {
         Fly_RotKd = 0.98015,
         Fly_VelKd = 0.94134,
         InkConsume = 0.4,
+        InkRecoverStop = 40,
         Shape_SphereD = 5,
         Shape_SphereR = 2,
         
@@ -82,6 +83,7 @@ ss.burstbomb = {
         Fly_RotKd = "ratio",
         Fly_VelKd = "ratio",
         InkConsume = "ink",
+        InkRecoverStop = "f",
         Shape_SphereD = "du",
         Shape_SphereR = "du",
     
@@ -127,5 +129,5 @@ function module:ServerSecondaryAttack(throwable)
     end
 
     self:ConsumeInk(p.InkConsume)
-    self:SetReloadDelay(40 * ss.FrameToSec)
+    self:SetReloadDelay(p.InkRecoverStop)
 end

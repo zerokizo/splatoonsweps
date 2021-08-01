@@ -51,6 +51,7 @@ ss.splatbomb = {
         Fly_WallKr = 0.2,
         ForceSleepFrame = 900,
         InkConsume = 0.7,
+        InkRecoverStop = 60,
         Land_AbsorveRt = 0.1,
         Land_GndKf = 0.2,
         Land_GndKr = 0.05,
@@ -117,6 +118,7 @@ ss.splatbomb = {
         Fly_WallKr = "-",
         ForceSleepFrame = "f",
         InkConsume = "ink",
+        InkRecoverStop = "f",
         Land_AbsorveRt = "ratio",
         Land_GndKf = "ratio",
         Land_GndKr = "ratio",
@@ -188,7 +190,7 @@ if SERVER then
         end
 
         self:ConsumeInk(p.InkConsume)
-        self:SetReloadDelay(60 * ss.FrameToSec)
+        self:SetReloadDelay(p.InkRecoverStop)
     end
 else
     function module:DrawOnSubTriggerDown()

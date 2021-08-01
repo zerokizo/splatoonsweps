@@ -25,6 +25,7 @@ ss.sprinkler = {
         GndColOnMovingObj_OffsetY = 3,
         GndColOnMovingObj_Radius = 3,
         InkConsume = 0.7, -- 0.6 in Splatoon 2
+        InkRecoverStop = 60,
         MaxHp = 1.2,
         ObjectDamageRateHigh = 10,
         ObjectDamageRateMid = 10,
@@ -105,6 +106,7 @@ ss.sprinkler = {
         GndColOnMovingObj_OffsetY = "du",
         GndColOnMovingObj_Radius = "du",
         InkConsume = "ink",
+        InkRecoverStop = "f",
         MaxHp = "hp",
         ObjectDamageRateHigh = "ratio",
         ObjectDamageRateMid = "ratio",
@@ -206,5 +208,5 @@ function module:ServerSecondaryAttack(throwable)
 
     self.ExistingSprinkler = e
     self:ConsumeInk(p.InkConsume)
-    self:SetReloadDelay(40 * ss.FrameToSec)
+    self:SetReloadDelay(p.InkRecoverStop)
 end

@@ -15,6 +15,7 @@ ss.pointsensor = {
         Fly_RotKd = 0.98015,
         Fly_VelKd = 0.94134,
         InkConsume = 0.4,
+        InkRecoverStop = 50,
 
         -- Taken from Splat bomb
         Fly_InitVel_Estimated = 9.5,
@@ -29,6 +30,7 @@ ss.pointsensor = {
         Fly_RotKd = "ratio",
         Fly_VelKd = "ratio",
         InkConsume = "ink",
+        InkRecoverStop = "f",
     
         Fly_InitVel_Estimated = "du/f",
         Fly_AirFrm = "f",
@@ -72,5 +74,5 @@ function module:ServerSecondaryAttack(throwable)
     end
 
     self:ConsumeInk(p.InkConsume)
-    self:SetReloadDelay(40 * ss.FrameToSec)
+    self:SetReloadDelay(p.InkRecoverStop)
 end

@@ -26,6 +26,7 @@ ss.inkmine = {
         Fly_VelKd = 0.94134,
         InitInkRadius = 10,
         InkConsume = 0.6,
+        InkRecoverStop = 0,
         MaxInkmines = 1,
         PlayerColRadius = 30,
     },
@@ -48,6 +49,7 @@ ss.inkmine = {
         Fly_VelKd = "ratio",
         InitInkRadius = "du",
         InkConsume = "ink",
+        InkRecoverStop = "f",
         MaxInkmines = "num",
         PlayerColRadius = "du",
     },
@@ -94,6 +96,7 @@ function module:ServerSecondaryAttack(throwable)
     e:Spawn()
     self.NumInkmines = self.NumInkmines + 1
     self:ConsumeInk(p.InkConsume)
+    -- self:SetReloadDelay(p.InkRecoverStop)
 
     ss.Paint(tr.HitPos, tr.HitNormal, p.InitInkRadius,
     inkcolor, ang.yaw, ss.GetDropType(), 1, self.Owner, self:GetClass())
