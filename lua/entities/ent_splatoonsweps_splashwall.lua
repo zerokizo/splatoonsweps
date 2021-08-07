@@ -35,7 +35,17 @@ function ENT:SetupDataTables()
 end
 
 function ENT:OnRemove()
-    self.RunningSound:Stop()
+    local p = self:GetPos()
+    local n = self.HitNormal
+    local e = EffectData()
+    e:SetOrigin(p)
+    e:SetNormal(n)
+    e:SetScale(3)
+    e:SetMagnitude(2)
+    e:SetRadius(5)
+    util.Effect("Sparks", e)
+    self:EmitSound "SplatoonSWEPs.SubWeaponDestroy"
+    if self.RunningSound then self.RunningSound:Stop() end
 end
 
 function ENT:TracePaint()
@@ -61,6 +71,10 @@ function ENT:Think()
 
     local i = self:GetFlexIDByName "InkAmount"
     self:SetFlexWeight(i, t / self.Parameters.mNoDamageRunningDurationFrame)
+
+    if self:GetSequenceName(self:GetSequence()) == "unfolding" and self:GetCycle() == 1 then
+        self:ResetSequence "idle"
+    end
 
     return true
 end
