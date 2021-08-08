@@ -43,6 +43,19 @@ function ENT:SetupDataTables()
     self:NetworkVar("Vector", 0, "InkColorProxy")
 end
 
+function ENT:IsStuck()
+    return IsValid(self.ContactEntity)
+    or isentity(self.ContactEntity) and self.ContactEntity:IsWorld()
+end
+
+function ENT:FindBoneFromPhysObj(ent, physobj)
+    for i = 0, ent:GetPhysicsObjectCount() - 1 do
+        if ent:GetPhysicsObjectNum(i) == physobj then return i end
+    end
+
+    return 0
+end
+
 if CLIENT then return end
 function ENT:PhysicsUpdate(p)
     local fix = FrameTime() * ss.SecToFrame

@@ -22,19 +22,6 @@ function ENT:OnRemove()
     self.WarnSound:Stop()
 end
 
-function ENT:IsStuck()
-    return IsValid(self.ContactEntity)
-    or isentity(self.ContactEntity) and self.ContactEntity:IsWorld()
-end
-
-function ENT:FindBoneFromPhysObj(ent, physobj)
-    for i = 0, ent:GetPhysicsObjectCount() - 1 do
-        if ent:GetPhysicsObjectNum(i) == physobj then return i end
-    end
-
-    return 0
-end
-
 function ENT:Initialize()
     local p = ss[self.SubWeaponName].Parameters
     self.Parameters = p

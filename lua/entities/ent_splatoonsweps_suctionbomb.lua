@@ -47,8 +47,7 @@ function ENT:PhysicsUpdate(p)
     local current = p:GetAngles():Forward()
     local angvel = desired:Cross(current)
     local avlocal = WorldToLocal(angvel, angle_zero, vector_origin, p:GetAngles())
-    p:AddAngleVelocity(-p:GetAngleVelocity())
-    p:AddAngleVelocity(avlocal)
+    p:SetAngleVelocityInstantaneous(avlocal)
 end
 
 function ENT:PhysicsCollide(data, collider)
@@ -70,8 +69,8 @@ function ENT:PhysicsCollide(data, collider)
     timer.Simple(0, function()
         if not IsValid(self) then return end
         if not IsValid(data.HitEntity) then return end
-        constraint.Weld(self, data.HitEntity, 0,
-        self:FindBoneFromPhysObj(data.HitEntity, data.HitObject), 0, false, false)
+        local phys = self:FindBoneFromPhysObj(data.HitEntity, data.HitObject)
+        constraint.Weld(self, data.HitEntity, 0, phys, 0, false, false)
     end)
     if not self.ContactStartTime then
         self.ContactStartTime = CurTime()

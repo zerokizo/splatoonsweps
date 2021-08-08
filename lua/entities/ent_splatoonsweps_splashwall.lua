@@ -9,11 +9,6 @@ ENT.Model = Model "models/splatoonsweps/subs/splashwall/splashwall.mdl"
 ENT.SubWeaponName = "splashwall"
 ENT.IsFirstTimeContact = true
 
-function ENT:IsStuck()
-    return IsValid(self.ContactEntity)
-    or isentity(self.ContactEntity) and self.ContactEntity:IsWorld()
-end
-
 function ENT:Initialize()
     local p = ss[self.SubWeaponName].Parameters
     self.Parameters = p
@@ -28,9 +23,13 @@ function ENT:Initialize()
     self.BaseClass.Initialize(self)
     self.RunningSound = CreateSound(self, ss.SplashWallRunning)
     self:SetSequence "folded"
+    self:SetUnfolded(false)
+    if SERVER then return end
+    self.ParticleEffects = {}
 end
 
 function ENT:SetupDataTables()
+    self:NetworkVar("Bool", 0, "Unfolded")
     self:NetworkVar("Vector", 0, "InkColorProxy")
 end
 
@@ -55,6 +54,59 @@ function ENT:TracePaint()
     self:GetAngles().yaw + 90, math.random(10, 12), 0.5, self.Owner, self.WeaponClassName)
 end
 
+if CLIENT then
+    ENT.NextEmissionTime = CurTime()
+    ENT.EmissionInterval = 0.2
+    function ENT:Think()
+        self:SetNextClientThink(CurTime())
+        if not self:GetUnfolded() then return true end
+        if #self.ParticleEffects > 0 then return end
+        if CurTime() < self.NextEmissionTime then return true end
+        self.NextEmissionTime = CurTime() + self.EmissionInterval
+
+        local scale = 8
+        local color = ss.GetColor(self:GetNWInt "inkcolor"):ToVector()
+        for i, att in ipairs(self:GetAttachments()) do
+            local p = CreateParticleSystem(self, ss.Particles.SplashWall, PATTACH_POINT_FOLLOW, att.id, self:GetPos())
+            p:AddControlPoint(1, game.GetWorld(), PATTACH_WORLDORIGIN, nil, color)
+            p:AddControlPoint(2, game.GetWorld(), PATTACH_WORLDORIGIN, nil, vector_up * scale)
+            self.ParticleEffects[i] = p
+        end
+
+        return true
+    end
+
+    return
+end
+
+-- TODO: 塗り替えす
+ENT.NextPaintTime = CurTime()
+ENT.PaintInterval = 0.05
+ENT.PreviousPaintAt = nil
+function ENT:Paint()
+    if not self:GetUnfolded() then return end
+    if CurTime() < self.NextPaintTime then return end
+    self.NextPaintTime = CurTime() + self.PaintInterval
+
+    local radius = self.Parameters.mPaintWidth / 2
+    local inkcolor = self:GetNWInt "inkcolor"
+    local dz = self:OBBMaxs().z
+    local paintPos = {}
+    for i, att in ipairs(self:GetAttachments()) do
+        local a = self:GetAttachment(att.id)
+        local t = util.QuickTrace(a.Pos, a.Ang:Forward() * dz)
+        if ss.GetSurfaceColor(t) ~= inkcolor then
+            table.insert(paintPos, t.HitPos)
+        end
+    end
+
+    for _, p in ipairs(paintPos) do
+        local sign = math.random() > 0.5 and 1 or -1
+        ss.Paint(p, vector_up, radius, inkcolor, self:GetAngles().yaw + 90 * sign,
+        ss.GetDropType(), 1, self.Owner, self.WeaponClassName)
+    end
+end
+
 function ENT:Think()
     self:NextThink(CurTime())
     local p = self:GetPhysicsObject()
@@ -74,26 +126,41 @@ function ENT:Think()
 
     if self:GetSequenceName(self:GetSequence()) == "unfolding" and self:GetCycle() == 1 then
         self:ResetSequence "idle"
+        self:SetUnfolded(true)
     end
+
+    self:Paint()
 
     return true
 end
 
 function ENT:PhysicsCollide(data, collider)
     if self:IsStuck() then return end
+
+    if -data.HitNormal.z < 0.7 then
+        local v = Vector(data.OurOldVelocity)
+        local dot = v:Dot(data.HitNormal)
+        v = v - data.HitNormal * dot * 2
+        collider:SetAngleVelocityInstantaneous(vector_origin)
+        collider:SetVelocityInstantaneous(v)
+        return
+    end
+
     collider:EnableMotion(not data.HitEntity:IsWorld())
     collider:SetPos(data.HitPos)
+    collider:SetAngles(Angle(0, collider:GetAngles().yaw, 0))
     timer.Simple(0, function()
         if not IsValid(self) then return end
         if not IsValid(data.HitEntity) then return end
-        constraint.Weld(self, data.HitEntity, 0,
-        self:FindBoneFromPhysObj(data.HitEntity, data.HitObject), 0, false, false)
+        local phys = self:FindBoneFromPhysObj(data.HitEntity, data.HitObject)
+        constraint.Weld(self, data.HitEntity, 0, phys, 0, false, false)
     end)
+
+    self.HitNormal = -data.HitNormal
+    self.ContactEntity = data.HitEntity
     if not self.ContactStartTime then
         self.ContactStartTime = CurTime()
     end
-    self.HitNormal = -data.HitNormal
-    self.ContactEntity = data.HitEntity
     
     if self.IsFirstTimeContact then
         self.IsFirstTimeContact = false

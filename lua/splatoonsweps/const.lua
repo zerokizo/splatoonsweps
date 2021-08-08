@@ -100,6 +100,7 @@ ss.Particles = {
 	MuzzleMist = "splatoonsweps_muzzlemist",
 	RollerRolling = "splatoonsweps_roller_rolling",
 	RollerSplash = "splatoonsweps_roller_splash",
+	SplashWall = "splatoonsweps_splash_wall",
 	SplatlingMuzzleFlash = "splatoonsweps_splatling_muzzleflash",
 }
 

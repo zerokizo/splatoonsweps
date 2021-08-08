@@ -2,7 +2,6 @@
 local ss = SplatoonSWEPs
 if not ss then return end
 
-local rand = "SplatoonSWEPs: Spread"
 local randsplash = "Splatoon SWEPs: SplashNum"
 local randvel = "SplatoonSWEPs: Spread velocity"
 local function EndSwing(self)
@@ -482,7 +481,7 @@ function SWEP:Move(ply, mv)
 		end
 		
 		local color = self:GetNWInt "inkcolor"
-		local inktype = util.SharedRandom(rand, 10, 12)
+		local inktype = ss.GetRollerRollInkType()
 		local widthmul = self.IsBrush and 1 or 0.67 -- This should be removed, I guess.
 		local width = Lerp(velocity, p.mCorePaintSlowMoveWidthHalf, p.mCorePaintWidthHalf) * widthmul
 		local yaw = self:GetAimVector():Angle().yaw + 90

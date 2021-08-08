@@ -26,12 +26,12 @@ ss.splashwall = {
         mConveyerRadius = 5,
         Fly_AirFrm = 4,
         Fly_Gravity = 0.16,
-        Fly_RotKd = 0.7,
+        Fly_RotKd = 0.98,
         Fly_VelKd = 0.94134,
         mInkConsume = 0.6,
         mInkRecoverStop = 80, -- 160 after ver. 2.2.0
         
-        Fly_InitVel_Estimated = 4,
+        Fly_InitVel_Estimated = 6,
     },
     Units = {
         mMaxHp = "hp",
@@ -76,7 +76,10 @@ end
 
 function module:GetSubWeaponInitVelocity()
     local initspeed = p.Fly_InitVel_Estimated
-    return self:GetAimVector() * initspeed
+    local dir = self:GetAimVector()
+    dir.z = 0
+    dir:Normalize()
+    return dir * initspeed
 end
 
 if CLIENT then return end

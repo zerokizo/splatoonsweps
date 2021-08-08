@@ -343,6 +343,10 @@ function ss.GetShooterInkType(offset) -- math.floor(4 <= x < 10) -> 4, 5, 6, 7, 
 	return math.floor(util.SharedRandom("SplatoonSWEPs: Ink type", 4, 9, CurTime() * 2 + (offset or 0)))
 end
 
+function ss.GetRollerRollInkType(offset)
+	return math.floor(util.SharedRandom("SplatoonSWEPs: Ink type", 10, 12, CurTime() * 3 + (offset or 0)))
+end
+
 function ss.CreateDrop(params, pos, color, weapon, colradius, paintradius, paintratio, yaw)
 	local dropdata = ss.MakeProjectileStructure()
 	table.Merge(dropdata, {
