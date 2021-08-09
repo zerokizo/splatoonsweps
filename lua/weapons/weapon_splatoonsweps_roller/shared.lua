@@ -18,20 +18,20 @@ local function EndSwing(self)
 	end
 
 	if not self:IsFirstTimePredicted() then return end
-	ss.EmitSoundPredicted(self.Owner, self, "SplatoonSWEPs.RollerHolster")
+	ss.EmitSoundPredicted(self:GetOwner(), self, "SplatoonSWEPs.RollerHolster")
 end
 
 local function PlaySwingSound(self, enoughink)
 	if enoughink then
-		ss.EmitSoundPredicted(self.Owner, self, self.SplashSound)
+		ss.EmitSoundPredicted(self:GetOwner(), self, self.SplashSound)
 		if not self.SwingSound then return end
-		ss.EmitSoundPredicted(self.Owner, self, self.SwingSound)
+		ss.EmitSoundPredicted(self:GetOwner(), self, self.SwingSound)
 	else
 		self:EmitSound "SplatoonSWEPs.EmptySwing"
 		if self.NotEnoughInk then return end
 		if ss.mp and SERVER then return end
 		self.NotEnoughInk = true
-		ss.EmitSound(self.Owner, ss.TankEmpty)
+		ss.EmitSound(self:GetOwner(), ss.TankEmpty)
 	end
 end
 
@@ -45,7 +45,7 @@ local function GetRollerTrace(self)
 	return util.TraceLine {
 		start = pos + forward * TraceLookStart + vector_up * TraceUp,
 		endpos = pos + forward * TraceLookAhead - vector_up * TraceDown,
-		filter = {self, self.Owner},
+		filter = {self, self:GetOwner()},
 		mask = ss.SquidSolidMask,
 	}
 end
@@ -59,7 +59,7 @@ local function DoRollingEffect(self, velocity)
 	e:SetEntity(self)
 	e:SetFlags(self.IsBrush and 1 or 0)
 	e:SetRadius(velocity)
-	ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsRollerRolling", e, true, self.IgnorePrediction)
+	ss.UtilEffectPredicted(self:GetOwner(), "SplatoonSWEPsRollerRolling", e, true, self.IgnorePrediction)
 end
 
 local function DoRunover(self, t, mv)
@@ -77,7 +77,7 @@ local function DoRunover(self, t, mv)
 	local knockback = false
 	local keys = {}
 	local function dealdamage(i, v)
-		if v == self.Owner then return end
+		if v == self:GetOwner() then return end
 		keys[v] = true
 		if self.RunoverExclusion[v] then return end
 		if v:Health() == 0 then return end
@@ -95,7 +95,7 @@ local function DoRunover(self, t, mv)
 			d:SetDamageType(DMG_GENERIC)
 			d:SetMaxDamage(p.mCoreDamage)
 			d:SetReportedPosition(effectpos)
-			d:SetAttacker(self.Owner)
+			d:SetAttacker(self:GetOwner())
 			d:SetInflictor(self)
 			d:ScaleDamage(ss.ToHammerHealth)
 			ss.ProtectedCall(v.TakeDamageInfo, v, d)
@@ -107,7 +107,7 @@ local function DoRunover(self, t, mv)
 
 	for i, v in ipairs(victims) do dealdamage(i, v) end
 	self.RunoverExclusion = keys
-	if not self.Owner:IsPlayer() then return end
+	if not self:GetOwner():IsPlayer() then return end
 	if not knockback then return end
 	mv:SetVelocity(mv:GetVelocity() - self:GetForward() * ss.InklingBaseSpeed * 10)
 	self:SetRunoverDelay(CurTime() + ss.RollerRunoverStopFrame)
@@ -221,7 +221,7 @@ function SWEP:CreateInk(createnum)
 	local p = self.Parameters
 	local dir = self:GetAimVector()
 	local pos = self:GetShootPos()
-	local right = self.Owner:GetRight()
+	local right = self:GetOwner():GetRight()
 	local splashnum = p.mSplashNum
 	local skipnum = splashnum - createnum
 	local width = p.mSplashPositionWidth
@@ -284,7 +284,7 @@ function SWEP:CreateInk(createnum)
 		ss.SetEffectSplashInitRate(e, Vector(proj.SplashInitRate))
 		ss.SetEffectSplashNum(e, proj.SplashNum)
 		ss.SetEffectStraightFrame(e, proj.StraightFrame)
-		ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
+		ss.UtilEffectPredicted(self:GetOwner(), "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
 		ss.AddInk(p, proj)
 	end
 
@@ -382,7 +382,7 @@ function SWEP:SharedPrimaryAttack(able, auto)
 	self:SetIsSecondSwingAnim(self:GetIsSecondSwing())
 	self:SetWeaponAnim(anim)
 	if not (self.IsBrush or issecond) then
-		self.Owner:SetAnimation(PLAYER_ATTACK1)
+		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 	end
 
 	if self.IsBrush then
@@ -441,7 +441,7 @@ function SWEP:Move(ply, mv)
 	local p = self.Parameters
 	local mode = self:GetMode()
 	local keyrelease = not (ply:IsPlayer() and self:GetKey() == IN_ATTACK)
-	if self.Owner:IsPlayer() and CurTime() < self:GetRunoverDelay() then
+	if self:GetOwner():IsPlayer() and CurTime() < self:GetRunoverDelay() then
 		mv:SetForwardSpeed(0)
 		mv:SetSideSpeed(0)
 	end
@@ -486,7 +486,7 @@ function SWEP:Move(ply, mv)
 		local width = Lerp(velocity, p.mCorePaintSlowMoveWidthHalf, p.mCorePaintWidthHalf) * widthmul
 		local yaw = self:GetAimVector():Angle().yaw + 90
 		local t = GetRollerTrace(self)
-		ss.Paint(t.HitPos, t.HitNormal, width, color, yaw, inktype, .25, self.Owner, self.ClassName)
+		ss.Paint(t.HitPos, t.HitNormal, width, color, yaw, inktype, .25, self:GetOwner(), self.ClassName)
 
 		DoRollingEffect(self, velocity)
 		DoRunover(self, t, mv)
@@ -583,7 +583,7 @@ function SWEP:CustomMoveSpeed()
 	end
 
 	if self:GetMode() ~= self.MODE.PAINT then return end
-	if not self.Owner:OnGround() then return end
+	if not self:GetOwner():OnGround() then return end
 	if self:GetInk() > 0 then
 		return self.Parameters.mMoveSpeed
 	end

@@ -21,22 +21,22 @@ local function AdjustRollerAngles(self, tracelength, vm)
 	local trleft = util.TraceLine {
 		start = self:GetPos() + up,
 		endpos = self:GetPos() + up + forward + right,
-		filter = {self.Owner, self},
+		filter = {self:GetOwner(), self},
 	}
 	local trright = util.TraceLine {
 		start = self:GetPos() + up,
 		endpos = self:GetPos() + up + forward - right,
-		filter = {self.Owner, self},
+		filter = {self:GetOwner(), self},
 	}
 	trleft = util.TraceLine {
 		start = trleft.HitPos,
 		endpos = trleft.HitPos + down,
-		filter = {self.Owner, self},
+		filter = {self:GetOwner(), self},
 	}
 	trright = util.TraceLine {
 		start = trright.HitPos,
 		endpos = trright.HitPos + down,
-		filter = {self.Owner, self},
+		filter = {self:GetOwner(), self},
 	}
 	target:ManipulateBoneAngles(bone, angle_zero)
 	target:SetupBones()
@@ -61,22 +61,22 @@ end
 
 local function RotateRoll(self, vm)
 	if self.IsBrush then return end
-	if not self.Owner:OnGround() then return end
+	if not self:GetOwner():OnGround() then return end
 	local target = vm or self
 	local bone = vm and self.VMBones.Roll or self.Bones.Roll
-	local oldpos = self.RotateRollPos or self.Owner:GetPos()
+	local oldpos = self.RotateRollPos or self:GetOwner():GetPos()
 	local oldang = target:GetManipulateBoneAngles(bone)
 	local forward = Angle(0, self:GetAimVector():Angle().yaw, 0):Forward()
 	local diameter = self.Primary.Diameter or 15
-	local diff = self.Owner:GetPos() - oldpos
+	local diff = self:GetOwner():GetPos() - oldpos
 	local amount = forward:Dot(diff)
 	local p = oldang.p + math.deg(amount / diameter)
 	target:ManipulateBoneAngles(bone, math.NormalizeAngle(p) * Pitch)
-	self.RotateRollPos = self.Owner:GetPos()
+	self.RotateRollPos = self:GetOwner():GetPos()
 end
 
 local function DrawVCrosshair(self, isfirstperson)
-	if self.Owner ~= LocalPlayer() then return end
+	if self:GetOwner() ~= LocalPlayer() then return end
 	if self:GetThrowing() then return end
 	if CurTime() > self.NextCrosshairSpawnTime then
 		ss.tablepush(self.Crosshair, CurTime())
@@ -220,7 +220,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local DesiredFlip = self.IronSightsFlip[armpos]
 	local relpos, relang = LocalToWorld(vector_origin, angle_zero, pos, ang)
-	local SwayTime = self.SwayTime / ss.GetTimeScale(self.Owner)
+	local SwayTime = self.SwayTime / ss.GetTimeScale(self:GetOwner())
 	if self:IsFirstTimePredicted() and armpos ~= self.ArmPos then
 		self.ArmPos, self.ArmBegin = armpos, ct
 		self.BasePos, self.BaseAng = self.OldPos, self.OldAng

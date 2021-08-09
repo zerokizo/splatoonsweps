@@ -207,7 +207,7 @@ end
 
 function SWEP:ViewModelDrawn(vm)
 	if self.SurpressDrawingVM or self:GetHolstering() or
-	not (IsValid(self) and IsValid(self.Owner)) then return end
+	not (IsValid(self) and IsValid(self:GetOwner())) then return end
 	if self:GetThrowing() and CurTime() > self:GetNextSecondaryFire() then
 		ss.ProtectedCall(self.DrawOnSubTriggerDown, self)
 	end
@@ -256,7 +256,7 @@ function SWEP:ViewModelDrawn(vm)
 				render.SuppressEngineLighting(true)
 			end
 
-			ss.ProtectedCall(self.PreDrawViewModelElements, self, model, self.Owner, ang, pos, v, matrix)
+			ss.ProtectedCall(self.PreDrawViewModelElements, self, model, self:GetOwner(), ang, pos, v, matrix)
 			model:EnableMatrix("RenderMultiply", matrix)
 			render.SetColorModulation(v.color.r / 255, v.color.g / 255, v.color.b / 255)
 			render.SetBlend(v.color.a / 255)
@@ -287,7 +287,7 @@ function SWEP:ViewModelDrawn(vm)
 end
 
 function SWEP:DrawWorldModel()
-	if IsValid(self.Owner) then
+	if IsValid(self:GetOwner()) then
 		if self:GetHolstering() then return end
 		if self:Crouching() then
 			if self:GetInInk() then
@@ -296,7 +296,7 @@ function SWEP:DrawWorldModel()
 				-- It seems changing eye position doesn't work.
 				self.Squid:SetEyeTarget(self.Squid:GetPos() + self.Squid:GetUp() * 100)
 				-- Move clientside model to player's position.
-				local v = self.Owner:GetVelocity()
+				local v = self:GetOwner():GetVelocity()
 				local a = v:Angle()
 				if v:LengthSqr() < 16 then -- Speed limit
 					a.p = 0
@@ -309,7 +309,7 @@ function SWEP:DrawWorldModel()
 				end
 				a.p, a.y, a.r = a.p - 90, self:GetAimVector():Angle().yaw, 180
 				self.Squid:SetAngles(a)
-				self.Squid:SetPos(self.Owner:GetPos())
+				self.Squid:SetPos(self:GetOwner():GetPos())
 				self.Squid:DrawModel()
 				self.Squid:DrawShadow(true)
 				self.Squid:CreateShadow()
@@ -330,13 +330,13 @@ function SWEP:DrawWorldModel()
 end
 
 function SWEP:DrawWorldModelTranslucent()
-	if IsValid(self.Owner) and self:GetHolstering() then return end
+	if IsValid(self:GetOwner()) and self:GetHolstering() then return end
 	if ss.ProtectedCall(self.PreDrawWorldModelTranslucent, self) then return end
-	if IsValid(self.Owner) and self:Crouching() and (self:GetInInk()
+	if IsValid(self:GetOwner()) and self:Crouching() and (self:GetInInk()
 	or self:GetNWBool "becomesquid" and IsValid(self.Squid)) then return end
 
 	local cameradistance = 1
-	local bone_ent = self.Owner
+	local bone_ent = self:GetOwner()
 	if not IsValid(bone_ent) then bone_ent = self end -- When the weapon is dropped
 	if self:IsCarriedByLocalPlayer() then
 		cameradistance = self:GetCameraFade()
@@ -355,8 +355,8 @@ function SWEP:DrawWorldModelTranslucent()
 			local inkconsume = ss.ProtectedCall(self.GetSubWeaponInkConsume, self) or 0
 			v.size = {x = size, y = size}
 			v.hide = not IsValid(self.WElements["inktank"].modelEnt) or self:GetInk() < inkconsume
-		elseif name == "inktank" and IsValid(self.Owner) then
-			bone_ent = self.Owner
+		elseif name == "inktank" and IsValid(self:GetOwner()) then
+			bone_ent = self:GetOwner()
 		end
 		if v.hide then continue end
 
@@ -497,7 +497,7 @@ function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 end
 
 function SWEP:DoDrawCrosshair(x, y)
-	self.Cursor = self.Owner:GetEyeTrace().HitPos:ToScreen()
+	self.Cursor = self:GetOwner():GetEyeTrace().HitPos:ToScreen()
 	if not ss.GetOption "drawcrosshair" then return end
 	if self:GetThrowing() then return end
 	x, y = self.Cursor.x, self.Cursor.y

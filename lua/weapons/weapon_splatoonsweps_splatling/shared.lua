@@ -7,7 +7,7 @@ SWEP.FlashDuration = .25
 
 function SWEP:GetChargeProgress(ping)
 	local p = self.Parameters
-	local ts = ss.GetTimeScale(self.Owner)
+	local ts = ss.GetTimeScale(self:GetOwner())
 	local frac = CurTime() - self:GetCharge() - p.mMinChargeFrame / ts
 	if ping then frac = frac + self:Ping() end
 	return math.Clamp(frac / p.mSecondPeriodMaxChargeFrame * ts, 0, 1)
@@ -88,8 +88,8 @@ function SWEP:PlayChargeSound()
 end
 
 function SWEP:ShouldChargeWeapon()
-	if self.Owner:IsPlayer() then
-		return self.Owner:KeyDown(IN_ATTACK)
+	if self:GetOwner():IsPlayer() then
+		return self:GetOwner():KeyDown(IN_ATTACK)
 	else
 		return CurTime() - self:GetCharge() < self.Parameters.mSecondPeriodMaxChargeFrame + .5
 	end
@@ -135,7 +135,7 @@ function SWEP:SharedInit()
 end
 
 function SWEP:SharedPrimaryAttack()
-	if not IsValid(self.Owner) then return end
+	if not IsValid(self:GetOwner()) then return end
 	if self:GetCharge() < math.huge then -- Hold +attack to charge
 		local p = self.Parameters
 		local prog = self:GetChargeProgress(CLIENT)
@@ -145,11 +145,11 @@ function SWEP:SharedPrimaryAttack()
 		self.JumpPower = Lerp(prog, ss.InklingJumpPower, p.mJumpGnd_Charge)
 		if prog == 0 then return end
 		local EnoughInk = self:GetInk() >= prog * p.mInkConsume
-		if not self.Owner:OnGround() or not EnoughInk then
+		if not self:GetOwner():OnGround() or not EnoughInk then
 			if EnoughInk or self:GetNWBool "canreloadstand" then
 				self:SetCharge(self:GetCharge() + FrameTime() * self.AirTimeFraction)
 			else
-				local ts = ss.GetTimeScale(self.Owner)
+				local ts = ss.GetTimeScale(self:GetOwner())
 				local elapsed = prog * p.mSecondPeriodMaxChargeFrame / ts
 				local min = p.mMinChargeFrame / ts
 				local ping = CLIENT and self:Ping() or 0
@@ -158,7 +158,7 @@ function SWEP:SharedPrimaryAttack()
 
 			if (ss.sp or CLIENT) and not (self.NotEnoughInk or EnoughInk) then
 				self.NotEnoughInk = true
-				ss.EmitSound(self.Owner, ss.TankEmpty)
+				ss.EmitSound(self:GetOwner(), ss.TankEmpty)
 			end
 		end
 	else -- First attempt

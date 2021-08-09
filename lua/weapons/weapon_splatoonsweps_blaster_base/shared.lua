@@ -31,7 +31,7 @@ end
 
 function SWEP:SharedPrimaryAttack(able)
 	local p = self.Parameters
-	local ts = ss.GetTimeScale(self.Owner)
+	local ts = ss.GetTimeScale(self:GetOwner())
     local time = CurTime() + self:GetPreFireDelay() / ts
 	self:SetNextPrimaryFire(CurTime() + p.mRepeatFrame / ts)
 	self:SetAimTimer(time)

@@ -7,7 +7,7 @@ SWEP.IsSlosher = true
 local FirePosition = 10
 function SWEP:GetRange() return self.Range end
 function SWEP:GetFirePosition(ping)
-	if not IsValid(self.Owner) then return self:GetPos(), self:GetForward(), 0 end
+	if not IsValid(self:GetOwner()) then return self:GetPos(), self:GetForward(), 0 end
 	local aim = self:GetAimVector() * self:GetRange(ping)
 	local ang = aim:Angle()
 	local shootpos = self:GetShootPos()
@@ -17,11 +17,11 @@ function SWEP:GetFirePosition(ping)
 	local t = ss.SquidTrace
 	t.start, t.endpos = shootpos, shootpos + aim
 	t.mins, t.maxs = -col, col
-	t.filter = {self, self.Owner}
+	t.filter = {self, self:GetOwner()}
 	for _, e in pairs(ents.FindAlongRay(t.start, t.endpos, t.mins * 5, t.maxs * 5)) do
 		local w = ss.IsValidInkling(e)
 		if w and ss.IsAlly(w, self) then
-			t.filter = {self, self.Owner, e, w}
+			t.filter = {self, self:GetOwner(), e, w}
 		end
 	end
 
@@ -75,7 +75,7 @@ end
 
 local randvel = "SplatoonSWEPs: Spread velocity"
 function SWEP:GetInitVelocity(number, spawncount, jumping)
-	if jumping == nil then jumping = self.Owner:OnGround() end
+	if jumping == nil then jumping = self:GetOwner():OnGround() end
 	local order = OrdinalNumbers[number]
 	local p = self.Parameters
 	local base = self:GetInitSpeed(number, spawncount, jumping)
@@ -168,7 +168,7 @@ function SWEP:CreateInk(number, spawncount) -- Group #, spawncount-th bullet(0, 
 	local p = self.Parameters
 	local dir = self:GetAimVector()
 	local pos = self:GetShootPos()
-	local right = self.Owner:GetRight()
+	local right = self:GetOwner():GetRight()
 	local iscenter = p["m" .. order .. "GroupCenterLine"]
 	local isside = p["m" .. order .. "GroupSideLine"]
 	local splashcolradius = p["m" .. order .. "GroupSplashColRadius"]
@@ -196,7 +196,7 @@ function SWEP:CreateInk(number, spawncount) -- Group #, spawncount-th bullet(0, 
 		})
 		
 		ss.SetEffectInitVel(e, self.Projectile.InitVel)
-		ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
+		ss.UtilEffectPredicted(self:GetOwner(), "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
 		ss.AddInk(p, self.Projectile)
 	end
 
@@ -280,7 +280,7 @@ function SWEP:SharedPrimaryAttack(able, auto)
 	self:SetNextInkSpawnTime1(spawntimebase)
 	self:SetNextInkSpawnTime2(spawntimebase + p.mSecondGroupBulletFirstFrameOffset)
 	self:SetNextInkSpawnTime3(spawntimebase + p.mThirdGroupBulletFirstFrameOffset)
-	self.Owner:SetAnimation(PLAYER_ATTACK1)
+	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 end
 
 function SWEP:Move(ply)
@@ -321,13 +321,13 @@ function SWEP:Move(ply)
 	self:SetReloadDelay(p.mInkRecoverStop)
 	if self:GetInk() < p.mInkConsume then
 		if not self:IsFirstTimePredicted() then return end
-		ss.EmitSoundPredicted(self.Owner, self, "SplatoonSWEPs.EmptySwing")
+		ss.EmitSoundPredicted(self:GetOwner(), self, "SplatoonSWEPs.EmptySwing")
 		if ss.mp and SERVER then return end
 		ss.EmitSound(ply, ss.TankEmpty)
 		return
 	end
 
-	ss.EmitSoundPredicted(self.Owner, self, self.ShootSound)
+	ss.EmitSoundPredicted(self:GetOwner(), self, self.ShootSound)
 	self:SetInk(math.max(self:GetInk() - p.mInkConsume, 0))
 	self:SetSpawnRemaining1(p.mFirstGroupBulletNum)
 	self:SetSpawnRemaining2(p.mSecondGroupBulletNum)

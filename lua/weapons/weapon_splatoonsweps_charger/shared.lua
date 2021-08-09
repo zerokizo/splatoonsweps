@@ -55,7 +55,7 @@ end
 
 function SWEP:GetScopedProgress(ping)
 	if not self.Scoped then return 0 end
-	if CLIENT and GetViewEntity() ~= self.Owner then return 0 end
+	if CLIENT and GetViewEntity() ~= self:GetOwner() then return 0 end
 	local prog = self:GetChargeProgress(ping)
 	local p = self.Parameters
 	local startmove = p.mSniperCameraMoveStartChargeRate
@@ -80,7 +80,7 @@ SWEP.SharedHolster = SWEP.ResetCharge
 function SWEP:PlayChargeSound()
 	if ss.mp and (SERVER or not IsFirstTimePredicted()) then return end
 	local prog = self:GetChargeProgress()
-	if not (ss.sp and SERVER and not self.Owner:IsPlayer()) and 0 < prog and prog < 1 then
+	if not (ss.sp and SERVER and not self:GetOwner():IsPlayer()) and 0 < prog and prog < 1 then
 		self.LoopSounds.AimSound.SoundPatch:PlayEx(1, math.max(self.LoopSounds.AimSound.SoundPatch:GetPitch(), prog * 99 + 1))
 	else
 		self.LoopSounds.AimSound.SoundPatch:Stop()
@@ -89,8 +89,8 @@ function SWEP:PlayChargeSound()
 end
 
 function SWEP:ShouldChargeWeapon()
-	if self.Owner:IsPlayer() then
-		return self.Owner:KeyDown(IN_ATTACK)
+	if self:GetOwner():IsPlayer() then
+		return self:GetOwner():KeyDown(IN_ATTACK)
 	else
 		return CurTime() - self:GetCharge() < self.Parameters.mMaxChargeFrame * 2
 	end
@@ -107,7 +107,7 @@ function SWEP:SharedInit()
 		if prog == 1 and not self.FullChargeFlag then
 			if CLIENT then
 				self.CrosshairFlashTime = CurTime() - self:Ping()
-				ss.EmitSound(self.Owner, ss.ChargerBeep)
+				ss.EmitSound(self:GetOwner(), ss.ChargerBeep)
 			end
 
 			self.FullChargeFlag = true
@@ -115,7 +115,7 @@ function SWEP:SharedInit()
 			local e = EffectData()
 			e:SetEntity(self)
 			e:SetFlags(0)
-			ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsMuzzleFlash", e)
+			ss.UtilEffectPredicted(self:GetOwner(), "SplatoonSWEPsMuzzleFlash", e)
 			return
 		end
 
@@ -131,7 +131,7 @@ end
 
 function SWEP:SharedPrimaryAttack()
 	local p = self.Parameters
-	if not IsValid(self.Owner) then return end
+	if not IsValid(self:GetOwner()) then return end
 	
 	self:SetReloadDelay(p.mInkRecoverStop)
 	if self:GetCharge() < math.huge then -- Hold +attack to charge
@@ -140,11 +140,11 @@ function SWEP:SharedPrimaryAttack()
 		self.JumpPower = Lerp(prog, ss.InklingJumpPower, p.mJumpGnd)
 		if prog > 0 then
 			local EnoughInk = self:GetInk() >= prog * p.mInkConsume
-			if not self.Owner:OnGround() or not EnoughInk then
+			if not self:GetOwner():OnGround() or not EnoughInk then
 				if EnoughInk or self:GetNWBool "canreloadstand" then
 					self:SetCharge(self:GetCharge() + FrameTime() * self.AirTimeFraction)
 				else
-					local ts = ss.GetTimeScale(self.Owner)
+					local ts = ss.GetTimeScale(self:GetOwner())
 					local elapsed = prog * p.mMaxChargeFrame / ts
 					local min = p.mMinChargeFrame / ts
 					local ping = CLIENT and self:Ping() or 0
@@ -153,7 +153,7 @@ function SWEP:SharedPrimaryAttack()
 
 				if (ss.sp or CLIENT) and not (self.NotEnoughInk or EnoughInk) then
 					self.NotEnoughInk = true
-					ss.EmitSound(self.Owner, ss.TankEmpty)
+					ss.EmitSound(self:GetOwner(), ss.TankEmpty)
 				end
 			end
 		end

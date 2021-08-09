@@ -60,7 +60,7 @@ ss.SetPrimary(SWEP, {
 })
 
 local function RefreshViewModel(self)
-	if not (IsValid(self.Owner) and self.Owner:IsPlayer()) then return end
+	if not (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) then return end
 	local ispistol = self:GetNWBool "nzap_pistolstyle"
 	local mdl = ispistol and self.ViewModel1 or self.ViewModel0
 	local vm = self:GetViewModel()

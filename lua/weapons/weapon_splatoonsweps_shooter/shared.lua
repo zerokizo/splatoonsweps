@@ -15,7 +15,7 @@ function SWEP:GetSplashInitRate()
 end
 
 function SWEP:GetFirePosition(ping)
-	if not IsValid(self.Owner) then return self:GetPos(), self:GetForward(), 0 end
+	if not IsValid(self:GetOwner()) then return self:GetPos(), self:GetForward(), 0 end
 	local aim = self:GetAimVector() * self:GetRange(ping)
 	local ang = aim:Angle()
 	local shootpos = self:GetShootPos()
@@ -25,11 +25,11 @@ function SWEP:GetFirePosition(ping)
 	local t = ss.SquidTrace
 	t.start, t.endpos = shootpos, shootpos + aim
 	t.mins, t.maxs = -col, col
-	t.filter = {self, self.Owner}
+	t.filter = {self, self:GetOwner()}
 	for _, e in pairs(ents.FindAlongRay(t.start, t.endpos, t.mins * 5, t.maxs * 5)) do
 		local w = ss.IsValidInkling(e)
 		if w and ss.IsAlly(w, self) then
-			t.filter = {self, self.Owner, e, w}
+			t.filter = {self, self:GetOwner(), e, w}
 		end
 	end
 
@@ -138,7 +138,7 @@ end
 function SWEP:CreateInk()
 	local p = self.Parameters
 	local pos, dir = self:GetFirePosition()
-	local right = self.Owner:GetRight()
+	local right = self:GetOwner():GetRight()
 	local ang = dir:Angle()
 	local rx, ry = self:GetSpread()
 	local splashnum = math.floor(p.mCreateSplashNum)
@@ -169,11 +169,11 @@ function SWEP:CreateInk()
 
 	self:SetSplashInitMul(self:GetSplashInitMul() + 1)
 	self:SetWeaponAnim(ACT_VM_PRIMARYATTACK)
-	ss.EmitSoundPredicted(self.Owner, self, self.ShootSound)
-	ss.SuppressHostEventsMP(self.Owner)
+	ss.EmitSoundPredicted(self:GetOwner(), self, self.ShootSound)
+	ss.SuppressHostEventsMP(self:GetOwner())
 	self:ResetSequence "fire" -- This is needed in multiplayer to prevent delaying muzzle effects.
-	self.Owner:SetAnimation(PLAYER_ATTACK1)
-	ss.EndSuppressHostEventsMP(self.Owner)
+	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+	ss.EndSuppressHostEventsMP(self:GetOwner())
 
 	if self:GetSplashInitMul() > p.mSplashSplitNum then
 		self:SetSplashInitMul(1)
@@ -199,16 +199,16 @@ function SWEP:CreateInk()
 		ss.SetEffectSplashInitRate(e, Vector(proj.SplashInitRate))
 		ss.SetEffectSplashNum(e, proj.SplashNum)
 		ss.SetEffectStraightFrame(e, proj.StraightFrame)
-		ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
+		ss.UtilEffectPredicted(self:GetOwner(), "SplatoonSWEPsShooterInk", e, true, self.IgnorePrediction)
 		ss.AddInk(p, proj)
 	end
 end
 
 function SWEP:PlayEmptySound()
-	local nextempty = self.Parameters.mRepeatFrame * 2 / ss.GetTimeScale(self.Owner)
+	local nextempty = self.Parameters.mRepeatFrame * 2 / ss.GetTimeScale(self:GetOwner())
 	if self:GetPreviousHasInk() then
 		if ss.sp or CLIENT and IsFirstTimePredicted() then
-			self.Owner:EmitSound(ss.TankEmpty)
+			self:GetOwner():EmitSound(ss.TankEmpty)
 		end
 
 		self:SetNextPlayEmpty(CurTime() + nextempty)
@@ -221,9 +221,9 @@ function SWEP:PlayEmptySound()
 end
 
 function SWEP:SharedPrimaryAttack(able, auto)
-	if not IsValid(self.Owner) then return end
+	if not IsValid(self:GetOwner()) then return end
 	local p = self.Parameters
-	local ts = ss.GetTimeScale(self.Owner)
+	local ts = ss.GetTimeScale(self:GetOwner())
 	self:SetNextPrimaryFire(CurTime() + p.mRepeatFrame / ts)
 	self:ConsumeInk(p.mInkConsume)
 	self:SetReloadDelay(p.mInkRecoverStop)
@@ -285,7 +285,7 @@ function SWEP:CustomActivity()
 	local aimpos = select(3, self:GetFirePosition())
 	aimpos = (aimpos == 3 or aimpos == 4) and "rpg" or "crossbow"
 
-	local m = self.Owner:GetModel()
+	local m = self:GetOwner():GetModel()
 	local aim = self:GetADS() and not (ss.DrLilRobotPlayermodels[m] or ss.TwilightPlayermodels[m])
 	return aim and "ar2" or aimpos
 end

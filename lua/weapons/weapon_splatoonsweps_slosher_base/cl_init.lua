@@ -67,7 +67,7 @@ function SWEP:GetCrosshairTrace(t)
 	local range = self.Range
 	local tr = ss.SquidTrace
 	tr.start, tr.endpos = t.pos, t.pos + t.dir * range
-	tr.filter = {self, self.Owner}
+	tr.filter = {self, self:GetOwner()}
 	tr.maxs = ss.vector_one * self.Parameters.mFirstGroupBulletFirstCollisionRadiusForField
 	tr.mins = -tr.maxs
 
@@ -191,7 +191,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local DesiredFlip = self.IronSightsFlip[armpos]
 	local relpos, relang = LocalToWorld(vector_origin, angle_zero, pos, ang)
-	local SwayTime = self.SwayTime / ss.GetTimeScale(self.Owner)
+	local SwayTime = self.SwayTime / ss.GetTimeScale(self:GetOwner())
 	if self:IsFirstTimePredicted() and armpos ~= self.ArmPos then
 		self.ArmPos, self.ArmBegin = armpos, ct
 		self.BasePos, self.BaseAng = self.OldPos, self.OldAng
@@ -234,14 +234,16 @@ function SWEP:DrawCrosshair(x, y)
 	local p = self.Parameters
 	for linenum = 1, p.mLineNum do
 		local t = self:SetupDrawCrosshair(linenum)
-		self:DrawFourLines(t)
-		self:DrawCenterCircleNoHit(t)
-		self:DrawHitCrossBG(t)
-		self:DrawOuterCircleBG(t)
-		self:DrawOuterCircle(t)
-		self:DrawHitCross(t)
-		self:DrawInnerCircle(t)
-		self:DrawCenterDot(t)
+		if t.CrosshairColor then
+			self:DrawFourLines(t)
+			self:DrawCenterCircleNoHit(t)
+			self:DrawHitCrossBG(t)
+			self:DrawOuterCircleBG(t)
+			self:DrawOuterCircle(t)
+			self:DrawHitCross(t)
+			self:DrawInnerCircle(t)
+			self:DrawCenterDot(t)
+		end
 	end
 
 	return true

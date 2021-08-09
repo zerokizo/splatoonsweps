@@ -37,14 +37,14 @@ function SWEP:StopLoopSound()
 end
 
 function SWEP:StartRecording()
-	local o = self.Owner
+	local o = self:GetOwner()
 	if not (o:IsPlayer() and ss.WeaponRecord[o]) then return end
 	self:SetNWEntity("Owner", o)
 	ss.WeaponRecord[o].Recent[self.ClassName] = -os.time()
 end
 
 function SWEP:EndRecording()
-	local o = IsValid(self.Owner) and self.Owner or self:GetNWEntity "Owner"
+	local o = IsValid(self:GetOwner()) and self:GetOwner() or self:GetNWEntity "Owner"
 	local r = ss.WeaponRecord[o]
 	local c = self.ClassName
 	local t = os.time()
@@ -87,16 +87,16 @@ end
 -- Returns the owner ping in seconds.
 -- Returns 0 if the owner is invalid or an NPC.
 function SWEP:Ping()
-	return IsValid(self.Owner) and self.Owner:IsPlayer() and self.Owner:Ping() / 1000 or 0
+	return IsValid(self:GetOwner()) and self:GetOwner():IsPlayer() and self:GetOwner():Ping() / 1000 or 0
 end
 
 function SWEP:Crouching()
-	return IsValid(self.Owner) and Either(self.Owner:IsPlayer(),
-	ss.ProtectedCall(self.Owner.Crouching, self.Owner), self.Owner:IsFlagSet(FL_DUCKING))
+	return IsValid(self:GetOwner()) and Either(self:GetOwner():IsPlayer(),
+	ss.ProtectedCall(self:GetOwner().Crouching, self:GetOwner()), self:GetOwner():IsFlagSet(FL_DUCKING))
 end
 
 function SWEP:GetFOV()
-	return self.Owner:GetFOV()
+	return self:GetOwner():GetFOV()
 end
 
 local function RetrieveOption(self, name, pt)
@@ -106,15 +106,15 @@ local function RetrieveOption(self, name, pt)
 		if #pt.location > 2 and pt.location[3] ~= self.ClassName then return end
 	end
 
-	local value = greatzenkakuman.cvartree.GetValue(pt, self.Owner)
+	local value = greatzenkakuman.cvartree.GetValue(pt, self:GetOwner())
 	if isbool(value) and self:GetNWBool(name) ~= value then
 		self:SetNWBool(name, value)
 	end
 
 	if isnumber(value) and self:GetNWInt(name) ~= value then
 		if name == "inkcolor" then
-			if self.Owner:IsNPC() then return end
-			if self.Owner:IsPlayer() and self.Owner:IsBot() then return end
+			if self:GetOwner():IsNPC() then return end
+			if self:GetOwner():IsPlayer() and self:GetOwner():IsBot() then return end
 		end
 
 		self:SetNWInt(name, value)
@@ -127,12 +127,12 @@ function SWEP:GetOptions()
 		RetrieveOption(self, name, pt)
 	end
 
-	if self.Owner:IsPlayer() and not self.Owner:IsBot() then return end
+	if self:GetOwner():IsPlayer() and not self:GetOwner():IsBot() then return end
 	local inkcolor
-	if self.Owner:IsPlayer() and self.Owner:IsBot() then
+	if self:GetOwner():IsPlayer() and self:GetOwner():IsBot() then
 		inkcolor = ss.GetBotInkColor(self)
 	else
-		inkcolor = ss.GetNPCInkColor(self.Owner)
+		inkcolor = ss.GetNPCInkColor(self:GetOwner())
 	end
 
 	if self:GetNWInt "inkcolor" == inkcolor then return end
@@ -145,9 +145,9 @@ function SWEP:ApplySkinAndBodygroups()
 		self:SetBodygroup(k, v)
 	end
 
-	if not IsValid(self.Owner) or not self.Owner:IsPlayer() then return end
+	if not IsValid(self:GetOwner()) or not self:GetOwner():IsPlayer() then return end
 	for i = 0, 2 do
-		local vm = self.Owner:GetViewModel(i)
+		local vm = self:GetOwner():GetViewModel(i)
 		if IsValid(vm) then
 			vm:SetSkin(self.Skin or 0)
 			for k, v in pairs(self.Bodygroup or {}) do
@@ -161,16 +161,16 @@ local InkTraceLength = 15
 local InkTraceZSteps = 10
 local InkTraceXYSteps = 2
 function SWEP:UpdateInkState() -- Set if player is in ink
-	local ang = Angle(0, self.Owner:GetAngles().yaw)
+	local ang = Angle(0, self:GetOwner():GetAngles().yaw)
 	local c = self:GetNWInt "inkcolor"
-	local filter = {self, self.Owner}
-	local org = self.Owner:GetPos()
-	local center = self.Owner:WorldSpaceCenter()
+	local filter = {self, self:GetOwner()}
+	local org = self:GetOwner():GetPos()
+	local center = self:GetOwner():WorldSpaceCenter()
 	local mean = (center + org) / 2
 	local fw, right = ang:Forward() * InkTraceLength, ang:Right() * InkTraceLength
-	local mins, maxs = self.Owner:GetCollisionBounds()
+	local mins, maxs = self:GetOwner():GetCollisionBounds()
 	local ink_t = {filter = filter, mask = MASK_SHOT, maxs = maxs, mins = mins}
-	local gcolor = ss.GetSurfaceColorArea(org, mins, maxs, InkTraceXYSteps, InkTraceLength, 0.5, self.Owner)
+	local gcolor = ss.GetSurfaceColorArea(org, mins, maxs, InkTraceXYSteps, InkTraceLength, 0.5, self:GetOwner())
 	local onink = gcolor >= 0
 	local onourink = gcolor == c
 	local onenemyink = onink and not onourink
@@ -204,10 +204,10 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	if not onenemyink and self:GetOnEnemyInk() then
 		self.LoopSounds.EnemyInkSound.SoundPatch:ChangeVolume(0, .5)
 	end
-	if inink and not self:GetInInk() then self.Owner:SetDSP(14) end
-	if not inink and self:GetInInk() then self.Owner:SetDSP(1) end
-	if self.Owner:IsPlayer() then
-		if not (self:GetOnEnemyInk() and self.Owner:KeyDown(IN_DUCK)) then
+	if inink and not self:GetInInk() then self:GetOwner():SetDSP(14) end
+	if not inink and self:GetInInk() then self:GetOwner():SetDSP(1) end
+	if self:GetOwner():IsPlayer() then
+		if not (self:GetOnEnemyInk() and self:GetOwner():KeyDown(IN_DUCK)) then
 			self:SetEnemyInkTouchTime(CurTime())
 		end
 	end
@@ -223,26 +223,26 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 end
 
 function SWEP:GetHandPos()
-	if not self.Owner:IsPlayer() then return self:GetShootPos() end
+	if not self:GetOwner():IsPlayer() then return self:GetShootPos() end
 
-	local e = (SERVER or self:IsTPS()) and self.Owner or self:GetViewModel()
+	local e = (SERVER or self:IsTPS()) and self:GetOwner() or self:GetViewModel()
 	return e:GetBoneMatrix(e:LookupBone "ValveBiped.Bip01_R_Hand"):GetTranslation()
 end
 
 function SWEP:GetViewModel(index)
-	if not (IsValid(self.Owner) and self.Owner:IsPlayer()) then return end
-	return self.Owner:GetViewModel(index)
+	if not (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) then return end
+	return self:GetOwner():GetViewModel(index)
 end
 
 function SWEP:SetWeaponAnim(act, index)
 	if not index then self:SendWeaponAnim(act) end
 	if index == 0 then self:SendWeaponAnim(act) return end
 	if not self:IsFirstTimePredicted() then return end
-	if not (IsValid(self.Owner) and self.Owner:IsPlayer()) then return end
+	if not (IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) then return end
 	for i = 1, 2 do
 		if not (index and i ~= index) then
 			-- Entity:GetSequenceCount() returns nil on an invalid viewmodel
-			local vm = self.Owner:GetViewModel(i)
+			local vm = self:GetOwner():GetViewModel(i)
 			if IsValid(vm) and (vm:GetSequenceCount() or 0) > 0 then
 				local seq = vm:SelectWeightedSequence(act)
 				if seq > -1 then
@@ -303,13 +303,13 @@ function SWEP:SharedDeployBase()
 	self.SquidSpeed = self:GetSquidSpeed()
 	self.OnEnemyInkSpeed = ss.OnEnemyInkSpeed
 	self.JumpPower = ss.InklingJumpPower
-	self.IgnorePrediction = SERVER and ss.mp and not self.Owner:IsPlayer() or nil
-	self.Owner:SetHealth(self.Owner:Health() * self:GetNWInt "BackupInklingMaxHealth" / self:GetNWInt "BackupHumanMaxHealth")
-	if self.Owner:IsPlayer() then
-		self.Owner:SetJumpPower(self.JumpPower)
-		self.Owner:SetCrouchedWalkSpeed(.5)
+	self.IgnorePrediction = SERVER and ss.mp and not self:GetOwner():IsPlayer() or nil
+	self:GetOwner():SetHealth(self:GetOwner():Health() * self:GetNWInt "BackupInklingMaxHealth" / self:GetNWInt "BackupHumanMaxHealth")
+	if self:GetOwner():IsPlayer() then
+		self:GetOwner():SetJumpPower(self.JumpPower)
+		self:GetOwner():SetCrouchedWalkSpeed(.5)
 		for _, k in ipairs(ss.KeyMask) do
-			if self.Owner:KeyDown(k) then
+			if self:GetOwner():KeyDown(k) then
 				ss.KeyPress(self, self,Owner, k)
 			end
 		end
@@ -335,7 +335,7 @@ function SWEP:SharedThinkBase()
 	end
 	
 	local ShouldNoDraw = Either(self:GetNWBool "becomesquid", self:Crouching(), self:GetInInk())
-	self.Owner:DrawShadow(not ShouldNoDraw)
+	self:GetOwner():DrawShadow(not ShouldNoDraw)
 	self:DrawShadow(not ShouldNoDraw)
 	self:ApplySkinAndBodygroups()
 	ss.ProtectedCall(self.SharedThink, self)
@@ -347,21 +347,21 @@ function SWEP:Reload()
 end
 
 function SWEP:CheckCanStandup()
-	if not IsValid(self.Owner) then return end
-	if not self.Owner:IsPlayer() then return true end
-	local plmins, plmaxs = self.Owner:GetHull()
+	if not IsValid(self:GetOwner()) then return end
+	if not self:GetOwner():IsPlayer() then return true end
+	local plmins, plmaxs = self:GetOwner():GetHull()
 	return not (self:Crouching() and util.TraceHull {
-		start = self.Owner:GetPos(),
-		endpos = self.Owner:GetPos(),
+		start = self:GetOwner():GetPos(),
+		endpos = self:GetOwner():GetPos(),
 		mins = plmins, maxs = plmaxs,
-		filter = {self, self.Owner},
+		filter = {self, self:GetOwner()},
 		mask = MASK_PLAYERSOLID,
 		collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
 	} .Hit)
 end
 
 function SWEP:SetReloadDelay(delay)
-	local reloadtime = delay / ss.GetTimeScale(self.Owner)
+	local reloadtime = delay / ss.GetTimeScale(self:GetOwner())
 	if self.ReloadSchedule:SinceLastCalled() < -reloadtime then return end
 	self.ReloadSchedule:SetDelay(reloadtime) -- Stop reloading ink
 	self.ReloadSchedule:SetLastCalled(-reloadtime)
@@ -373,12 +373,12 @@ function SWEP:PrimaryAttack(auto) -- Shoot ink.  bool auto | is a scheduled shot
 	if not self:CheckCanStandup() then return end
 	if auto and ss.sp and CLIENT then return end
 	if not auto and CurTime() < self:GetCooldown() then return end
-	if not auto and self.Owner:IsPlayer() and self:GetKey() ~= IN_ATTACK then return end
+	if not auto and self:GetOwner():IsPlayer() and self:GetKey() ~= IN_ATTACK then return end
 	local able = self:GetInk() > 0 and self:CheckCanStandup()
-	ss.SuppressHostEventsMP(self.Owner)
+	ss.SuppressHostEventsMP(self:GetOwner())
 	ss.ProtectedCall(self.SharedPrimaryAttack, self, able, auto)
 	ss.ProtectedCall(Either(SERVER, self.ServerPrimaryAttack, self.ClientPrimaryAttack), self, able, auto)
-	ss.EndSuppressHostEventsMP(self.Owner)
+	ss.EndSuppressHostEventsMP(self:GetOwner())
 end
 
 function SWEP:SecondaryAttack() -- Use sub weapon
@@ -387,26 +387,26 @@ function SWEP:SecondaryAttack() -- Use sub weapon
 	if self:GetThrowing() then return end
 	if CurTime() < self:GetCooldown() then return end
 	if not self:CheckCanStandup() then return end
-	if self.Owner:IsPlayer() then
+	if self:GetOwner():IsPlayer() then
 		self:SetThrowing(true)
 		self:SetWeaponAnim(ss.ViewModel.Throwing)
 
 		if self.IsSubWeaponThrowable then
 			local filter = self.IgnorePrediction
-			if SERVER and ss.mp and self.Owner:IsPlayer() then
+			if SERVER and ss.mp and self:GetOwner():IsPlayer() then
 				filter = RecipientFilter()
-				filter:AddPlayer(self.Owner)
+				filter:AddPlayer(self:GetOwner())
 			end
 
 			local e = EffectData()
 			e:SetEntity(self)
 			e:SetScale(1.5)
-			ss.UtilEffectPredicted(self.Owner, "SplatoonSWEPsLandingPoint", e, true, filter)
+			ss.UtilEffectPredicted(self:GetOwner(), "SplatoonSWEPsLandingPoint", e, true, filter)
 		end
 
 		if not self:IsFirstTimePredicted() then return end
 		if self.HoldType ~= "grenade" then
-			self.Owner:AnimResetGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD)
+			self:GetOwner():AnimResetGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD)
 		end
 	else
 		local able = self:GetInk() > 0 and self:CheckCanStandup() and self:CanSecondaryAttack()
@@ -465,20 +465,20 @@ function SWEP:SetupDataTables()
 	local getaimvector = self.GetAimVector
 	local getshootpos = self.GetShootPos
 	function self:GetAimVector()
-		if not IsValid(self.Owner) then return self:GetForward() end
-		if self.Owner:IsPlayer() then return self.Owner:GetAimVector() end
+		if not IsValid(self:GetOwner()) then return self:GetForward() end
+		if self:GetOwner():IsPlayer() then return self:GetOwner():GetAimVector() end
 		return getaimvector(self)
 	end
 
 	function self:GetShootPos()
-		if not IsValid(self.Owner) then return self:GetPos() end
-		if self.Owner:IsPlayer() then return self.Owner:GetShootPos() end
+		if not IsValid(self:GetOwner()) then return self:GetPos() end
+		if self:GetOwner():IsPlayer() then return self:GetOwner():GetShootPos() end
 		return getshootpos(self)
 	end
 
 	self.HealSchedule = self:AddNetworkSchedule(0, function(self, schedule)
 		local healink = self:GetNWBool "canhealink" and self:GetInInk() -- Gradually heals the owner
-		local timescale = ss.GetTimeScale(self.Owner)
+		local timescale = ss.GetTimeScale(self:GetOwner())
 		local delay = 10 / timescale
 		if healink then
 			delay = delay / 8 / gain "healspeedink"
@@ -488,15 +488,15 @@ function SWEP:SetupDataTables()
 		
 		if schedule:GetDelay() ~= delay then schedule:SetDelay(delay) end
 		if not self:GetOnEnemyInk() and (self:GetNWBool "canhealstand" or healink) then
-			local health = math.Clamp(self.Owner:Health() + 1, 0, self.Owner:GetMaxHealth())
-			if self.Owner:Health() ~= health then self.Owner:SetHealth(health) end
+			local health = math.Clamp(self:GetOwner():Health() + 1, 0, self:GetOwner():GetMaxHealth())
+			if self:GetOwner():Health() ~= health then self:GetOwner():SetHealth(health) end
 		end
 	end)
 
 	self.ReloadSchedule = self:AddNetworkSchedule(0, function(self, schedule)
 		local reloadamount = math.max(0, schedule:SinceLastCalled()) -- Recharging ink
 		local reloadink = self:GetNWBool "canreloadink" and self:GetInInk()
-		local timescale = ss.GetTimeScale(self.Owner)
+		local timescale = ss.GetTimeScale(self:GetOwner())
 		local mul = ss.GetMaxInkAmount() * timescale
 		if reloadink then
 			mul = mul / 3 * gain "reloadspeedink" / 100

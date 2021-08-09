@@ -17,7 +17,7 @@ end
 
 local TrailParams = {true, 3, 1, .5, .125, "sprites/physbeama"}
 function SWEP:ServerDeploy()
-	if not (self.IsHeroShot and IsValid(self.Owner) and self.Owner:IsPlayer()) then return end
+	if not (self.IsHeroShot and IsValid(self:GetOwner()) and self:GetOwner():IsPlayer()) then return end
 	local a = self:LookupAttachment "trail"
 	local c = self.HeroColor[self:GetNWInt "level" + 1]
 	local vm = self:GetViewModel()

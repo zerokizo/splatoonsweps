@@ -505,6 +505,7 @@ hook.Add("PostDrawEffects", "SplatoonSWEPs: Draw marked enemies", function()
 
 	local marked = {}
 	local c = ss.GetColor(lpw:GetNWInt "inkcolor")
+	if not c then return end
 	local additive = c:ToVector():Dot(ss.GrayScaleFactor) > 0.5
 
 	for _, e in ipairs(ents.GetAll()) do

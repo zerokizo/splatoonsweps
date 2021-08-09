@@ -60,10 +60,10 @@ local NPCHoldType = {
 	weapon_splatoonsweps_roller = "melee",
 }
 function SWEP:TranslateActivity(act)
-	if self.Owner:IsNPC() then
+	if self:GetOwner():IsNPC() then
 		local h = NPCHoldType[self.Base]
 		local a = self.ActivityTranslateAI
-		local invalid = self.Owner:SelectWeightedSequence(a[h][act] or 0) < 0
+		local invalid = self:GetOwner():SelectWeightedSequence(a[h][act] or 0) < 0
 		return not invalid and a[h][act] or a.smg[act] or -1
 	end
 

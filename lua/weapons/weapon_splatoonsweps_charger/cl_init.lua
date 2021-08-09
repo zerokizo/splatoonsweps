@@ -24,8 +24,8 @@ function SWEP:ClientInit()
 	if not self.Scoped then return end
 	self.RTScope = GetRenderTarget(ss.RenderTarget.Name.RTScope, 512, 512)
 	self:AddSchedule(0, function(self, sched)
-		if not (self.Scoped and IsValid(self.Owner)) then return end
-		self.Owner:SetNoDraw(
+		if not (self.Scoped and IsValid(self:GetOwner())) then return end
+		self:GetOwner():SetNoDraw(
 			self:IsMine() and
 			self:GetScopedProgress() == 1 and
 			not self:GetNWBool "usertscope")
@@ -56,7 +56,7 @@ function SWEP:DrawOuterCircle(t)
 	local x, y = t.HitPosScreen.x, t.HitPosScreen.y
 	if prog == 0 then
 		local elapsed = math.max(CurTime() - self:GetCharge() + self:Ping(), 0)
-		local minchargetime = self.Parameters.mMaxChargeFrame * ss.GetTimeScale(self.Owner)
+		local minchargetime = self.Parameters.mMaxChargeFrame * ss.GetTimeScale(self:GetOwner())
 		prog = math.Clamp(elapsed / minchargetime, 0, 1) * 360
 	else
 		prog = prog * (360 - self.MinChargeDeg) + self.MinChargeDeg
@@ -138,6 +138,7 @@ function SWEP:DrawCrosshair(x, y)
 	local t = self:SetupDrawCrosshair()
 	local p = self.Parameters
 	local dist = self.Scoped and p.mFullChargeDistanceScoped or p.mFullChargeDistance
+	if not t.CrosshairColor then return end
 	t.EndPosScreen = (self:GetShootPos() + self:GetAimVector() * dist):ToScreen()
 	t.CrosshairDarkColor = ColorAlpha(t.CrosshairColor, 192)
 	t.CrosshairDarkColor.r = t.CrosshairDarkColor.r / 2

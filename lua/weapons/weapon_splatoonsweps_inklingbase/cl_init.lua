@@ -107,11 +107,11 @@ function SWEP:Initialize()
 end
 
 function SWEP:Deploy()
-	if not IsValid(self.Owner) then return end
-	if self.Owner:IsPlayer() then
+	if not IsValid(self:GetOwner()) then return end
+	if self:GetOwner():IsPlayer() then
 		self.SurpressDrawingVM = nil
-		self.HullDuckMins, self.HullDuckMaxs = self.Owner:GetHullDuck()
-		self.ViewOffsetDucked = self.Owner:GetViewOffsetDucked()
+		self.HullDuckMins, self.HullDuckMaxs = self:GetOwner():GetHullDuck()
+		self.ViewOffsetDucked = self:GetOwner():GetViewOffsetDucked()
 		self:UpdateBonePositions(self:GetViewModel())
 	end
 
@@ -122,18 +122,18 @@ end
 
 function SWEP:Holster()
 	if self:GetInFence() then return false end
-	if not IsValid(self.Owner) then return true end
-	if self.Owner:IsPlayer() then
+	if not IsValid(self:GetOwner()) then return true end
+	if self:GetOwner():IsPlayer() then
 		self.SurpressDrawingVM = true
 		local vm = self:GetViewModel()
 		if IsValid(vm) then self:ResetBonePositions(vm) end
 		if self:GetNWBool "becomesquid" and self.HullDuckMins then
-			self.Owner:SetHullDuck(self.HullDuckMins, self.HullDuckMaxs)
-			self.Owner:SetViewOffsetDucked(self.ViewOffsetDucked)
+			self:GetOwner():SetHullDuck(self.HullDuckMins, self.HullDuckMaxs)
+			self:GetOwner():SetViewOffsetDucked(self.ViewOffsetDucked)
 		end
 	end
 
-	self.Owner:SetHealth(self.Owner:Health() * self:GetNWInt "BackupHumanMaxHealth" / self:GetNWInt "BackupInklingMaxHealth")
+	self:GetOwner():SetHealth(self:GetOwner():Health() * self:GetNWInt "BackupHumanMaxHealth" / self:GetNWInt "BackupInklingMaxHealth")
 	ss.ProtectedCall(self.ClientHolster, self)
 	return self:SharedHolsterBase()
 end
@@ -157,7 +157,7 @@ function SWEP:OnRemove()
 end
 
 function SWEP:Think()
-	if not IsValid(self.Owner) or self:GetHolstering() then return end
+	if not IsValid(self:GetOwner()) or self:GetHolstering() then return end
 	if self:IsFirstTimePredicted() then
 		local enough = self:GetInk() > (ss.ProtectedCall(self.GetSubWeaponInkConsume, self) or 0)
 		if not self.EnoughSubWeapon and enough then
@@ -189,7 +189,7 @@ function SWEP:Think()
 end
 
 function SWEP:IsTPS()
-	return not self:IsCarriedByLocalPlayer() or self.Owner:ShouldDrawLocalPlayer()
+	return not self:IsCarriedByLocalPlayer() or self:GetOwner():ShouldDrawLocalPlayer()
 end
 
 function SWEP:TranslateToViewmodelPos(pos)

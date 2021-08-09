@@ -92,7 +92,7 @@ function SWEP:GetCrosshairTrace(t)
 	local range = self:GetRange(true) - colradius
 	local tr = ss.MakeInkQueueTraceStructure()
 	tr.start, tr.endpos = t.pos, t.pos + t.dir * range
-	tr.filter = {self, self.Owner}
+	tr.filter = {self, self:GetOwner()}
 	tr.maxs = ss.vector_one * colradius
 	tr.mins = -tr.maxs
 
@@ -218,7 +218,7 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	local DesiredFlip = self.IronSightsFlip[armpos]
 	local relpos, relang = LocalToWorld(vector_origin, angle_zero, pos, ang)
-	local SwayTime = self.SwayTime / ss.GetTimeScale(self.Owner)
+	local SwayTime = self.SwayTime / ss.GetTimeScale(self:GetOwner())
 	if self:IsFirstTimePredicted() and armpos ~= self.ArmPos then
 		self.ArmPos, self.ArmBegin = armpos, ct
 		self.BasePos, self.BaseAng = self.OldPos, self.OldAng
@@ -259,6 +259,7 @@ end
 
 function SWEP:DrawCrosshair(x, y)
 	local t = self:SetupDrawCrosshair()
+	if not t.CrosshairColor then return end
 	self:DrawFourLines(t, self:GetSpreadAmount())
 	self:DrawCenterCircleNoHit(t)
 	self:DrawHitCrossBG(t)
