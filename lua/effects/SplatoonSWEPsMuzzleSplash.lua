@@ -153,8 +153,8 @@ function EFFECT:Think()
 	and isangle(self.Angle)
 	and CurTime() < self.InitTime + self.LifeTime
 	if IsValid(self.Weapon) and self.Weapon.IsSplatoonWeapon then
-		return valid and IsValid(self.Weapon.Owner)
-		and self.Weapon.Owner:GetActiveWeapon() == self.Weapon
+		return valid and IsValid(self.Weapon:GetOwner())
+		and self.Weapon:GetOwner():GetActiveWeapon() == self.Weapon
 	else
 		return valid and (self.IsTPS or drawviewmodel:GetBool())
 	end

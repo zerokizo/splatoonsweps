@@ -51,7 +51,7 @@ function EFFECT:Init(e)
 			end
 		end
 
-		if ss.sp and self.Weapon.Owner:IsPlayer() then
+		if ss.sp and self.Weapon:GetOwner():IsPlayer() then
 			c:Mul(255)
 			self.Emitter = ParticleEmitter(pos)
 			self.Flash = self.Emitter:Add("splatoonsweps/effects/blaster_explosion_impact", pos)
@@ -74,7 +74,7 @@ function EFFECT:Init(e)
 		return
 	end
 
-	if ss.sp and self.Weapon.Owner:IsPlayer() then
+	if ss.sp and self.Weapon:GetOwner():IsPlayer() then
 		local function SetPos(p)
 			local att = ent:GetAttachment(a)
 			if att then

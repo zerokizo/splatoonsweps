@@ -186,7 +186,7 @@ end
 local function HitEntity(ink, t)
 	local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
 	local time = math.max(CurTime() - ink.InitTime, 0)
-	local d, e, o = DamageInfo(), t.Entity, weapon.Owner
+	local d, e, o = DamageInfo(), t.Entity, weapon:GetOwner()
 	if weapon.IsCharger and data.Range and tr.LengthSum > data.Range then return end
 	if ss.LastHitID[e] == data.ID then return end
 	ss.LastHitID[e] = data.ID -- Avoid multiple damages at once
@@ -242,7 +242,7 @@ local function ProcessInkQueue(ply)
 					if not removal then
 						removal = not IsValid(tr.filter)
 						or not IsValid(data.Weapon)
-						or not IsValid(data.Weapon.Owner)
+						or not IsValid(data.Weapon:GetOwner())
 					end
 
 					if not removal and (not tr.filter:IsPlayer() or tr.filter == ply) then

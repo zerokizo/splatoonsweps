@@ -55,7 +55,7 @@ function EFFECT:Init(e)
 	self:SetMaterial(invisiblemat:GetName())
 	local Weapon = ss.GetEffectEntity(e)
 	if not IsValid(Weapon) then return end
-	if not IsValid(Weapon.Owner) then return end
+	if not IsValid(Weapon:GetOwner()) then return end
 	local ApparentPos, ApparentAng = Weapon:GetMuzzlePosition()
 	if not (ApparentPos and ApparentAng) then return end
 	local p = Weapon.Parameters
@@ -136,7 +136,7 @@ function EFFECT:Init(e)
 	self.Ink.InitTime = CurTime() - Ping
 	self.Ink.IsCarriedByLocalPlayer = IsLP
 	self.Ink.Parameters = p
-	self.Ink.Trace.filter = IsValid(Weapon) and Weapon.Owner or nil
+	self.Ink.Trace.filter = IsValid(Weapon) and Weapon:GetOwner() or nil
 	self.Ink.Trace.maxs:Mul(ColRadius)
 	self.Ink.Trace.mins:Mul(ColRadius)
 	self.Ink.Trace.endpos:Set(self.Ink.Data.InitPos)
@@ -184,7 +184,7 @@ function EFFECT:Think()
 	if not self.Ink.Data then return false end
 	local Weapon = self.Ink.Data.Weapon
 	if not IsValid(Weapon) then return false end
-	if not IsValid(Weapon.Owner) then return false end
+	if not IsValid(Weapon:GetOwner()) then return false end
 	if not ss.IsInWorld(self.Ink.Trace.endpos) then return false end
 	ss.AdvanceBullet(self.Ink)
 
@@ -192,7 +192,7 @@ function EFFECT:Think()
 	local tr = util.TraceHull(self.Ink.Trace)
 	local lp = LocalPlayer()
 	local la = Angle(0, lp:GetAngles().yaw, 0)
-	local trlp = Weapon.Owner ~= LocalPlayer()
+	local trlp = Weapon:GetOwner() ~= LocalPlayer()
 	local start, endpos = self.Ink.Trace.start, self.Ink.Trace.endpos
 	local t = self.Ink.Trace.LifeTime
 	if trlp then trlp = ss.TraceLocalPlayer(start, endpos - start) end

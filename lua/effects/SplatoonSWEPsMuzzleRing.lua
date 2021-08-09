@@ -38,13 +38,13 @@ function EFFECT:Init(e)
 	self.radmin = MinRadius
 	self.InitTime = CurTime() - ping
 	local pos, ang = self.Weapon:GetMuzzlePosition()
-	if IsValid(self.Weapon.Owner) then
-		local forward = self.Weapon.Owner:GetForward()
-		local right = self.Weapon.Owner:GetRight()
-		local up = self.Weapon.Owner:GetUp()
-		local yaw = self.Weapon.Owner:GetAngles().yaw
-		if self.Weapon.Owner:IsPlayer() then
-			yaw = self.Weapon.Owner:GetAimVector():Angle().yaw
+	if IsValid(self.Weapon:GetOwner()) then
+		local forward = self.Weapon:GetOwner():GetForward()
+		local right = self.Weapon:GetOwner():GetRight()
+		local up = self.Weapon:GetOwner():GetUp()
+		local yaw = self.Weapon:GetOwner():GetAngles().yaw
+		if self.Weapon:GetOwner():IsPlayer() then
+			yaw = self.Weapon:GetOwner():GetAimVector():Angle().yaw
 		end
 		
 		if self.IsRollerSwing then
@@ -160,6 +160,6 @@ function EFFECT:Think()
 	and isnumber(self.tmin)
 	and CurTime() < self.InitTime + self.LifeTime
 	and (self.Weapon:IsTPS() or drawviewmodel:GetBool())
-	and IsValid(self.Weapon.Owner)
-	and self.Weapon.Owner:GetActiveWeapon() == self.Weapon
+	and IsValid(self.Weapon:GetOwner())
+	and self.Weapon:GetOwner():GetActiveWeapon() == self.Weapon
 end

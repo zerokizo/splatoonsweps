@@ -8,8 +8,8 @@ local mdl = Model "models/hunter/misc/sphere075x075.mdl"
 local p = ss.splatbomb.Parameters
 local function CheckVars(self)
     if not IsValid(self.Weapon) then return end
-    if not IsValid(self.Weapon.Owner) then return end
-    if self.Weapon.Owner:GetActiveWeapon() ~= self.Weapon then return end
+    if not IsValid(self.Weapon:GetOwner()) then return end
+    if self.Weapon:GetOwner():GetActiveWeapon() ~= self.Weapon then return end
     return true
 end
 
@@ -71,7 +71,7 @@ function EFFECT:Think()
         endpos = initpos,
         mask = MASK_SOLID,
         collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
-        filter = self.Weapon.Owner,
+        filter = self.Weapon:GetOwner(),
         maxs = ss.vector_one * TRACE_SIZE,
         mins = -ss.vector_one * TRACE_SIZE,
     }

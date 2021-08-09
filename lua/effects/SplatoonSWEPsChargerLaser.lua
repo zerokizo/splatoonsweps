@@ -21,7 +21,7 @@ end
 function EFFECT:Render()
 	if ss.RenderingRTScope then return end
 	if not IsValid(self.Weapon) then return end
-	if not IsValid(self.Weapon.Owner) then return end
+	if not IsValid(self.Weapon:GetOwner()) then return end
 	if not (self.Weapon:IsTPS() or drawviewmodel:GetBool()) then return end
 	self:SetPos(GetViewEntity():GetPos())
 
@@ -95,6 +95,6 @@ end
 
 function EFFECT:Think()
 	return IsValid(self.Weapon)
-	and IsValid(self.Weapon.Owner)
+	and IsValid(self.Weapon:GetOwner())
 	and self.Weapon:GetCharge() < math.huge
 end
