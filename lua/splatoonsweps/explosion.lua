@@ -130,11 +130,13 @@ function ss.MakeExplosion(data)
 					end
 				end
 
-				local t = ss.SquidTrace
-				t.start = origin
-				t.endpos = origin + dist
-				t.filter = {data.BombEntity, not hurtowner and owner or nil}
-				t = util.TraceLine(t)
+				util.TraceLine {
+					start = origin,
+					endpos = origin + dist,
+					filter = {data.BombEntity, not hurtowner and owner or nil},
+					mask = MASK_SHOT,
+					collisiongroup = COLLISION_GROUP_NONE,
+				}
 				if not t.Hit or t.Entity == e then
 					if ShouldPerformEffect then
 						ss.CreateHitEffect(inkcolor, damagedealt and 6 or 2, origin + dist, -dist, owner)
