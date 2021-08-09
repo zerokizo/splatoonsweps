@@ -57,7 +57,7 @@ local function DoScatterSplash(ink)
 	dropdata.InitPos = dropdata.InitPos + offsetvec
 	dropdata.InitVel = initang:Right() * offsetsign * initspeed
 	ss.AddInk(p, dropdata)
-	ss.CreateDropEffect(dropdata, p.mScatterSplashPaintRadius, ink.Trace.filter)
+	ss.CreateDropEffect(dropdata, p.mScatterSplashPaintRadius, ink.Owner)
 end
 
 local function Simulate(ink)
@@ -145,7 +145,7 @@ local function HitPaint(ink, t)
 	end
 	
 	ss.Paint(t.HitPos, t.HitNormal, radius * ratio, data.Color,
-	data.Yaw, data.Type, 1 / ratio, tr.filter, weapon.ClassName)
+	data.Yaw, data.Type, 1 / ratio, ink.Owner, weapon.ClassName)
 	
 	if not data.DoDamage then return end
 	if hitfloor then return end
@@ -178,6 +178,7 @@ local function HitPaint(ink, t)
 				Time = CurTime() + i * data.WallPaintRadius / ink.CurrentSpeed,
 				filter = tr.filter,
 				ClassName = data.Weapon.ClassName,
+				Owner = ink.Owner,
 			}] = true
 		end
 	end
@@ -240,12 +241,13 @@ local function ProcessInkQueue(ply)
 				if ink then
 					local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
 					if not removal then
-						removal = not IsValid(tr.filter)
+						removal = not IsValid(ink.Owner)
 						or not IsValid(data.Weapon)
 						or not IsValid(data.Weapon:GetOwner())
 					end
 
-					if not removal and (not tr.filter:IsPlayer() or tr.filter == ply) then
+					if not removal and (not ink.Owner:IsPlayer() or ink.Owner == ply) then
+						tr.filter = ss.MakeAllyFilter(ink.Owner)
 						Simulate(ink)
 						if tr.start:DistToSqr(tr.endpos) > 0 then
 							tr.maxs = ss.vector_one * data.ColRadiusWorld
@@ -296,7 +298,7 @@ local function ProcessInkQueue(ply)
 		for ink in pairs(ss.PaintSchedule) do
 			if CurTime() > ink.Time then
 				ss.Paint(ink.pos, ink.normal, ink.radius, ink.color,
-				ink.angle, ink.inktype, ink.ratio, ink.filter, ink.ClassName)
+				ink.angle, ink.inktype, ink.ratio, ink.Owner, ink.ClassName)
 				ss.PaintSchedule[ink] = nil
 
 				if SysTime() - Benchmark > ss.FrameToSec then
@@ -429,7 +431,7 @@ function ss.DoDropSplashes(ink, iseffect)
 				e:SetNormal(data.InitDir)
 				e:SetOrigin(t.HitPos)
 				e:SetRadius(p.mCollisionRadiusNear / 2)
-				ss.UtilEffectPredicted(tr.filter, "SplatoonSWEPsBlasterTrail", e)
+				ss.UtilEffectPredicted(ink.Owner, "SplatoonSWEPsBlasterTrail", e)
 			end
 			
 			ss.SetEffectColor(e, data.Color)
@@ -443,7 +445,7 @@ function ss.DoDropSplashes(ink, iseffect)
 			ss.SetEffectSplashInitRate(e, Vector(0))
 			ss.SetEffectSplashNum(e, 0)
 			ss.SetEffectStraightFrame(e, 0)
-			ss.UtilEffectPredicted(tr.filter, "SplatoonSWEPsShooterInk", e)
+			ss.UtilEffectPredicted(ink.Owner, "SplatoonSWEPsShooterInk", e)
 		else
 			hull.start = droppos
 			hull.endpos = droppos + data.InitDir * data.SplashLength
@@ -468,6 +470,7 @@ function ss.AddInk(parameters, data)
 	local t = ss.MakeInkQueueStructure()
 	t.Data = table.Copy(data)
 	t.IsCarriedByLocalPlayer = Either(SERVER, false, ss.ProtectedCall(w.IsCarriedByLocalPlayer, w))
+	t.Owner = ply
 	t.Parameters = parameters
 	t.Trace.filter = ply
 	t.Trace.endpos:Set(data.InitPos)

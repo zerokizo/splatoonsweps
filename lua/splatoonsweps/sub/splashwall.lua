@@ -86,11 +86,13 @@ if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
     local e = ents.Create "ent_splatoonsweps_splashwall"
     e.Owner = self.Owner
+    e.Weapon = self
     e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
     e:SetInkColorProxy(self:GetInkColorProxy())
     e:SetPos(self:GetShootPos())
     e:SetAngles(Angle(0, self:GetAimVector():Angle().yaw, 0))
     e:Spawn()
+    e:EmitSound "SplatoonSWEPs.SubWeaponThrown"
     local ph = e:GetPhysicsObject()
     if IsValid(ph) then
         ph:AddVelocity(self:GetSubWeaponInitVelocity() + self:GetVelocity())

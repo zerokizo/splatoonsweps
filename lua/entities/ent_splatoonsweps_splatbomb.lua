@@ -4,10 +4,6 @@ if not ss then return end
 AddCSLuaFile()
 
 ENT.Base = "ent_splatoonsweps_throwable"
-ENT.CollisionGroups = {
-    [true] = COLLISION_GROUP_INTERACTIVE_DEBRIS,
-    [false] = COLLISION_GROUP_PROJECTILE,
-}
 ENT.ContactTotalTime = 0
 ENT.ExplosionOffset = 0
 ENT.HitSound = "SplatoonSWEPs.SplatbombHitWorld"
@@ -53,10 +49,10 @@ end
 
 function ENT:Detonate()
     if self.RemoveFlag then return end
-    if self:GetContactTime() < self.BurstTotalFrame then return end
     ss.MakeBombExplosion(self:GetPos() + self.HitNormal * self.ExplosionOffset,
     self.HitNormal, self, self:GetNWInt "inkcolor", self.SubWeaponName)
     self:StopSound "SplatoonSWEPs.BombAlert"
+    self:StopSound "SplatoonSWEPs.SubWeaponThrown"
     self.RemoveFlag = true
 end
 
@@ -75,7 +71,10 @@ function ENT:Think()
     end
     
     if self:GetClass() ~= "ent_splatoonsweps_splatbomb" or p:GetStress() > 0 then
-        self:Detonate()
+        if self:GetContactTime() > self.BurstTotalFrame then
+            self:Detonate()
+        end
+
         if t > self.Parameters.Burst_WaitFrm - self.Parameters.Burst_WarnFrm then
             self.WarnSound:PlayEx(1, 100)
         end
@@ -92,6 +91,10 @@ end
 
 function ENT:PhysicsCollide(data, collider)
     if self.RemoveFlag then return end
+    if data.HitEntity.SubWeaponName == "splashwall" then
+        self:Detonate()
+    end
+
     if data.OurOldVelocity:LengthSqr() > 1000 and CurTime() > self.NextPlayHitSE then
         self:EmitSound(self.HitSound)
         self.NextPlayHitSE = CurTime() + self.CollisionSeSilentFrame

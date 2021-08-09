@@ -53,6 +53,10 @@ end
 function ENT:PhysicsCollide(data, collider)
     if self.RemoveFlag then return end
     if self:IsStuck() then return end
+    if data.HitEntity.SubWeaponName == "splashwall" then
+        self:Detonate()
+    end
+    
     self.BaseClass.PhysicsCollide(self, data, collider)
     local n = -data.HitNormal
     local ang = n:Angle()

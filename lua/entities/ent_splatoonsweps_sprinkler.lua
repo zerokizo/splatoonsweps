@@ -99,7 +99,6 @@ function ENT:Spout()
         ink.InitVel = dir * math.Rand(VelL, VelH)
         ink.Yaw     = ang.yaw
         local t = ss.AddInk({}, ink)
-        if t.Trace then t.Trace.filter = self end
         t.SprinklerHitEffect = true
         
         local e = EffectData()
@@ -129,6 +128,12 @@ function ENT:Think()
     if not self.ContactStartTime then return true end
     if CurTime() < self.NextSpoutTime then return true end
     self.NextSpoutTime = CurTime() + self.Parameters.Spout_Span_First
+    if IsValid(self.Weapon) then
+        self:SetNWInt("inkcolor", self.Weapon:GetNWInt "inkcolor")
+        local color = ss.GetColor(self:GetNWInt "inkcolor")
+        if color then self:SetInkColorProxy(color:ToVector()) end
+    end
+
     self:Spout()
     return true
 end
@@ -136,6 +141,11 @@ end
 function ENT:PhysicsCollide(data, collider)
     if self.RemoveFlag then return end
     if self:IsStuck() then return end
+    if data.HitEntity.SubWeaponName == "splashwall" then
+        SafeRemoveEntity(self)
+        return
+    end
+    
     self.BaseClass.PhysicsCollide(self, data, collider)
     local n = -data.HitNormal
     local ang = n:Angle()
@@ -173,8 +183,6 @@ function ENT:PhysicsCollide(data, collider)
     inkcolor, 0, ss.GetDropType(), 1, self.Owner, self.WeaponClassName)
 
     if IsValid(self.DestroyOnLand) then
-        local d = DamageInfo()
-        d:SetDamage(self.DestroyOnLand:Health())
-        self.DestroyOnLand:TakeDamageInfo(d)
+        SafeRemoveEntity(self.DestroyOnLand)
     end
 end

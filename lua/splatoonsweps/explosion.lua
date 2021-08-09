@@ -294,7 +294,7 @@ function ss.MakeBlasterExplosion(ink)
 	local rnear = p.mCollisionRadiusNear * rmul
 	local rmid = p.mCollisionRadiusMiddle * rmul
 	local rfar = p.mCollisionRadiusFar * rmul
-	local IsLP = CLIENT and LocalPlayer() == ink.Trace.filter
+	local IsLP = CLIENT and LocalPlayer() == ink.Owner
 	local e = table.Merge(ss.MakeExplosionStructure(), {
 		ClassName = data.Weapon.ClassName,
 		DamageRadius = rfar,
@@ -321,7 +321,7 @@ function ss.MakeBlasterExplosion(ink)
 		IsPredicted = true,
 		InkColor = data.Color,
 		Origin = ink.Trace.endpos,
-		Owner = ink.Trace.filter,
+		Owner = ink.Owner,
 		ProjectileID = data.ID,
 		SplashInitAng = data.InitDir:Angle(),
 		TraceLength = p.mMoveLength,
@@ -365,7 +365,6 @@ function ss.MakeBlasterExplosion(ink)
 	ss.SetEffectSplashInitRate(e, Vector(0))
 	ss.SetEffectSplashNum(e, 0)
 	ss.SetEffectStraightFrame(e, 0)
-	ss.UtilEffectPredicted(ink.Trace.filter,
-	"SplatoonSWEPsShooterInk", e, true, data.Weapon.IgnorePrediction)
+	ss.UtilEffectPredicted(ink.Owner, "SplatoonSWEPsShooterInk", e, true, data.Weapon.IgnorePrediction)
 	ss.AddInk(p, dropdata)
 end

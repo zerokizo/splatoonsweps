@@ -333,3 +333,16 @@ function ss.GetGravityDirection()
 	if not g then return -vector_up end
 	return g:GetNormalized()
 end
+
+function ss.MakeAllyFilter(Owner)
+	local t = {Owner}
+	local w = ss.IsValidInkling(Owner)
+	if not w then return t end
+	for _, e in ipairs(ents.GetAll()) do
+		if e.UseSubWeaponFilter and ss.IsAlly(w, e) then
+			table.insert(t, e)
+		end
+	end
+
+	return t
+end

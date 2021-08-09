@@ -9,7 +9,19 @@ ENT.Type = "anim"
 ENT.UseSubWeaponFilter = true
 ENT.WeaponClassName = ""
 
+local function SplashWallFilter(e1, e2)
+    if e2.SubWeaponName == "splashwall" then e1, e2 = e2, e1 end
+    if e2.SubWeaponName == "splashwall" then return true end
+    if not isstring(e2.SubWeaponName) then return end
+    if ss.IsAlly(e1, e2) then return false end
+    return true
+end
+
 hook.Add("ShouldCollide", "SplatoonSWEPs: Sub weapon filter", function(e1, e2)
+    if e1.SubWeaponName == "splashwall" or e2.SubWeaponName == "splashwall" then
+        return SplashWallFilter(e1, e2)
+    end
+
     if e2.UseSubWeaponFilter then e1, e2 = e2, e1 end
     if e2.UseSubWeaponFilter then return false end
     if not e1.UseSubWeaponFilter then return end

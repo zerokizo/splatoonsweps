@@ -18,14 +18,18 @@ function ENT:Initialize()
     self.GravityHold = p.Fly_Gravity
     self.Gravity = p.Fly_Gravity
     self.HitNormal = vector_up
-    self.CollisionSeSilentFrame = p.CollisionSeSilentFrame or math.huge
     self.DragCoeffChangeTime = CurTime() + self.StraightFrame
     self.BaseClass.Initialize(self)
     self.RunningSound = CreateSound(self, ss.SplashWallRunning)
     self:SetSequence "folded"
     self:SetUnfolded(false)
-    if SERVER then self:MakeCollisionMesh() return end
-    self.ParticleEffects = {}
+    self:MakeCollisionMesh()
+    if SERVER then
+        self:SetMaxHealth(p.mMaxHp)
+        self:SetHealth(self:GetMaxHealth())
+    else
+        self.ParticleEffects = {}
+    end
 end
 
 function ENT:SetupDataTables()
@@ -54,7 +58,22 @@ function ENT:TracePaint()
     self:GetAngles().yaw + 90, math.random(10, 12), 0.5, self.Owner, self.WeaponClassName)
 end
 
+function ENT:MakeCollisionMesh()
+    local mins, maxs = self:GetCollisionBounds()
+    self.CollisionMesh = {
+        Vector(mins.x, mins.y, mins.z),
+        Vector(mins.x, mins.y, maxs.z),
+        Vector(mins.x, maxs.y, mins.z),
+        Vector(mins.x, maxs.y, maxs.z),
+        Vector(maxs.x, mins.y, mins.z),
+        Vector(maxs.x, mins.y, maxs.z),
+        Vector(maxs.x, maxs.y, mins.z),
+        Vector(maxs.x, maxs.y, maxs.z),
+    }
+end
+
 if CLIENT then
+    ENT.PhysObjChanged = false
     ENT.NextEmissionTime = CurTime()
     ENT.EmissionInterval = 0.2
     function ENT:Think()
@@ -63,6 +82,12 @@ if CLIENT then
         if #self.ParticleEffects > 0 then return end
         if CurTime() < self.NextEmissionTime then return true end
         self.NextEmissionTime = CurTime() + self.EmissionInterval
+
+        if not self.PhysObjChanged then
+            self.PhysObjChanged = true
+            self:PhysicsInitConvex(self.CollisionMesh)
+            self:EnableCustomCollisions(true)
+        end
 
         local scale = 8
         local color = ss.GetColor(self:GetNWInt "inkcolor"):ToVector()
@@ -79,13 +104,11 @@ if CLIENT then
     return
 end
 
--- TODO: 塗り替えす
 ENT.NextPaintTime = CurTime()
-ENT.PaintInterval = 0.05
 function ENT:Paint()
     if not self:GetUnfolded() then return end
     if CurTime() < self.NextPaintTime then return end
-    self.NextPaintTime = CurTime() + self.PaintInterval
+    self.NextPaintTime = CurTime() + self.Parameters.mPaintRepeatFrame
 
     local ratio = 0.6
     local radius = self.Parameters.mPaintWidth / 2
@@ -110,28 +133,10 @@ function ENT:Paint()
     end
 end
 
-function ENT:MakeCollisionMesh()
-    local mins, maxs = self:GetCollisionBounds()
-    self.CollisionMesh = {
-        Vector(mins.x, mins.y, mins.z),
-        Vector(mins.x, mins.y, maxs.z),
-        Vector(mins.x, maxs.y, mins.z),
-        Vector(mins.x, maxs.y, maxs.z),
-        Vector(maxs.x, mins.y, mins.z),
-        Vector(maxs.x, mins.y, maxs.z),
-        Vector(maxs.x, maxs.y, mins.z),
-        Vector(maxs.x, maxs.y, maxs.z),
-    }
-end
-
 function ENT:Think()
     self:NextThink(CurTime())
     local p = self:GetPhysicsObject()
     if not IsValid(p) then return true end
-    -- if CurTime() > self.NextTracePaintTime then
-    --     self.NextTracePaintTime = CurTime() + self.TracePaintInterval
-    --     self:TracePaint()
-    -- end
     if not self.ContactStartTime then return end
     local t = CurTime() - self.ContactStartTime
     if t > self.Parameters.mNoDamageRunningDurationFrame then

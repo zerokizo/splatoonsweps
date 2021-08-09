@@ -136,7 +136,7 @@ function EFFECT:Init(e)
 	self.Ink.InitTime = CurTime() - Ping
 	self.Ink.IsCarriedByLocalPlayer = IsLP
 	self.Ink.Parameters = p
-	self.Ink.Trace.filter = IsValid(Weapon) and Weapon:GetOwner() or nil
+	self.Ink.Owner = IsValid(Weapon) and Weapon:GetOwner() or nil
 	self.Ink.Trace.maxs:Mul(ColRadius)
 	self.Ink.Trace.mins:Mul(ColRadius)
 	self.Ink.Trace.endpos:Set(self.Ink.Data.InitPos)
@@ -189,6 +189,7 @@ function EFFECT:Think()
 	ss.AdvanceBullet(self.Ink)
 
 	-- Check collision agains local player
+	self.Ink.Trace.filter = ss.MakeAllyFilter(Weapon:GetOwner())
 	local tr = util.TraceHull(self.Ink.Trace)
 	local lp = LocalPlayer()
 	local la = Angle(0, lp:GetAngles().yaw, 0)
