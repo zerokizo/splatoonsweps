@@ -170,7 +170,7 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	local fw, right = ang:Forward() * InkTraceLength, ang:Right() * InkTraceLength
 	local mins, maxs = self.Owner:GetCollisionBounds()
 	local ink_t = {filter = filter, mask = MASK_SHOT, maxs = maxs, mins = mins}
-	local gcolor = ss.GetSurfaceColorArea(org, mins, maxs, InkTraceXYSteps, InkTraceLength, 0.5)
+	local gcolor = ss.GetSurfaceColorArea(org, mins, maxs, InkTraceXYSteps, InkTraceLength, 0.5, self.Owner)
 	local onink = gcolor >= 0
 	local onourink = gcolor == c
 	local onenemyink = onink and not onourink

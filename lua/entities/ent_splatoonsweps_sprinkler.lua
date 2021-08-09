@@ -150,12 +150,6 @@ function ENT:PhysicsCollide(data, collider)
     collider:EnableMotion(not data.HitEntity:IsWorld())
     collider:SetPos(data.HitPos)
     collider:SetAngles(ang)
-    timer.Simple(0, function()
-        if not IsValid(self) then return end
-        if not IsValid(data.HitEntity) then return end
-        local phys = self:FindBoneFromPhysObj(data.HitEntity, data.HitObject)
-        constraint.Weld(self, data.HitEntity, 0, phys, 0, false, false)
-    end)
     
     timer.Simple(0.125, function()
         if not IsValid(self) then return end
@@ -165,12 +159,11 @@ function ENT:PhysicsCollide(data, collider)
         self.RunningSound:Play()
     end)
 
-    if not self.ContactStartTime then
-        self.ContactStartTime = CurTime()
-    end
-
     self.HitNormal = -data.HitNormal
     self.ContactEntity = data.HitEntity
+    self.ContactPhysObj = data.HitObject
+    self.ContactStartTime = self.ContactStartTime or CurTime()
+    self:Weld()
     self:SetSequence "sprinkle"
     self:SetNWFloat("t0", CurTime())
     self:SetNWBool("hit", true)

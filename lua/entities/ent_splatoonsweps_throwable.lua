@@ -57,7 +57,21 @@ function ENT:FindBoneFromPhysObj(ent, physobj)
 end
 
 if CLIENT then return end
+
+function ENT:Weld()
+    timer.Simple(0, function()
+        if not IsValid(self) then return end
+        if self.ContactEntity ~= game.GetWorld()
+        and not IsValid(self.ContactEntity) then return end
+        if not IsValid(self.ContactPhysObj) then return end
+        local phys = self:FindBoneFromPhysObj(self.ContactEntity, self.ContactPhysObj)
+        constraint.Weld(self, self.ContactEntity, 0, phys, 0, false, false)
+    end)
+end
+
 function ENT:PhysicsUpdate(p)
+    if self:IsStuck() then return end
+
     local fix = FrameTime() * ss.SecToFrame
     -- Linear drag for X/Y axis
     p:AddVelocity(p:GetVelocity() * self.AirResist * fix)

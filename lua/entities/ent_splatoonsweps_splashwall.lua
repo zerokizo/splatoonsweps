@@ -24,7 +24,7 @@ function ENT:Initialize()
     self.RunningSound = CreateSound(self, ss.SplashWallRunning)
     self:SetSequence "folded"
     self:SetUnfolded(false)
-    if SERVER then return end
+    if SERVER then self:MakeCollisionMesh() return end
     self.ParticleEffects = {}
 end
 
@@ -82,29 +82,46 @@ end
 -- TODO: 塗り替えす
 ENT.NextPaintTime = CurTime()
 ENT.PaintInterval = 0.05
-ENT.PreviousPaintAt = nil
 function ENT:Paint()
     if not self:GetUnfolded() then return end
     if CurTime() < self.NextPaintTime then return end
     self.NextPaintTime = CurTime() + self.PaintInterval
 
+    local ratio = 0.6
     local radius = self.Parameters.mPaintWidth / 2
     local inkcolor = self:GetNWInt "inkcolor"
+    local atts = self:GetAttachments()
     local dz = self:OBBMaxs().z
     local paintPos = {}
-    for i, att in ipairs(self:GetAttachments()) do
-        local a = self:GetAttachment(att.id)
-        local t = util.QuickTrace(a.Pos, a.Ang:Forward() * dz)
-        if ss.GetSurfaceColor(t) ~= inkcolor then
-            table.insert(paintPos, t.HitPos)
+    for i, att in ipairs(atts) do
+        -- get rid of leftmost/rightmost nozzle
+        if not (att.name:find "7" or att.name:find "6") then
+            local a = self:GetAttachment(att.id)
+            local t = util.QuickTrace(a.Pos, a.Ang:Forward() * dz, self)
+            if ss.GetSurfaceColor(t) ~= inkcolor then
+                table.insert(paintPos, t)
+            end
         end
     end
 
-    for _, p in ipairs(paintPos) do
-        local sign = math.random() > 0.5 and 1 or -1
-        ss.Paint(p, vector_up, radius, inkcolor, self:GetAngles().yaw + 90 * sign,
-        ss.GetDropType(), 1, self.Owner, self.WeaponClassName)
+    for _, t in ipairs(paintPos) do
+        ss.Paint(t.HitPos, t.HitNormal, radius / ratio, inkcolor, self:GetAngles().yaw + 90,
+        ss.GetDropType(), ratio, self.Owner, self.WeaponClassName)
     end
+end
+
+function ENT:MakeCollisionMesh()
+    local mins, maxs = self:GetCollisionBounds()
+    self.CollisionMesh = {
+        Vector(mins.x, mins.y, mins.z),
+        Vector(mins.x, mins.y, maxs.z),
+        Vector(mins.x, maxs.y, mins.z),
+        Vector(mins.x, maxs.y, maxs.z),
+        Vector(maxs.x, mins.y, mins.z),
+        Vector(maxs.x, mins.y, maxs.z),
+        Vector(maxs.x, maxs.y, mins.z),
+        Vector(maxs.x, maxs.y, maxs.z),
+    }
 end
 
 function ENT:Think()
@@ -127,6 +144,10 @@ function ENT:Think()
     if self:GetSequenceName(self:GetSequence()) == "unfolding" and self:GetCycle() == 1 then
         self:ResetSequence "idle"
         self:SetUnfolded(true)
+        self:PhysicsInitConvex(self.CollisionMesh)
+        self:GetPhysicsObject():EnableMotion(not self.ContactEntity:IsWorld())
+        self:EnableCustomCollisions(true)
+        self:Weld()
     end
 
     self:Paint()
@@ -149,18 +170,12 @@ function ENT:PhysicsCollide(data, collider)
     collider:EnableMotion(not data.HitEntity:IsWorld())
     collider:SetPos(data.HitPos)
     collider:SetAngles(Angle(0, collider:GetAngles().yaw, 0))
-    timer.Simple(0, function()
-        if not IsValid(self) then return end
-        if not IsValid(data.HitEntity) then return end
-        local phys = self:FindBoneFromPhysObj(data.HitEntity, data.HitObject)
-        constraint.Weld(self, data.HitEntity, 0, phys, 0, false, false)
-    end)
 
     self.HitNormal = -data.HitNormal
     self.ContactEntity = data.HitEntity
-    if not self.ContactStartTime then
-        self.ContactStartTime = CurTime()
-    end
+    self.ContactPhysObj = data.HitObject
+    self.ContactStartTime = self.ContactStartTime or CurTime()
+    self:Weld()
     
     if self.IsFirstTimeContact then
         self.IsFirstTimeContact = false

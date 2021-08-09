@@ -172,7 +172,7 @@ end
 -- Returning:
 --   number           | The ink color.
 --   nil              | If there is no ink or it's too mixed, this returns nil.
-function ss.GetSurfaceColorArea(org, mins, maxs, num, tracez, tolerance)
+function ss.GetSurfaceColorArea(org, mins, maxs, num, tracez, tolerance, filter)
 	local ink_t = {filter = filter, mask = MASK_SHOT}
 	local gcoloravailable = 0 -- number of points whose color is not -1
 	local gcolorlist = {} -- Ground color list
