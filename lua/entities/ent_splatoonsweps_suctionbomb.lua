@@ -39,7 +39,6 @@ if CLIENT then
 end
 
 function ENT:PhysicsUpdate(p)
-    if self.RemoveFlag then return end
     if self:IsStuck() then return end
     self.BaseClass.PhysicsUpdate(self, p)
     local desired = p:GetVelocity()
@@ -51,12 +50,7 @@ function ENT:PhysicsUpdate(p)
 end
 
 function ENT:PhysicsCollide(data, collider)
-    if self.RemoveFlag then return end
     if self:IsStuck() then return end
-    if data.HitEntity.SubWeaponName == "splashwall" then
-        self:Detonate()
-    end
-    
     self.BaseClass.PhysicsCollide(self, data, collider)
     local n = -data.HitNormal
     local ang = n:Angle()

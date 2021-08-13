@@ -25,7 +25,7 @@ function ENT:Initialize()
     self:SetUnfolded(false)
     self:MakeCollisionMesh()
     if SERVER then
-        self:SetMaxHealth(p.mMaxHp)
+        self:SetMaxHealth(p.mMaxHp * ss.ToHammerHealth)
         self:SetHealth(self:GetMaxHealth())
     else
         self.ParticleEffects = {}
@@ -133,18 +133,33 @@ function ENT:Paint()
     end
 end
 
+function ENT:OnTakeDamage(d)
+    self:SetHealth(math.max(0, self:Health() - d:GetDamage()))
+    if self:Health() == 0 then self.DestroyWaitStartTime = CurTime() end
+
+    return d:GetDamage()
+end
+
 function ENT:Think()
     self:NextThink(CurTime())
     local p = self:GetPhysicsObject()
     if not IsValid(p) then return true end
     if not self.ContactStartTime then return end
-    local t = CurTime() - self.ContactStartTime
-    if t > self.Parameters.mNoDamageRunningDurationFrame then
-        self:Remove()
-    end
 
     local i = self:GetFlexIDByName "InkAmount"
-    self:SetFlexWeight(i, t / self.Parameters.mNoDamageRunningDurationFrame)
+    if self.DestroyWaitStartTime then
+        self:SetFlexWeight(i, 1)
+        local t = CurTime() - self.DestroyWaitStartTime
+        if t > self.Parameters.mDestroyWaitFrame then self:Remove() end
+    else
+        local t = CurTime() - self.ContactStartTime
+        local duration = self.Parameters.mNoDamageRunningDurationFrame
+        local healthToTime = (1 - self:Health() / self:GetMaxHealth()) * duration
+        local inkAmount = math.min(1, (t + healthToTime) / duration)
+        if inkAmount == 1 then self.DestroyWaitStartTime = CurTime() end
+        if t > duration then self:Remove() end
+        self:SetFlexWeight(i, inkAmount)
+    end
 
     if self:GetSequenceName(self:GetSequence()) == "unfolding" and self:GetCycle() == 1 then
         self:ResetSequence "idle"
@@ -161,6 +176,29 @@ function ENT:Think()
 end
 
 function ENT:PhysicsCollide(data, collider)
+    if data.HitEntity.SubWeaponName then
+        SafeRemoveEntity(data.HitEntity)
+        if isfunction(data.HitEntity.Detonate) then
+            data.HitEntity:Detonate()
+        end
+    elseif not data.HitEntity:IsWorld() then
+        local d = DamageInfo()
+        local dt = bit.bor(DMG_AIRBOAT, DMG_REMOVENORAGDOLL, DMG_BURN, DMG_BLAST)
+        if not data.HitEntity:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
+        d:SetDamage(self.Parameters.mDamage)
+        d:SetDamageForce(-data.HitNormal)
+        d:SetDamagePosition(data.HitPos)
+        d:SetDamageType(dt)
+        d:SetReportedPosition(data.HitPos)
+        d:SetAttacker(self.Owner)
+        d:SetInflictor(self)
+        d:ScaleDamage(ss.ToHammerHealth)
+        data.HitEntity:TakeDamageInfo(d)
+        if data.HitEntity:GetClass() == "npc_grenade_frag" then
+            data.HitEntity:Fire("SetTimer", 0)
+        end
+    end
+
     if self:IsStuck() then return end
 
     if -data.HitNormal.z < 0.7 then

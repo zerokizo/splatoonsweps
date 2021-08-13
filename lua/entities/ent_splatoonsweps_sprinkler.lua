@@ -139,13 +139,7 @@ function ENT:Think()
 end
 
 function ENT:PhysicsCollide(data, collider)
-    if self.RemoveFlag then return end
     if self:IsStuck() then return end
-    if data.HitEntity.SubWeaponName == "splashwall" then
-        SafeRemoveEntity(self)
-        return
-    end
-    
     self.BaseClass.PhysicsCollide(self, data, collider)
     local n = -data.HitNormal
     local ang = n:Angle()

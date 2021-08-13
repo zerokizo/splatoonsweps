@@ -58,7 +58,7 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
         * [x] Disruptor
         * [x] Point Sensor
         * [x] Sprinkler
-        * [ ] Splash Wall
+        * [x] Splash Wall
         * [ ] Squid Beakon
 
 ## I want to make the following, too

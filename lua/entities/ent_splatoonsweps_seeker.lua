@@ -72,10 +72,9 @@ function ENT:TracePaint()
 end
 
 function ENT:Explode()
-    if self.RemoveFlag then return end
     ss.MakeBombExplosion(self:GetPos() + self.HitNormal * self.ExplosionOffset,
     self.HitNormal, self, self:GetNWInt "inkcolor", self.SubWeaponName)
-    self.RemoveFlag = true
+    SafeRemoveEntity(self)
 end
 
 function ENT:Think()
@@ -94,7 +93,6 @@ function ENT:Think()
     end
 
     if t > self.ExplodeTime then self:Explode() end
-    if self.RemoveFlag then self:Remove() end
     if IsValid(self.Target) then
         if t > self.SeekStartTime then
             local dir = self.Target:GetPos() - self:GetPos() dir:Normalize()

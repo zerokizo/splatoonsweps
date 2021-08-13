@@ -130,7 +130,7 @@ function ss.MakeExplosion(data)
 					end
 				end
 
-				util.TraceLine {
+				local t = util.TraceLine {
 					start = origin,
 					endpos = origin + dist,
 					filter = {data.BombEntity, not hurtowner and owner or nil},

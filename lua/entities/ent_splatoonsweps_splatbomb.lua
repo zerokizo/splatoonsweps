@@ -48,12 +48,11 @@ function ENT:GetContactTime()
 end
 
 function ENT:Detonate()
-    if self.RemoveFlag then return end
     ss.MakeBombExplosion(self:GetPos() + self.HitNormal * self.ExplosionOffset,
     self.HitNormal, self, self:GetNWInt "inkcolor", self.SubWeaponName)
     self:StopSound "SplatoonSWEPs.BombAlert"
     self:StopSound "SplatoonSWEPs.SubWeaponThrown"
-    self.RemoveFlag = true
+    SafeRemoveEntity(self)
 end
 
 function ENT:Think()
@@ -84,17 +83,10 @@ function ENT:Think()
         self.WarnSound:PlayEx(0, 100)
     end
     
-    if not self.RemoveFlag then return true end
-    self:Remove()
     return true
 end
 
 function ENT:PhysicsCollide(data, collider)
-    if self.RemoveFlag then return end
-    if data.HitEntity.SubWeaponName == "splashwall" then
-        self:Detonate()
-    end
-
     if data.OurOldVelocity:LengthSqr() > 1000 and CurTime() > self.NextPlayHitSE then
         self:EmitSound(self.HitSound)
         self.NextPlayHitSE = CurTime() + self.CollisionSeSilentFrame
