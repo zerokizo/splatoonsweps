@@ -191,7 +191,7 @@ function ENT:PhysicsCollide(data, collider)
             end
         elseif not data.HitEntity:IsWorld() then
             local d = DamageInfo()
-            local dt = bit.bor(DMG_AIRBOAT, DMG_REMOVENORAGDOLL, DMG_BURN, DMG_BLAST)
+            local dt = bit.bor(DMG_AIRBOAT, DMG_REMOVENORAGDOLL)
             if not data.HitEntity:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
             d:SetDamage(self.Parameters.mDamage)
             d:SetDamageForce(-data.HitNormal)

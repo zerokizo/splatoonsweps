@@ -12,7 +12,6 @@ ENT.WeaponClassName = ""
 local function SplashWallFilter(e1, e2)
     if e2.SubWeaponName == "splashwall" then e1, e2 = e2, e1 end
     local w = ss.IsValidInkling(e2)
-    if SERVER and e2.SubWeaponName then print(e2, w) end
     if w and ss.IsAlly(e1, w) then return false end
     if not isstring(e2.SubWeaponName) then return end
     if ss.IsAlly(e1, e2) then return false end
