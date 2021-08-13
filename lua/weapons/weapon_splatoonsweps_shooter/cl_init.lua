@@ -178,6 +178,11 @@ function SWEP:GetArmPos()
 	end
 end
 
+-- Patch for Viewmodel Lagger
+function SWEP:GetIronSights()
+	return self:GetADS()
+end
+
 local SwayTime = 12 * ss.FrameToSec
 local LeftHandAlt = {2, 1, 4, 3, 5, 6}
 function SWEP:GetViewModelPosition(pos, ang)
