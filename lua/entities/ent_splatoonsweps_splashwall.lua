@@ -25,6 +25,7 @@ function ENT:Initialize()
     self:SetSequence "folded"
     self:SetUnfolded(false)
     self:MakeCollisionMesh()
+    self:AddEFlags(EFL_DONTBLOCKLOS)
     if SERVER then
         self:SetMaxHealth(p.mMaxHp * ss.ToHammerHealth)
         self:SetHealth(self:GetMaxHealth())
@@ -166,9 +167,12 @@ function ENT:Think()
         self:ResetSequence "idle"
         self:SetUnfolded(true)
         self:PhysicsInitConvex(self.CollisionMesh)
-        self:GetPhysicsObject():EnableMotion(not self.ContactEntity:IsWorld())
         self:EnableCustomCollisions(true)
         self:Weld()
+        local p = self:GetPhysicsObject()
+        if IsValid(p) then
+            p:EnableMotion(not self.ContactEntity:IsWorld())
+        end
     end
 
     self:Paint()
