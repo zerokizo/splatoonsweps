@@ -22,16 +22,12 @@ function SWEP:GetFirePosition(ping)
 	local col = ss.vector_one * self.Parameters.mColRadius
 	local dy = FirePosition * (self:GetNWBool "lefthand" and -1 or 1)
 	local dp = -Vector(0, dy, FirePosition) dp:Rotate(ang)
-	local t = ss.SquidTrace
+	local t = {}
 	t.start, t.endpos = shootpos, shootpos + aim
 	t.mins, t.maxs = -col, col
-	t.filter = {self, self:GetOwner()}
-	for _, e in pairs(ents.FindAlongRay(t.start, t.endpos, t.mins * 5, t.maxs * 5)) do
-		local w = ss.IsValidInkling(e)
-		if w and ss.IsAlly(w, self) then
-			t.filter = {self, self:GetOwner(), e, w}
-		end
-	end
+	t.filter = ss.MakeAllyFilter(self:GetOwner())
+	t.mask = ss.SquidSolidMask
+	t.collisiongroup = COLLISION_GROUP_NONE
 
 	local tr = util.TraceLine(t)
 	local trhull = util.TraceHull(t)

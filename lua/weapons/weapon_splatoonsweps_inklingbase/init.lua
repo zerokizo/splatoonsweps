@@ -289,7 +289,10 @@ end
 function SWEP:OnDrop()
 	self:SetOwner(self.SafeOwner)
 	self.PMTable = nil
-	self:RestoreInfo()
+	if self:GetOwner():GetActiveWeapon() == self then
+		self:RestoreInfo()
+	end
+	
 	ss.ProtectedCall(self.ServerHolster, self)
 	self:SharedHolsterBase()
 	self:CreateRagdoll()

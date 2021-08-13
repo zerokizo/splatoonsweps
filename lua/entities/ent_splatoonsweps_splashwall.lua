@@ -5,6 +5,7 @@ AddCSLuaFile()
 
 ENT.AutomaticFrameAdvance = true
 ENT.Base = "ent_splatoonsweps_throwable"
+ENT.CollisionGroup = COLLISION_GROUP_NONE
 ENT.Model = Model "models/splatoonsweps/subs/splashwall/splashwall.mdl"
 ENT.SubWeaponName = "splashwall"
 ENT.IsFirstTimeContact = true
@@ -176,30 +177,38 @@ function ENT:Think()
 end
 
 function ENT:PhysicsCollide(data, collider)
-    if data.HitEntity.SubWeaponName then
-        SafeRemoveEntity(data.HitEntity)
-        if isfunction(data.HitEntity.Detonate) then
-            data.HitEntity:Detonate()
+    if self:IsStuck() then
+        if data.HitEntity.SubWeaponName then
+            if data.HitEntity.SubWeaponName == "splashwall" then
+                if not data.HitEntity:IsStuck() then
+                    SafeRemoveEntity(data.HitEntity)
+                end
+            else
+                SafeRemoveEntity(data.HitEntity)
+                if isfunction(data.HitEntity.Detonate) then
+                    data.HitEntity:Detonate()
+                end
+            end
+        elseif not data.HitEntity:IsWorld() then
+            local d = DamageInfo()
+            local dt = bit.bor(DMG_AIRBOAT, DMG_REMOVENORAGDOLL, DMG_BURN, DMG_BLAST)
+            if not data.HitEntity:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
+            d:SetDamage(self.Parameters.mDamage)
+            d:SetDamageForce(-data.HitNormal)
+            d:SetDamagePosition(data.HitPos)
+            d:SetDamageType(dt)
+            d:SetReportedPosition(data.HitPos)
+            d:SetAttacker(self.Owner)
+            d:SetInflictor(self)
+            d:ScaleDamage(ss.ToHammerHealth)
+            data.HitEntity:TakeDamageInfo(d)
+            if data.HitEntity:GetClass() == "npc_grenade_frag" then
+                data.HitEntity:Fire("SetTimer", 0)
+            end
         end
-    elseif not data.HitEntity:IsWorld() then
-        local d = DamageInfo()
-        local dt = bit.bor(DMG_AIRBOAT, DMG_REMOVENORAGDOLL, DMG_BURN, DMG_BLAST)
-        if not data.HitEntity:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
-        d:SetDamage(self.Parameters.mDamage)
-        d:SetDamageForce(-data.HitNormal)
-        d:SetDamagePosition(data.HitPos)
-        d:SetDamageType(dt)
-        d:SetReportedPosition(data.HitPos)
-        d:SetAttacker(self.Owner)
-        d:SetInflictor(self)
-        d:ScaleDamage(ss.ToHammerHealth)
-        data.HitEntity:TakeDamageInfo(d)
-        if data.HitEntity:GetClass() == "npc_grenade_frag" then
-            data.HitEntity:Fire("SetTimer", 0)
-        end
-    end
 
-    if self:IsStuck() then return end
+        return
+    end
 
     if -data.HitNormal.z < 0.7 then
         local v = Vector(data.OurOldVelocity)
