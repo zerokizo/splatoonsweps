@@ -79,8 +79,8 @@ If you test it in multiplayer game, all players must have the assets.
 
 You need the following to work it correctly.
 * Team Fortress 2
-* [Splatoon Full Weapons Pack][3]
 * [Enhanced Inklings][4]
+* ~~[Splatoon Full Weapons Pack][3]~~ Now you don't need this!  
 
 Playermodels are optional, but I recommend to install them, too.
 * [Inkling Playermodels][5]
