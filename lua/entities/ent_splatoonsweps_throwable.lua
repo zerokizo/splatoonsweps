@@ -4,7 +4,7 @@ if not ss then return end
 AddCSLuaFile()
 
 ENT.CollisionGroup = COLLISION_GROUP_PASSABLE_DOOR
-ENT.Model = Model "models/splatoonsweps/subs/splat_bomb/splat_bomb.mdl"
+ENT.Model = Model "models/splatoonsweps/subs/splatbomb/splatbomb.mdl"
 ENT.Type = "anim"
 ENT.UseSubWeaponFilter = true
 ENT.WeaponClassName = ""

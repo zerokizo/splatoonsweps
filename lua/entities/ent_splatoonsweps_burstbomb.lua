@@ -6,7 +6,7 @@ AddCSLuaFile()
 ENT.Base = "ent_splatoonsweps_throwable"
 ENT.CollisionGroup = COLLISION_GROUP_PROJECTILE
 ENT.IsSplatoonBomb = true
-ENT.Model = Model "models/props_splatoon/weapons/subs/burst_bombs/burst_bomb.mdl"
+ENT.Model = Model "models/splatoonsweps/subs/burstbomb/burstbomb.mdl"
 ENT.SubWeaponName = "burstbomb"
 
 function ENT:Initialize()
@@ -20,7 +20,9 @@ function ENT:Initialize()
     while base.ClassName ~= "ent_splatoonsweps_throwable" do base = base.BaseClass end
     base.Initialize(self)
     if CLIENT then return end
-    self:GetPhysicsObject():SetMass(0.001)
+    local p = self:GetPhysicsObject()
+    if not IsValid(p) then return end
+    p:SetMass(0.001)
 end
 
 if CLIENT then return end

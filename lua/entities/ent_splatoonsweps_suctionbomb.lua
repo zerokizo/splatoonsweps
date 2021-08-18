@@ -7,7 +7,7 @@ ENT.Base = "ent_splatoonsweps_splatbomb"
 ENT.ExplosionOffset = 10
 ENT.HitSound = "SplatoonSWEPs.SuctionBomb"
 ENT.IsSplatoonBomb = true
-ENT.Model = Model "models/splatoonsweps/subs/suction_bomb/suction_bomb.mdl"
+ENT.Model = Model "models/splatoonsweps/subs/suctionbomb/suctionbomb.mdl"
 ENT.SubWeaponName = "suctionbomb"
 
 if CLIENT then

@@ -4,7 +4,7 @@ if not ss then return end
 AddCSLuaFile()
 
 ENT.Base = "ent_splatoonsweps_burstbomb"
-ENT.Model = Model "models/props_splatoon/weapons/subs/disruptor/disruptor.mdl"
+ENT.Model = Model "models/splatoonsweps/subs/disruptor/disruptor.mdl"
 ENT.SubWeaponName = "disruptor"
 
 if CLIENT then return end
