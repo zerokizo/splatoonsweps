@@ -1,24 +1,28 @@
 # SplatoonSWEPs
+
 This is a huge rework of my existing addon, [SplatoonSWEPs][1].  
-If you are interested in this project, watch this the following video for a brief introduction. 
+If you are interested in this project, watch this the following video for a brief introduction.  
 [![Youtube](https://img.youtube.com/vi/2ca3UeLlCZs/0.jpg)](https://www.youtube.com/watch?v=2ca3UeLlCZs)
 
 The aim of this rework is the following:
+
 * Working fine on multiplayer game (especially on dedicated servers)
 * More flesh than before! (not just throwing props)
 * Various options with better UI
-    * Drawing crosshair
-    * Left hand mode
-    * Realistic scope for scoped chargers
-    * DOOM-style viewmodel
-    * Aim down sight
-    * And so on...
+  * Drawing crosshair
+  * Left hand mode
+  * Realistic scope for scoped chargers
+  * DOOM-style viewmodel
+  * Aim down sight
+  * And so on...
 
-# Important thing - read before testing
+## Important thing - read before testing
+
 ***
 **I don't intend to let you enjoy the new SWEPs.  Actually I want you to test it to help me fix bugs.**  
 **So, I think something like "The addon isn't working for me" isn't worth reading.**  
 **If you're going to tell me you're in trouble, write at least the following:**  
+
 * [ ] What happened to you? Write the detail.
 * [ ] How to get the same problem? The "step to reproduce" section.
 * [ ] Any errors?  If so, the message in the console.
@@ -30,13 +34,16 @@ They're located in *garrysmod/data/splatoonsweps/mapname.txt* for singleplayer a
 and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
 
 ## Known issues
+
 * Loading some large maps with this SWEPs causes GMOD to crash in 32-bit build.
     You can still load them in 64-bit build so I recommend to switch to it.
 * You may experience major frame drops if your VRAM amount is not enough.
     Make sure to set the ink resolution option (found in where you change playermodel for the SWEPs) correctly.
 
 ***
+
 ## Done
+
 * A new ink system
 * Inkling base system.
     You can become inkling as well.
@@ -45,30 +52,34 @@ and *garrysmod/download/data/splatoonsweps/mapname.txt* for multiplayer.
 * All main weapons in Splatoon (Wii U).
 
 ## Currently working on
+
 * Sub weapons!
-    * [x] Explosive effect for bombs
-    * [x] Guide marker
-    * [x] Explosive sub weapons
-        * [x] Burst Bomb
-        * [x] Ink Mine
-        * [x] Seeker
-        * [x] Splat Bomb
-        * [x] Suction Bomb
-    * [ ] Non-explosive sub weapons
-        * [x] Disruptor
-        * [x] Point Sensor
-        * [x] Sprinkler
-        * [x] Splash Wall
-        * [ ] Squid Beakon
+  * [x] Explosive effect for bombs
+  * [x] Guide marker
+  * [x] Explosive sub weapons
+    * [x] Burst Bomb
+    * [x] Ink Mine
+    * [x] Seeker
+    * [x] Splat Bomb
+    * [x] Suction Bomb
+  * [ ] Non-explosive sub weapons
+    * [x] Disruptor
+    * [x] Point Sensor
+    * [x] Sprinkler
+    * [x] Splash Wall
+    * [ ] Squid Beakon
 
 ## I want to make the following, too
+
 * Special weapons in Splatoon and Splatoon 2
 * Dualies, Brellas and some Splatoon 2 features.
 * Gears and gear abilities
 
 ## How to install this project
+
 Though this is still work in progress, you can download and test it.
 If you test it in multiplayer game, all players must have the assets.
+
 * Click **Clone or download** on the top-right, then **Download ZIP**.
 * Extract the zip into garrysmod/addons/.  
   * Go to Steam -> LIBRARY -> Garry's Mod
@@ -78,11 +89,13 @@ If you test it in multiplayer game, all players must have the assets.
   * Put the extracted folder named **splatoonsweps-master** there.
 
 You need the following to work it correctly.
+
 * Team Fortress 2
 * [Enhanced Inklings][4]
 * ~~[Splatoon Full Weapons Pack][3]~~ Now you don't need this!  
 
 Playermodels are optional, but I recommend to install them, too.
+
 * [Inkling Playermodels][5]
 * [Octoling Playermodels][6]
 * [Callie & Marie Playermodels][7]

@@ -24,7 +24,6 @@ function ENT:PhysicsCollide(data, collider)
     for _, t in ipairs(ents.FindInSphere(self:GetPos(), p.Burst_Radius)) do
         local w = ss.IsValidInkling(t)
         if (t:IsPlayer() or t:IsNPC() or t:IsNextBot()) and not (w and ss.IsAlly(self, w)) then
-            hit = true
             t:EmitSound "SplatoonSWEPs.DisruptorTaken"
             t:SetNWBool("SplatoonSWEPs: IsDisrupted", true)
             t:SetNWFloat("SplatoonSWEPs: DisruptorEndTime", CurTime() + ss.PointSensorDuration)

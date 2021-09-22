@@ -428,8 +428,8 @@ local function ReadFaces()
                 local u1, u2 = verts[4] - verts[1], verts[3] - verts[2]
                 local v1, v2 = verts[2] - verts[1], verts[3] - verts[4]
                 for k, v in ipairs(dispverts) do -- Get the world positions of the displacements
-                    x = (k - 1) % power -- 0 <= x <= power
-                    y = math.floor((k - 1) / power) -- 0 <= y <= power
+                    local x = (k - 1) % power -- 0 <= x <= power
+                    local y = math.floor((k - 1) / power) -- 0 <= y <= power
                     local div1 = v1 * y / (power - 1)
                     local div2 = u1 + v2 * y / (power - 1) - div1
                     v.origin = div1 + div2 * x / (power - 1)
