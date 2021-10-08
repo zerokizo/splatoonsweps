@@ -2,10 +2,10 @@
 AddCSLuaFile()
 local ss = SplatoonSWEPs
 if not ss then return {} end
-ss.inkmine = {
+ss.squidbeakon = {
     Merge = {
         IsSubWeaponThrowable = false,
-        NumInkmines = 0,
+        NumBeakons = 0,
     },
     Parameters = {
         Burst_Damage_Far = 0.3,
@@ -25,10 +25,18 @@ ss.inkmine = {
         Fly_Gravity = 0.16,
         Fly_VelKd = 0.94134,
         InitInkRadius = 10,
-        InkConsume = 0.6,
+        InkConsume = 0.9,
         InkRecoverStop = 0,
-        MaxInkmines = 1,
+        MaxBeakons = 3,
         PlayerColRadius = 30,
+        DeploySoundDelay = 12,
+        RadioPlayInterval = 300,
+        RotationSpeed = 144,
+        RotationDelay = 15,
+        LightEmitInitialDelay = 3,
+        LightEmitInterval = 53,
+        LightEmitTime = 8,
+        LightEmitRestTime = 12,
     },
     Units = {
         Burst_Damage_Far = "hp",
@@ -50,23 +58,24 @@ ss.inkmine = {
         InitInkRadius = "du",
         InkConsume = "ink",
         InkRecoverStop = "f",
-        MaxInkmines = "num",
+        MaxBeakons = "num",
         PlayerColRadius = "du",
+        DeploySoundDelay = "f",
+        RadioPlayInterval = "f",
+        RotationSpeed = "deg",
+        RotationDelay = "f",
+        LightEmitInitialDelay = "f",
+        LightEmitInterval = "f",
+        LightEmitTime = "f",
+        LightEmitRestTime = "f",
     },
     BurstSound = "SplatoonSWEPs.BombExplosion",
-    GetDamage = function(dist, ent)
-        local params = ss.splatbomb.Parameters
-        local rnear = params.Burst_Radius_Near
-        local dnear = params.Burst_Damage_Near
-        local dfar = params.Burst_Damage_Far
-        return dist < rnear and dnear or dfar
-    end,
 }
 
-ss.ConvertUnits(ss.inkmine.Parameters, ss.inkmine.Units)
+ss.ConvertUnits(ss.squidbeakon.Parameters, ss.squidbeakon.Units)
 
-local module = ss.inkmine.Merge
-local p = ss.inkmine.Parameters
+local module = ss.squidbeakon.Merge
+local p = ss.squidbeakon.Parameters
 function module:CanSecondaryAttack()
     return self:GetInk() > p.InkConsume
 end
@@ -78,26 +87,50 @@ end
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
     if not self.Owner:OnGround() then return end
-    if self.NumInkmines >= p.MaxInkmines then return end
+    
+    self.ExistingBeakons = self.ExistingBeakons or {}
+    if self.NumBeakons >= p.MaxBeakons then
+        local beakon = NULL
+        while not IsValid(beakon) and #self.ExistingBeakons > 0 do
+            beakon = ss.tablepop(self.ExistingBeakons)
+        end
+
+        SafeRemoveEntity(beakon)
+    end
+
     local start = self.Owner:GetPos()
     local tracedz = -vector_up * p.CrossPaintRayLength
     local tr = util.QuickTrace(start, tracedz, self.Owner)
     if not tr.Hit then return end
 
     local inkcolor = self:GetNWInt "inkcolor"
-    local e = ents.Create "ent_splatoonsweps_inkmine"
-    local ang = (tr.Hit and tr.HitNormal or vector_up):Angle()
-    ang:RotateAroundAxis(ang:Right(), -90)
+    local e = ents.Create "ent_splatoonsweps_squidbeakon"
+    local ang = Angle()
+    ang.yaw = self.Owner:GetAngles().yaw
     e.Weapon = self
     e:SetOwner(self.Owner)
     e:SetNWInt("inkcolor", inkcolor)
-    e:SetPos(tr.HitPos + tr.HitNormal * 9)
+    e:SetInkColorProxy(self:GetInkColorProxy())
+    e:SetPos(tr.HitPos + tr.HitNormal)
     e:SetAngles(ang)
     e:Spawn()
-    self.NumInkmines = self.NumInkmines + 1
+    
+    self.NumBeakons = self.NumBeakons + 1
+    table.insert(self.ExistingBeakons, e)
+
     self:ConsumeInk(p.InkConsume)
     self:SetReloadDelay(p.InkRecoverStop)
 
     ss.Paint(tr.HitPos, tr.HitNormal, p.InitInkRadius,
     inkcolor, ang.yaw, ss.GetDropType(), 1, self.Owner, self:GetClass())
+
+    local p = e:GetPhysicsObject()
+    if not IsValid(p) then return end
+    p:EnableMotion(not tr.Entity:IsWorld())
+
+    e.HitNormal = tr.HitNormal
+    e.ContactEntity = tr.Entity
+    e.ContactPhysObj = tr.Entity:GetPhysicsObject()
+    e.ContactStartTime = CurTime()
+    e:Weld()
 end

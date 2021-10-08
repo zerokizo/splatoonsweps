@@ -72,7 +72,7 @@ sound.Add {
 }
 
 sound.Add {
-    channel = CHAN_WEAPON,
+    channel = CHAN_BODY,
     name = "SplatoonSWEPs.BeakonDeploy",
     level = ss.WeaponSoundLevel,
     sound = "splatoonsweps/weapons/sub/beakon/deploy.mp3",
@@ -83,7 +83,7 @@ sound.Add {
 sound.Add {
     channel = CHAN_WEAPON,
     name = "SplatoonSWEPs.BeakonIdle",
-    level = ss.WeaponSoundLevel,
+    level = 65,
     sound = "splatoonsweps/weapons/sub/beakon/ready.mp3",
     volume = ss.WeaponSoundVolume,
     pitch = 100,
@@ -246,7 +246,7 @@ ss.PrecacheSoundList {
     {
         channel = CHAN_AUTO,
         name = "SplatoonSWEPs.BeakonRadio",
-        level = ss.WeakShotLevel,
+        level = 65,
         sound = "splatoonsweps/weapons/sub/beakon/radio%d.mp3",
         volume = ss.WeaponSoundVolume,
         pitch = 100,

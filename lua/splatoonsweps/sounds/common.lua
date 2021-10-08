@@ -40,7 +40,7 @@ include "sub.lua"
 sound.Add {
 	channel = CHAN_STATIC,
 	name = "SplatoonSWEPs.DealDamage",
-	level = 75,
+	level = 90,
 	sound = "splatoonsweps/player/dealdamagenormal.wav",
 	volume = 1,
 	pitch = 100,
@@ -49,7 +49,7 @@ sound.Add {
 sound.Add {
 	channel = CHAN_STATIC,
 	name = "SplatoonSWEPs.DealDamageCritical",
-	level = 80,
+	level = 100,
 	sound = "splatoonsweps/player/dealdamagecritical.wav",
 	volume = 1,
 	pitch = 100,
