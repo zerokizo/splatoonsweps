@@ -366,15 +366,17 @@ function ss.PostRender(w)
 	ss.RenderingRTScope = ss.sp
 	local alpha = 1 - w:GetScopedProgress(true)
 	local a = vm:GetAttachment(w.RTAttachment)
-	render.PushRenderTarget(w.RTScope)
-	render.RenderView {
-		origin = w.ScopeOrigin or a.Pos, angle = a.Ang,
-		x = 0, y = 0, w = 512, h = 512, aspectratio = 1,
-		fov = w.Parameters.mSniperCameraFovy,
-		drawviewmodel = false,
-	}
-	ss.ProtectedCall(w.HideRTScope, w, alpha)
-	render.PopRenderTarget()
+	if a then
+		render.PushRenderTarget(w.RTScope)
+		render.RenderView {
+			origin = w.ScopeOrigin or a.Pos, angle = a.Ang,
+			x = 0, y = 0, w = 512, h = 512, aspectratio = 1,
+			fov = w.Parameters.mSniperCameraFovy,
+			drawviewmodel = false,
+		}
+		ss.ProtectedCall(w.HideRTScope, w, alpha)
+		render.PopRenderTarget()
+	end
 	ss.RenderingRTScope = nil
 end
 

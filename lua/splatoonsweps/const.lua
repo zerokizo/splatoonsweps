@@ -11,6 +11,8 @@ local Marie = Model "models/drlilrobot/splatoon/ply/marie.mdl"
 local Callie = Model "models/drlilrobot/splatoon/ply/callie.mdl"
 local OctoGirl = Model "models/player/octoling.mdl"
 local OctoBoy = Model "models/player/octoling_male.mdl"
+local Pearl = Model "models/egghead/splatoon_2/pearl_hime_pm.mdl"
+local Marina = Model "models/egghead/splatoon_2/marina_ida_pm.mdl"
 
 ss.sp = game.SinglePlayer()
 ss.mp = not ss.sp
@@ -21,7 +23,7 @@ ss.TEXTUREFLAGS = include "splatoonsweps/constants/textureflags.lua"
 ss.RenderTarget = table.Merge(ss.RenderTarget, include "splatoonsweps/constants/rendertarget.lua")
 ss.InkTankModel = Model "models/props_splatoon/gear/inktank_backpack/inktank_backpack.mdl"
 ss.Units = include "splatoonsweps/constants/parameterunits.lua"
-ss.Playermodel = {nil, InkGirl, InkBoy, Marie, Callie, Octo, OctoGirl, OctoBoy}
+ss.Playermodel = {nil, InkGirl, InkBoy, Marie, Callie, Octo, OctoGirl, OctoBoy, Pearl, Marina}
 ss.PLAYER = {
 	NOCHANGE = 1,
 	GIRL = 2,
@@ -31,6 +33,8 @@ ss.PLAYER = {
 	OCTO = 6,
 	OCTOGIRL = 7,
 	OCTOBOY = 8,
+	PEARL = 9,
+	MARINA = 10,
 }
 
 ss.SQUID = {
@@ -46,13 +50,15 @@ ss.Squidmodel = {
 
 ss.SquidmodelIndex = {
 	[ss.PLAYER.NOCHANGE] = ss.SQUID.INKLING,
-	[ss.PLAYER.GIRL] = ss.SQUID.INKLING,
-	[ss.PLAYER.BOY] = ss.SQUID.INKLING,
-	[ss.PLAYER.MARIE] = ss.SQUID.INKLING,
-	[ss.PLAYER.CALLIE] = ss.SQUID.INKLING,
-	[ss.PLAYER.OCTO] = ss.SQUID.OCTO,
+	[ss.PLAYER.GIRL]     = ss.SQUID.INKLING,
+	[ss.PLAYER.BOY]      = ss.SQUID.INKLING,
+	[ss.PLAYER.MARIE]    = ss.SQUID.INKLING,
+	[ss.PLAYER.CALLIE]   = ss.SQUID.INKLING,
+	[ss.PLAYER.OCTO]     = ss.SQUID.OCTO,
 	[ss.PLAYER.OCTOGIRL] = ss.SQUID.OCTO,
-	[ss.PLAYER.OCTOBOY] = ss.SQUID.OCTO,
+	[ss.PLAYER.OCTOBOY]  = ss.SQUID.OCTO,
+	[ss.PLAYER.PEARL]    = ss.SQUID.INKLING,
+	[ss.PLAYER.MARINA]   = ss.SQUID.OCTO,
 }
 
 ss.ChargingEyeSkin = {
@@ -61,6 +67,8 @@ ss.ChargingEyeSkin = {
 	[InkBoy] = 4,
 	[InkGirl] = 4,
 	[Octo] = 4,
+	[Pearl] = 5,
+	[Marina] = 4,
 }
 ss.DrLilRobotPlayermodels = {
 	[InkGirl] = true,

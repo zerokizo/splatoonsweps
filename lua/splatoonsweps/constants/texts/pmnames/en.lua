@@ -8,4 +8,6 @@ return {PlayermodelNames = {
 	"Octoling",
 	"Octoling Girl",
 	"Octoling Boy",
+	"Pearl",
+	"Marina",
 }}
