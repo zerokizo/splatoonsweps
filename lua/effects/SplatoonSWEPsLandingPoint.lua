@@ -2,7 +2,7 @@
 local ss = SplatoonSWEPs
 if not ss then return end
 
-local TRACE_SIZE = 20
+local TRACE_SIZE = 15
 local mat = Material "splatoonsweps/crosshair/landing_point"
 local mdl = Model "models/hunter/misc/sphere075x075.mdl"
 local p = ss.splatbomb.Parameters
@@ -93,7 +93,7 @@ function EFFECT:Think()
         count = count + 1
         self.Positions[#self.Positions + 1] = trace.HitPos
         self.Normal = trace.HitNormal
-    until trace.Hit
+    until count > 1 and trace.Hit
 
     self.Positions[#self.Positions + 1] = self.Positions[#self.Positions]
     + velocity * dt - self.Normal * TRACE_SIZE
