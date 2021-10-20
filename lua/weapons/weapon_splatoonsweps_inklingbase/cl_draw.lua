@@ -171,35 +171,6 @@ function SWEP:CreateModels(t)
 	end
 end
 
-function SWEP:MakeSquidModel(id)
-	self.SquidModelNumber = ss.SquidmodelIndex[self:GetNWInt "playermodel"] or ss.SQUID.INKLING
-	local modelpath = ss.Squidmodel[self.SquidModelNumber] -- Octopus or squid?
-	if IsValid(self.Squid) then self.Squid:Remove() end
-	if file.Exists(modelpath, "GAME") then
-		self.Squid = ClientsideModel(modelpath, RENDERGROUP_BOTH)
-		if IsValid(self.Squid) then
-			self.Squid:SetPos(self:GetPos())
-			self.Squid:SetAngles(self:GetAngles())
-			self.Squid:SetNoDraw(true)
-			self.Squid:DrawShadow(true)
-			self.Squid.GetInkColorProxy = function()
-				if IsValid(self) then
-					return self:GetInkColorProxy()
-				else
-					return ss.vector_one
-				end
-			end
-		else
-			self.Squid = nil
-		end
-	elseif not self.ErrorSquidModel then
-		self.ErrorSquidModel = true
-		if self:GetNWBool "becomesquid" then
-			self:PopupError "WeaponSquidModelNotFound"
-		end
-	end
-end
-
 function SWEP:PreDrawViewModel(vm, weapon, ply)
 	ss.ProtectedCall(self.PreViewModelDrawn, self, vm, weapon, ply)
 	vm:SetupBones()
@@ -287,38 +258,9 @@ function SWEP:ViewModelDrawn(vm)
 end
 
 function SWEP:DrawWorldModel()
-	if IsValid(self:GetOwner()) then
-		if self:GetHolstering() then return end
-		if self:Crouching() then
-			if self:GetInInk() then
-				return
-			elseif self:GetNWBool "becomesquid" and IsValid(self.Squid) then
-				-- It seems changing eye position doesn't work.
-				self.Squid:SetEyeTarget(self.Squid:GetPos() + self.Squid:GetUp() * 100)
-				-- Move clientside model to player's position.
-				local v = self:GetOwner():GetVelocity()
-				local a = v:Angle()
-				if v:LengthSqr() < 16 then -- Speed limit
-					a.p = 0
-				elseif a.p > 45 and a.p <= 90 then -- Angle limit: up and down
-					a.p = 45
-				elseif a.p >= 270 and a.p < 300 then
-					a.p = 300
-				else
-					a.r = a.p
-				end
-				a.p, a.y, a.r = a.p - 90, self:GetAimVector():Angle().yaw, 180
-				self.Squid:SetAngles(a)
-				self.Squid:SetPos(self:GetOwner():GetPos())
-				self.Squid:DrawModel()
-				self.Squid:DrawShadow(true)
-				self.Squid:CreateShadow()
-
-				return
-			end
-		end
-	end
-
+	if self:GetHolstering() then return end
+	if self:ShouldDrawSquid() then return end
+	if self:GetInInk() then return end
 	if ss.ProtectedCall(self.PreDrawWorldModel, self) then return end
 	if not self:IsCarriedByLocalPlayer() then self:Think() end
 	if self:GetThrowing() and CurTime() > self:GetNextSecondaryFire() then
@@ -332,8 +274,8 @@ end
 function SWEP:DrawWorldModelTranslucent()
 	if IsValid(self:GetOwner()) and self:GetHolstering() then return end
 	if ss.ProtectedCall(self.PreDrawWorldModelTranslucent, self) then return end
-	if IsValid(self:GetOwner()) and self:Crouching() and (self:GetInInk()
-	or self:GetNWBool "becomesquid" and IsValid(self.Squid)) then return end
+	if self:ShouldDrawSquid() then return end
+	if self:GetInInk() then return end
 
 	local cameradistance = 1
 	local bone_ent = self:GetOwner()
@@ -530,4 +472,12 @@ end
 
 function SWEP:GetCameraFade()
 	return math.Clamp(self:GetPos():DistToSqr(EyePos()) / ss.CameraFadeDistance, 0, 1)
+end
+
+function SWEP:ShouldDrawSquid()
+	if not IsValid(self:GetOwner()) then return false end
+	if not self:Crouching() then return false end
+	if not self:GetNWBool "becomesquid" then return false end
+	if not IsValid(self:GetNWEntity "Squid") then return false end
+	return not self:GetInInk()
 end

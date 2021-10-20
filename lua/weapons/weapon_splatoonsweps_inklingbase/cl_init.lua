@@ -149,7 +149,6 @@ function SWEP:OnRemove()
 		if IsValid(v.modelEnt) then v.modelEnt:Remove() end
 	end
 
-	if IsValid(self.Squid) then self.Squid:Remove() end
 	self:StopLoopSound()
 	self:EndRecording()
 	ss.ProtectedCall(self.ClientOnRemove, self)
@@ -167,20 +166,6 @@ function SWEP:Think()
 			end
 		end
 		self.EnoughSubWeapon = enough
-	end
-
-	if IsValid(self.Squid) then
-		if ss.SquidmodelIndex[self:GetNWInt "playermodel"] == ss.SQUID.OCTO then
-			if self.SquidModelNumber ~= ss.SQUID.OCTO then
-				self.Squid:SetModel(ss.Squidmodel[ss.SQUID.OCTO])
-				self.SquidModelNumber = ss.SQUID.OCTO
-			end
-		elseif self.SquidModelNumber ~= ss.SQUID.INKLING then
-			self.Squid:SetModel(ss.Squidmodel[ss.SQUID.INKLING])
-			self.SquidModelNumber = ss.SQUID.INKLING
-		end
-	else
-		self:MakeSquidModel()
 	end
 
 	self:ProcessSchedules()

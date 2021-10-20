@@ -80,3 +80,18 @@ end
 function SWEP:FireAnimationEvent(pos, ang, event, options)
 	return ss.FireAnimationEvent(self, pos, ang, event, options)
 end
+
+function SWEP:MakeSquidModel(id)
+	if CLIENT then return end
+	local squid = self:GetNWEntity "Squid"
+	if IsValid(squid) then squid:Remove() end
+	self:SetNWEntity("Squid", ents.Create "ent_splatoonsweps_squid")
+	if not IsValid(self:GetNWEntity "Squid") then return end
+	local squid = self:GetNWEntity "Squid"
+	squid:SetPos(self:GetOwner():GetPos())
+	squid:SetAngles(self:GetOwner():GetAngles())
+	squid:SetNWEntity("Owner", self:GetOwner())
+	squid:SetNWEntity("Weapon", self)
+	squid:SetParent(self)
+	squid:Spawn()
+end

@@ -25,6 +25,7 @@ SplatoonSWEPs = SplatoonSWEPs or {
 include "splatoonsweps/const.lua"
 include "drawui.lua"
 include "inkmanager.lua"
+include "minimap.lua"
 include "network.lua"
 include "splatoonsweps/shared.lua"
 include "userinfo.lua"
@@ -319,7 +320,7 @@ function ss.GetWaterMaterial()
 end
 
 local function ShouldHidePlayer(w, ply)
-	return Either(w:GetNWBool "becomesquid" and IsValid(w.Squid), ply:Crouching(), w:GetInInk())
+	return Either(w:GetNWBool "becomesquid" and IsValid(w:GetNWEntity "Squid"), ply:Crouching(), w:GetInInk())
 end
 
 local function ShouldChangePlayerAlpha(w, ply)

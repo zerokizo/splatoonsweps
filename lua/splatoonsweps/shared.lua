@@ -488,6 +488,13 @@ function ss.KeyPress(self, ply, key)
 	end
 	
 	ss.ProtectedCall(self.KeyPress, self, ply, key)
+	if CLIENT and key == IN_SPEED then ss.OpenMiniMap() end
+
+	local squid = self:GetNWEntity "Squid"
+	if key == IN_JUMP and ply:OnGround() and IsValid(squid)
+	and squid:LookupSequence "jump_start" >= 0 then
+		squid:SetSequence "jump_start"
+	end
 end
 
 function ss.KeyRelease(self, ply, key)

@@ -298,6 +298,7 @@ function SWEP:SharedDeployBase()
 	self:SetCooldown(CurTime())
 	self:StartRecording()
 	self:SetKey(0)
+	self:MakeSquidModel()
 	self.KeyPressedOrder = {}
 	self.InklingSpeed = self:GetInklingSpeed()
 	self.SquidSpeed = self:GetSquidSpeed()
