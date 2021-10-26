@@ -32,30 +32,27 @@ function ENT:Update()
     if not IsValid(owner) then return end
     if not IsValid(weapon) then return end
 
-    -- TODO: Export animations for Octoling
-    if self:GetNWInt "SquidModelNumber" == ss.SQUID.INKLING then
-        local seq = self:GetSequence()
-        local SequenceName = self:GetSequenceName(seq)
-        local WasOnGround = self.WasOnGround
-        local SquidLoopSequences = {
-            [self:LookupSequence "idle"] = "idle",
-            [self:LookupSequence "walk"] = "walk",
-            [self:LookupSequence "jump"] = "jump",
-        }
+    local seq = self:GetSequence()
+    local SequenceName = self:GetSequenceName(seq)
+    local WasOnGround = self.WasOnGround
+    local SquidLoopSequences = {
+        [self:LookupSequence "idle"] = "idle",
+        [self:LookupSequence "walk"] = "walk",
+        [self:LookupSequence "jump"] = "jump",
+    }
 
-        self.WasOnGround = owner:OnGround()
-        if SquidLoopSequences[seq] or self:IsSequenceFinished() then
-            if owner:OnGround() then
-                if owner:KeyDown(MoveKeys) then
-                    self:SetSequence "walk"
-                elseif not WasOnGround then
-                    self:SetSequence "jump_end"
-                else
-                    self:SetSequence "idle"
-                end
+    self.WasOnGround = owner:OnGround()
+    if SquidLoopSequences[seq] or self:IsSequenceFinished() then
+        if owner:OnGround() then
+            if owner:KeyDown(MoveKeys) then
+                self:SetSequence "walk"
+            elseif not WasOnGround then
+                self:SetSequence "jump_end"
             else
-                self:SetSequence "jump"
+                self:SetSequence "idle"
             end
+        else
+            self:SetSequence "jump"
         end
     end
 
@@ -90,14 +87,9 @@ function ENT:CalcAbsolutePosition(_pos, _ang)
         a.p = 300
     end
     
-    -- TODO: Make consistent rotation adjustment between squid and octopus
-    local issquid = self:GetNWInt "SquidModelNumber" == ss.SQUID.INKLING
-    local sign = issquid and 1 or -1
-    local dy = issquid and 0 or 180
-    local dz = vector_up * (issquid and -3 or 0)
-    a.p = (a.p + 90) * sign
-    a.y = yaw + dy
-    a.r = 0
+    a.p = a.p - 90
+    a.y = yaw
+    a.r = 180
     
     if owner:OnGround() then
         local t = util.QuickTrace(
@@ -114,7 +106,7 @@ function ENT:CalcAbsolutePosition(_pos, _ang)
         end
     end
     
-    return pos + dz, a
+    return pos + vector_up * 3, a
 end
 
 function ENT:ShouldDraw()

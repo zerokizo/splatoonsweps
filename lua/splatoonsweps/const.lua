@@ -45,7 +45,7 @@ ss.SQUID = {
 ss.Squidmodel = {
 	[ss.SQUID.INKLING] = Model "models/splatoonsweps/squids/squid.mdl",
 	[ss.SQUID.KRAKEN] = Model "models/props_splatoon/squids/kraken_beta.mdl",
-	[ss.SQUID.OCTO] = Model "models/props_splatoon/squids/octopus_beta.mdl",
+	[ss.SQUID.OCTO] = Model "models/splatoonsweps/squids/octopus.mdl",
 }
 
 ss.SquidmodelIndex = {
