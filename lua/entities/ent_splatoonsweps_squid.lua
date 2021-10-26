@@ -6,17 +6,6 @@ AddCSLuaFile()
 ENT.AutomaticFrameAdvance = true
 ENT.Type = "anim"
 
-function ENT:Initialize()
-	self:SetNWInt("SquidModelNumber", ss.SquidmodelIndex[self:GetNWInt "playermodel"] or ss.SQUID.INKLING)
-    local modelpath = ss.Squidmodel[self:GetNWInt "SquidModelNumber"]
-
-    self:SetModel(modelpath)
-    if self:LookupSequence "idle" >= 0 then self:ResetSequence "idle" end
-    if not file.Exists(modelpath, "GAME") then
-		self:GetNWEntity "Weapon":GetOwner():SendLua "self:PopupError 'WeaponSquidModelNotFound'"
-    end
-end
-
 function ENT:GetInkColorProxy()
     if IsValid(self:GetNWEntity "Weapon") then
         return self:GetNWEntity "Weapon":GetInkColorProxy()
@@ -56,14 +45,14 @@ function ENT:Update()
         end
     end
 
-    if ss.SquidmodelIndex[weapon:GetNWInt "playermodel"] == ss.SQUID.OCTO then
-        if self:GetNWInt "SquidModelNumber" ~= ss.SQUID.OCTO then
-            self:SetModel(ss.Squidmodel[ss.SQUID.OCTO])
-            self:SetNWInt("SquidModelNumber", ss.SQUID.OCTO)
+    for k, v in pairs(ss.SQUID) do
+        if k ~= "KRAKEN" then
+            if ss.SquidmodelIndex[weapon:GetNWInt "playermodel"] == v then
+                if self:GetModel() ~= ss.Squidmodel[v] then
+                    self:SetModel(ss.Squidmodel[v])
+                end
+            end
         end
-    elseif self:GetNWInt "SquidModelNumber" ~= ss.SQUID.INKLING then
-        self:SetModel(ss.Squidmodel[ss.SQUID.INKLING])
-        self:SetNWInt("SquidModelNumber", ss.SQUID.INKLING)
     end
 end
 
@@ -133,6 +122,23 @@ if CLIENT then
     end
 
     return
+end
+
+function ENT:Initialize()
+    local weapon = self:GetNWEntity "Weapon"
+    if not IsValid(weapon) then
+        SafeRemoveEntity(self)
+        return
+    end
+
+	local index = ss.SquidmodelIndex[weapon:GetNWInt "playermodel"] or ss.SQUID.INKLING
+    local modelpath = ss.Squidmodel[index]
+
+    self:SetModel(modelpath)
+    if self:LookupSequence "idle" >= 0 then self:ResetSequence "idle" end
+    if not file.Exists(modelpath, "GAME") and IsValid(weapon:GetOwner()) then
+        weapon:GetOwner():SendLua "self:PopupError 'WeaponSquidModelNotFound'"
+    end
 end
 
 function ENT:Think()

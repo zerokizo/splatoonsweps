@@ -41,11 +41,13 @@ ss.SQUID = {
 	INKLING = 1,
 	KRAKEN = 2,
 	OCTO = 3,
+	OCTO2 = 4,
 }
 ss.Squidmodel = {
 	[ss.SQUID.INKLING] = Model "models/splatoonsweps/squids/squid.mdl",
 	[ss.SQUID.KRAKEN] = Model "models/props_splatoon/squids/kraken_beta.mdl",
 	[ss.SQUID.OCTO] = Model "models/splatoonsweps/squids/octopus.mdl",
+	[ss.SQUID.OCTO2] = Model "models/splatoonsweps/squids/octopus2.mdl",
 }
 
 ss.SquidmodelIndex = {
@@ -55,10 +57,10 @@ ss.SquidmodelIndex = {
 	[ss.PLAYER.MARIE]    = ss.SQUID.INKLING,
 	[ss.PLAYER.CALLIE]   = ss.SQUID.INKLING,
 	[ss.PLAYER.OCTO]     = ss.SQUID.OCTO,
-	[ss.PLAYER.OCTOGIRL] = ss.SQUID.OCTO,
-	[ss.PLAYER.OCTOBOY]  = ss.SQUID.OCTO,
+	[ss.PLAYER.OCTOGIRL] = ss.SQUID.OCTO2,
+	[ss.PLAYER.OCTOBOY]  = ss.SQUID.OCTO2,
 	[ss.PLAYER.PEARL]    = ss.SQUID.INKLING,
-	[ss.PLAYER.MARINA]   = ss.SQUID.OCTO,
+	[ss.PLAYER.MARINA]   = ss.SQUID.OCTO2,
 }
 
 ss.ChargingEyeSkin = {
