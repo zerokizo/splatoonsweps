@@ -102,6 +102,7 @@ function ENT:ShouldDraw()
     local weapon = self:GetNWEntity "Weapon"
     if not IsValid(weapon) then return false end
     if not weapon:IsTPS() then return false end
+    if weapon:GetOwner():GetActiveWeapon() ~= weapon then return false end
     return weapon:ShouldDrawSquid()
 end
 
