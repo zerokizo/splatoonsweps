@@ -81,6 +81,7 @@ local function DoRunover(self, t, mv)
 		keys[v] = true
 		if self.RunoverExclusion[v] then return end
 		if v:Health() == 0 then return end
+		if CLIENT and v:GetClass():lower():find "clientside" then return end
 		
 		local effectpos = center + dir * dir:Dot(v:GetPos() - center)
 		if self:IsMine() then
