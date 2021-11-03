@@ -101,6 +101,10 @@ Playermodels are optional, but I recommend to install them, too.
 * [Callie & Marie Playermodels][7]
 * [Splatoon 2 - Octolings [PM/RAG/VOX]][8]
 
+Using an external addon for third person view is also recommended.
+
+* [View Extension [ Thirdperson & Firstperson ]][9]
+
 [1]:https://steamcommunity.com/sharedfiles/filedetails/?id=746789974
 [2]:https://steamcommunity.com/workshop/filedetails/?id=688236142
 [3]:https://steamcommunity.com/sharedfiles/filedetails/?id=688236142
@@ -109,3 +113,4 @@ Playermodels are optional, but I recommend to install them, too.
 [6]:https://steamcommunity.com/sharedfiles/filedetails/?id=478059724
 [7]:https://steamcommunity.com/sharedfiles/filedetails/?id=476149543
 [8]:https://steamcommunity.com/sharedfiles/filedetails/?id=1544841933
+[9]:https://steamcommunity.com/sharedfiles/filedetails/?id=2589006389
