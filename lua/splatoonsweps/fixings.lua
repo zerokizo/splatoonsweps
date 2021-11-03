@@ -60,3 +60,26 @@ if isfunction(FindMetaTable "Player".SplatoonOffsets) then
         end
     end)
 end
+
+-- View Extension disables FOV changes so "fix" it
+if CLIENT and hook.GetTable().CalcView["ViewExtension:CalcView"] then
+    ss.ViewExtensionCalcView = ss.ViewExtensionCalcView or hook.GetTable().CalcView["ViewExtension:CalcView"]
+    hook.Remove("CalcView", "ViewExtension:CalcView")
+    hook.Add("CalcView", "ViewExtension:CalcView", function( ply, org, ang, fov, zn, zf)
+        local w = ss.IsValidInkling(ply)
+        local t = ss.ViewExtensionCalcView(ply, org, ang, fov, zn, zf)
+        if not t then return end
+        if not w then return t end
+
+        -- This is really ugly, but I have to because
+        -- Player:ShouldDrawLocalPlayer() returns false at here for some reason
+        local mt = FindMetaTable "Player"
+        local g = mt.ShouldDrawLocalPlayer
+        function mt:ShouldDrawLocalPlayer() return t.drawviewer end
+
+        local p, a, f = w:CalcView(ply, Vector(t.origin), Angle(t.angles), t.fov)
+        mt.ShouldDrawLocalPlayer = g -- Then restore it
+        t.origin, t.angles, t.fov = p, a, f
+        return t
+    end)
+end
