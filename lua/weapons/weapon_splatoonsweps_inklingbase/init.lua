@@ -103,7 +103,7 @@ function SWEP:GetNPCBurstSettings()
 	return min or 3, max or 8, delay or self.NPCDelay
 end
 
-function SWEP:GetNPCRestTime()
+function SWEP:GetNPCRestTimes()
 	local min, max = ss.ProtectedCall(self.NPCRestTime, self)
 	return min or self.NPCDelay, max or self.NPCDelay * 3
 end
@@ -211,6 +211,7 @@ function SWEP:Equip(newowner)
 		self:SetSaveValue("m_fMinRange2", 0)
 		self:SetSaveValue("m_fMaxRange1", self.Range)
 		self:SetSaveValue("m_fMaxRange2", self.Range)
+		print(self.Range)
 		self:Deploy()
 		local think = "SplatoonSWEPs: NPC Think function" .. self:EntIndex()
 		timer.Create(think, 0, 0, function()

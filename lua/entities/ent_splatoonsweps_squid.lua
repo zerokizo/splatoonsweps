@@ -20,6 +20,7 @@ function ENT:Update()
     local weapon = self:GetNWEntity "Weapon"
     if not IsValid(owner) then return end
     if not IsValid(weapon) then return end
+    if not owner:IsPlayer() then return end
 
     local seq = self:GetSequence()
     local SequenceName = self:GetSequenceName(seq)
@@ -101,6 +102,7 @@ end
 function ENT:ShouldDraw()
     local weapon = self:GetNWEntity "Weapon"
     if not IsValid(weapon) then return false end
+    if not IsValid(weapon:GetOwner()) then return false end
     if not weapon:IsTPS() then return false end
     if weapon:GetOwner():GetActiveWeapon() ~= weapon then return false end
     return weapon:ShouldDrawSquid()

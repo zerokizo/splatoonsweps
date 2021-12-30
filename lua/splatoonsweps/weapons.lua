@@ -385,7 +385,7 @@ function ss.CustomPrimary.weapon_splatoonsweps_roller(weapon)
 	weapon.Primary.Automatic = false
 	weapon.NPCDelay = p.mSwingLiftFrame
 	weapon.Range = ss.GetRange(p.mSplashInitSpeedBase,
-	p.mSplashStraightFrame, p.mSplashStraightFrame, ss.RollerAirResist)
+	p.mSplashStraightFrame, p.mSplashStraightFrame * 1.5, ss.RollerAirResist)
 end
 
 function ss.DefaultParams.weapon_splatoonsweps_slosher_base(weapon)
