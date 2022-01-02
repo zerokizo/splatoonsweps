@@ -21,7 +21,7 @@ local weaponslot = {
 local function SetupIcons(SWEP)
 	if SERVER then return end
 	local icon = "entities/" .. SWEP.ClassName
-	if not file.Exists(("materials/%s.vmt"):format(icon), "GAME") then
+	if not file.Exists(string.format("materials/%s.vmt", icon), "GAME") then
 		icon = "weapons/swep"
 	end
 
@@ -49,7 +49,7 @@ hook.Add("PreGamemodeLoaded", "SplatoonSWEPs: Register weapon classes", function
 		local LuaFolderPath = "weapons/" .. base
 		for i, LuaFilePath in ipairs(file.Find(LuaFolderPath .. "/weapon_*.lua", "LUA")) do
 			local ClassName = "weapon_splatoonsweps_" .. LuaFilePath:StripExtension():sub(8)
-			LuaFilePath = ("%s/%s"):format(LuaFolderPath, LuaFilePath)
+			LuaFilePath = string.format("%s/%s", LuaFolderPath, LuaFilePath)
 
 			if SERVER then AddCSLuaFile(LuaFilePath) end
 			SWEP = {
@@ -75,7 +75,7 @@ hook.Add("PreGamemodeLoaded", "SplatoonSWEPs: Register weapon classes", function
 
 			for _, v in ipairs(SWEP.Variations or {}) do
 				v.ClassName = v.ClassName and "weapon_splatoonsweps_" .. v.ClassName
-				or ("%s_%s"):format(SWEP.ClassName, v.Suffix)
+				or string.format("%s_%s", SWEP.ClassName, v.Suffix)
 
 				local UniqueModelPath = modelpath:format(v.ClassName)
 				v.Base = base

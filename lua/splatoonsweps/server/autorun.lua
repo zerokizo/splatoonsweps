@@ -170,8 +170,8 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
 		ss.SendError(ss.Text.Error.CrashDetected, nil, nil, 15)
 	end
 
-	local path = ("splatoonsweps/%s.txt"):format(game.GetMap())
-	local pathbsp = ("maps/%s.bsp"):format(game.GetMap())
+	local path = string.format("splatoonsweps/%s.txt", game.GetMap())
+	local pathbsp = string.format("maps/%s.bsp", game.GetMap())
 	local data = util.JSONToTable(util.Decompress(file.Read(path) or "") or "") or {}
 	local mapCRC = tonumber(util.CRC(file.Read(pathbsp, true)))
 	if not file.Exists("splatoonsweps", "DATA") then file.CreateDir "splatoonsweps" end

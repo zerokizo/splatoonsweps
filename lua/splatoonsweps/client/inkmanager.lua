@@ -16,7 +16,7 @@ local MAX_QUEUES_TOLERANCE = 5 -- Possible number of queues to be processed at o
 for i = 1, 14 do
 	inkmaterials[i] = {}
 	for j = 1, 4 do
-		inkmaterials[i][j] = Material(("splatoonsweps/inkshot/%d/%d.vmt"):format(i, j))
+		inkmaterials[i][j] = Material(string.format("splatoonsweps/inkshot/%d/%d.vmt", i, j))
 	end
 end
 

@@ -78,7 +78,7 @@ local TextureFilterBits = bit.bor(unpack {
 })
 local SurfaceArray = {}
 local MapName = game.GetMap()
-local BSPFilePath = ("maps/%s.bsp"):format(MapName)
+local BSPFilePath = string.format("maps/%s.bsp", MapName)
 local BSPFile = file.Open(BSPFilePath, "rb", "GAME")
 local BSP = {}
 

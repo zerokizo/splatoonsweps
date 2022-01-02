@@ -49,8 +49,8 @@ function sd.ShowInkChecked(r, s)
         local v2 = ss.To3D(Vector(b1, b4), s.Origin, s.Angles)
         local v3 = ss.To3D(Vector(b3, b4), s.Origin, s.Angles)
         local v4 = ss.To3D(Vector(b3, b2), s.Origin, s.Angles)
-        d.DText(v1, ("(%d, %d)"):format(b1, b2))
-        d.DText(v3, ("(%d, %d)"):format(b3, b4))
+        d.DText(v1, string.format("(%d, %d)", b1, b2))
+        d.DText(v3, string.format("(%d, %d)", b3, b4))
         d.DPoly {v1, v2, v3, v4}
     end
 end

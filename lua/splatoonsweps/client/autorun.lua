@@ -282,8 +282,8 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Clientside initialization", function(
 	file.Delete(crashpath) -- Succeeded to make RTs and remove crash detection
 
 	-- Checking ink map in data/
-	local path = ("splatoonsweps/%s.txt"):format(game.GetMap())
-	local pathbsp = ("maps/%s.bsp"):format(game.GetMap())
+	local path = string.format("splatoonsweps/%s.txt", game.GetMap())
+	local pathbsp = string.format("maps/%s.bsp", game.GetMap())
 	local inkCRCServer = GetGlobalString "SplatoonSWEPs: Ink map CRC"
 	local dataJSON = file.Read(path) or file.Read("data/" .. path, true) or ""
 	local dataTable = util.JSONToTable(util.Decompress(dataJSON))
