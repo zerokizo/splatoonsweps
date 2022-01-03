@@ -40,7 +40,8 @@ end)
 net.Receive("SplatoonSWEPs: Redownload ink data", function(_, ply)
     local data = file.Read(string.format("splatoonsweps/%s.txt", game.GetMap()))
     local startpos = ply.SendData or 1
-    local bps = 65530
+    local header, bool, uint, float = 3, 1, 2, 4
+    local bps = 65536 - header - bool - uint - float
     local chunk = data:sub(startpos, startpos + bps - 1)
     local size = chunk:len()
     local current = math.floor(startpos / bps)

@@ -50,8 +50,11 @@ end, nil, ss.Text.CVars.Clear, FCVAR_SERVER_CAN_EXECUTE)
 -- Clears all ink in the world.
 -- Sends a net message to clear ink on clientside.
 function ss.ClearAllInk()
-    net.Start "SplatoonSWEPs: Send ink cleanup"
-    net.Send(ss.PlayersReady)
+    if player.GetCount() > 0 then
+        net.Start "SplatoonSWEPs: Send ink cleanup"
+        net.Send(ss.PlayersReady)
+    end
+
     table.Empty(ss.InkQueue)
     table.Empty(ss.PaintSchedule)
     if not ss.SurfaceArray then return end -- Workaround for changelevel
