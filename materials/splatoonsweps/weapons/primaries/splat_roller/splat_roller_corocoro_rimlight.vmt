@@ -10,7 +10,7 @@
     "$phongfresnelranges" "[0 0 0]"
     "$halflambert" "0"
 
-    // Rim lighting parameters
+ // Rim lighting parameters
     "$selfillumfresnel" "3"
 
     "$selfillumfresnelminmaxexp" "[0 .5 1]"

@@ -17,9 +17,9 @@
     "$envmap" "env_cubemap"
     "$envmaptint" "[.1 .1 .1]"
 
-    // Rim lighting parameters
-    "$rimlight" "1"                     // To enable rim lighting (requires phong)
-    "$rimlightexponent" "4"                // Exponent for phong component of rim lighting
-    "$rimlightboost" "2"                // Boost for ambient cube component of rim lightin
+ // Rim lighting parameters
+    "$rimlight" "1" // To enable rim lighting (requires phong)
+    "$rimlightexponent" "4" // Exponent for phong component of rim lighting
+    "$rimlightboost" "2" // Boost for ambient cube component of rim lightin
 
 }
