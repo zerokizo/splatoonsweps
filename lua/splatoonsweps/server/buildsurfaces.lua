@@ -648,6 +648,31 @@ local function ReadGameLump()
     end
 end
 
+local function ReadLeafs()
+    local size = 32 -- LEAF Lump structure size
+    local header = BSP.Header[LUMP.LEAFS]
+    local lump = BSP.Data[LUMP.LEAFS]
+    BSPFile:Seek(header.offset)
+    header.num = math.floor(header.length / size) - 1
+    for i = 0, header.num do
+        local leaf = {}
+        leaf.contents = read "Long"
+        leaf.cluster = read "Short"
+        local areaflags = read "UShort"
+        leaf.area = bit.band(areaflags, 0x01FF)
+        leaf.flags = bit.band(bit.rshift(areaflags, 9), 0x007F)
+        leaf.mins = read "ShortVector"
+        leaf.maxs = read "ShortVector"
+        leaf.firstleafface = read "UShort"
+        leaf.numleaffaces = read "UShort"
+        leaf.firstleafbrush = read "UShort"
+        leaf.numleafbrushes = read "UShort"
+        leaf.leafWaterDataID = read "Short"
+        read "Short" -- padding
+        lump[i + 1] = leaf
+    end
+end
+
 util.TimerCycle()
 ReadBSPHeader()
 ReadPlanes()
@@ -657,6 +682,7 @@ ReadSurfEdges()
 ReadTexData()
 ReadTexInfos()
 ReadFaces()
+ReadLeafs()
 ReadGameLump()
 
 local NumDisplacements = 0
@@ -675,6 +701,18 @@ for _, face in ipairs(BSP.Data[LUMP.FACES]) do
         if face.Displacement then
             NumDisplacements = NumDisplacements + 1
         end
+    end
+end
+
+for _, lump in ipairs(BSP.Data[LUMP.LEAFS]) do
+    local area = lump.area
+    if area > 0 then
+        if not ss.MinimapAreaBounds[area] then
+            ss.MinimapAreaBounds[area] = { mins = ss.vector_one * 16384, maxs = ss.vector_one * -16384 }
+        end
+
+        ss.MinimapAreaBounds[area].mins = ss.MinVector(ss.MinimapAreaBounds[area].mins, lump.mins)
+        ss.MinimapAreaBounds[area].maxs = ss.MaxVector(ss.MinimapAreaBounds[area].maxs, lump.maxs)
     end
 end
 

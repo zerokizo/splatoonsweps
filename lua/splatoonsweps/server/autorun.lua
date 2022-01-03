@@ -8,6 +8,7 @@ SplatoonSWEPs = SplatoonSWEPs or {
     AspectSumY = 0,
     CrosshairColors = {},
     LastHitID = {},
+    MinimapAreaBounds = {},
     NoCollide = {},
     NumInkEntities = 0,
     InkColors = {},
@@ -179,6 +180,7 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
         include "splatoonsweps/server/buildsurfaces.lua"
         data.MapCRC = mapCRC
         data.AABBTree = ss.SanitizeJSONLimit(ss.AABBTree)
+        data.MinimapAreaBounds = s.SanitizeJSONLimit(ss.MinimapAreaBounds)
         data.SurfaceArray = ss.SanitizeJSONLimit(ss.SurfaceArray)
         data.UVInfo = {
             AreaBound = ss.AreaBound,
@@ -190,6 +192,7 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
         file.Write(path, util.Compress(util.TableToJSON(data)))
     else
         ss.AABBTree = ss.DesanitizeJSONLimit(data.AABBTree)
+        ss.MinimapAreaBounds = ss.DesanitizeJSONLimit(data.MinimapAreaBounds)
         ss.SurfaceArray = ss.DesanitizeJSONLimit(data.SurfaceArray)
     end
 

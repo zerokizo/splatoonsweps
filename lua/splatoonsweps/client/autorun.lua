@@ -13,6 +13,7 @@ SplatoonSWEPs = SplatoonSWEPs or {
     InkShotMaterials = {},
     InkQueue = {},
     LastHitID = {},
+    MinimapAreaBounds = {},
     Models = {},
     PaintQueue = {},
     PaintSchedule = {},
@@ -51,6 +52,7 @@ local MAX_TRIANGLES = math.floor(32768 / 3) -- mesh library limitation
 local INK_SURFACE_DELTA_NORMAL = .8 -- Distance between map surface and ink mesh
 function ss.PrepareInkSurface(data)
     ss.AABBTree = ss.DesanitizeJSONLimit(data.AABBTree)
+    ss.MinimapAreaBounds = ss.DesanitizeJSONLimit(data.MinimapAreaBounds)
     ss.SurfaceArray = ss.DesanitizeJSONLimit(data.SurfaceArray)
     ss.AreaBound  = data.UVInfo.AreaBound
     ss.AspectSum  = data.UVInfo.AspectSum
