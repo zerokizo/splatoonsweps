@@ -4,9 +4,9 @@
 SplatoonSWEPs = SplatoonSWEPs or {
 	AmbientColor = color_white,
 	AreaBound = 0,
-	AspectSum = 0,				-- Sum of aspect ratios for each surface
-	AspectSumX = 0,				-- Sum of widths for each surface
-	AspectSumY = 0,				-- Sum of heights for each surface
+	AspectSum = 0,  -- Sum of aspect ratios for each surface
+	AspectSumX = 0, -- Sum of widths for each surface
+	AspectSumY = 0, -- Sum of heights for each surface
 	CrosshairColors = {},
 	IMesh = {},
 	InkColors = {},
@@ -50,8 +50,8 @@ local crashpath = "splatoonsweps/crashdump.txt" -- Existing this means the clien
 local MAX_TRIANGLES = math.floor(32768 / 3) -- mesh library limitation
 local INK_SURFACE_DELTA_NORMAL = .8 -- Distance between map surface and ink mesh
 function ss.PrepareInkSurface(data)
-	ss.AABBTree = ss.RestoreJSONLimit(data.AABBTree)
-	ss.SurfaceArray = ss.RestoreJSONLimit(data.SurfaceArray)
+	ss.AABBTree = ss.DesanitizeJSONLimit(data.AABBTree)
+	ss.SurfaceArray = ss.DesanitizeJSONLimit(data.SurfaceArray)
 	ss.AreaBound  = data.UVInfo.AreaBound
 	ss.AspectSum  = data.UVInfo.AspectSum
 	ss.AspectSumX = data.UVInfo.AspectSumX

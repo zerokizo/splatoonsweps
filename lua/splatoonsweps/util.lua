@@ -79,7 +79,7 @@ end
 --   table source | A table containing a large amount of data.
 -- Returning:
 --   table        | A nested table.  Each element has up to 15000 data.
-function ss.AvoidJSONLimit(source)
+function ss.SanitizeJSONLimit(source)
 	local s = {}
 	for chunk = 1, math.ceil(#source / 15000) do
 		local t = {}
@@ -95,12 +95,12 @@ function ss.AvoidJSONLimit(source)
 	return s
 end
 
--- Restores a table saved with ss.AvoidJSONLimit().
+-- Restores a table saved with ss.SanitizeJSONLimit().
 -- Argument:
---   table source | A nested table made by ss.AvoidJSONLimit().
+--   table source | A nested table made by ss.SanitizeJSONLimit().
 -- Returning:
 --   table        | A sequential table.
-function ss.RestoreJSONLimit(source)
+function ss.DesanitizeJSONLimit(source)
 	local s = {}
 	for _, chunk in ipairs(source) do
 		for _, v in ipairs(chunk) do s[#s + 1] = v end
@@ -181,7 +181,11 @@ end
 -- Returning:
 --   bool			| The given vector is in world or not.
 function ss.IsInWorld(pos)
-	return math.abs(pos.x) < 16384 and math.abs(pos.y) < 16384 and math.abs(pos.z) < 16384
+	return not util.TraceLine {
+		start = pos,
+		endpos = pos,
+		collisiongroup = COLLISION_GROUP_WORLD,
+	}.HitWorld
 end
 
 -- For Charger's interpolation.

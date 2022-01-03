@@ -178,8 +178,8 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
 	if data.MapCRC ~= mapCRC then
 		include "splatoonsweps/server/buildsurfaces.lua"
 		data.MapCRC = mapCRC
-		data.AABBTree = ss.AvoidJSONLimit(ss.AABBTree)
-		data.SurfaceArray = ss.AvoidJSONLimit(ss.SurfaceArray)
+		data.AABBTree = ss.SanitizeJSONLimit(ss.AABBTree)
+		data.SurfaceArray = ss.SanitizeJSONLimit(ss.SurfaceArray)
 		data.UVInfo = {
 			AreaBound = ss.AreaBound,
 			AspectSum = ss.AspectSum,
@@ -189,8 +189,8 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
 
 		file.Write(path, util.Compress(util.TableToJSON(data)))
 	else
-		ss.AABBTree = ss.RestoreJSONLimit(data.AABBTree)
-		ss.SurfaceArray = ss.RestoreJSONLimit(data.SurfaceArray)
+		ss.AABBTree = ss.DesanitizeJSONLimit(data.AABBTree)
+		ss.SurfaceArray = ss.DesanitizeJSONLimit(data.SurfaceArray)
 	end
 
 	-- This is needed due to a really annoying bug (GitHub/garrysmod-issues #1495)
