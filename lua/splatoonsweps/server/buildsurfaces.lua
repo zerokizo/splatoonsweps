@@ -2,70 +2,70 @@
 local ss = SplatoonSWEPs
 if not ss then return end
 local LUMP = { -- Lump names. most of these are unused in SplatoonSWEPs.
-	ENTITIES						=  0,
-	PLANES							=  1,
-	TEXDATA							=  2,
-	VERTEXES						=  3,
-	VISIBLITY						=  4,
-	NODES							=  5,
-	TEXINFO							=  6,
-	FACES							=  7,
-	LIGHTING						=  8,
-	OCCLUSION						=  9,
-	LEAFS							= 10,
-	FACEIDS							= 11,
-	EDGES							= 12,
-	SURFEDGES						= 13,
-	MODELS							= 14,
-	WORLDLIGHTS						= 15,
-	LEAFFACES						= 16,
-	LEAFBRUSHES						= 17,
-	BRUSHES							= 18,
-	BRUSHSIDES						= 19,
-	AREAS							= 20,
-	AREAPORTALS						= 21,
-	PORTALS							= 22, -- unused in version 20
-	CLUSTERS						= 23, --
-	PORTALVERTS						= 24, --
-	CLUSTERPORTALS					= 25, -- unused in version 20
-	DISPINFO						= 26,
-	ORIGINALFACES					= 27,
-	PHYSDISP						= 28,
-	PHYSCOLLIDE						= 29,
-	VERTNORMALS						= 30,
-	VERTNORMALINDICES				= 31,
-	DISP_LIGHTMAP_ALPHAS			= 32,
-	DISP_VERTS						= 33,
-	DISP_LIGHMAP_SAMPLE_POSITIONS	= 34,
-	GAME_LUMP						= 35,
-	LEAFWATERDATA					= 36,
-	PRIMITIVES						= 37,
-	PRIMVERTS						= 38,
-	PRIMINDICES						= 39,
-	PAKFILE							= 40,
-	CLIPPORTALVERTS					= 41,
-	CUBEMAPS						= 42,
-	TEXDATA_STRING_DATA				= 43,
-	TEXDATA_STRING_TABLE			= 44,
-	OVERLAYS						= 45,
-	LEAFMINDISTTOWATER				= 46,
-	FACE_MACRO_TEXTURE_INFO			= 47,
-	DISP_TRIS						= 48,
-	PHYSCOLLIDESURFACE				= 49,
-	WATEROVERLAYS					= 50,
-	LIGHTMAPEDGES					= 51,
-	LIGHTMAPPAGEINFOS				= 52,
-	LIGHTING_HDR					= 53, -- only used in version 20+ BSP files
-	WORLDLIGHTS_HDR					= 54, --
-	LEAF_AMBIENT_LIGHTING_HDR		= 55, --
-	LEAF_AMBIENT_LIGHTING			= 56, -- only used in version 20+ BSP files
-	XZIPPAKFILE						= 57,
-	FACES_HDR						= 58,
-	MAP_FLAGS						= 59,
-	OVERLAY_FADES					= 60,
-	OVERLAY_SYSTEM_LEVELS			= 61,
-	PHYSLEVEL						= 62,
-	DISP_MULTIBLEND					= 63,
+    ENTITIES						=  0,
+    PLANES							=  1,
+    TEXDATA							=  2,
+    VERTEXES						=  3,
+    VISIBLITY						=  4,
+    NODES							=  5,
+    TEXINFO							=  6,
+    FACES							=  7,
+    LIGHTING						=  8,
+    OCCLUSION						=  9,
+    LEAFS							= 10,
+    FACEIDS							= 11,
+    EDGES							= 12,
+    SURFEDGES						= 13,
+    MODELS							= 14,
+    WORLDLIGHTS						= 15,
+    LEAFFACES						= 16,
+    LEAFBRUSHES						= 17,
+    BRUSHES							= 18,
+    BRUSHSIDES						= 19,
+    AREAS							= 20,
+    AREAPORTALS						= 21,
+    PORTALS							= 22, -- unused in version 20
+    CLUSTERS						= 23, --
+    PORTALVERTS						= 24, --
+    CLUSTERPORTALS					= 25, -- unused in version 20
+    DISPINFO						= 26,
+    ORIGINALFACES					= 27,
+    PHYSDISP						= 28,
+    PHYSCOLLIDE						= 29,
+    VERTNORMALS						= 30,
+    VERTNORMALINDICES				= 31,
+    DISP_LIGHTMAP_ALPHAS			= 32,
+    DISP_VERTS						= 33,
+    DISP_LIGHMAP_SAMPLE_POSITIONS	= 34,
+    GAME_LUMP						= 35,
+    LEAFWATERDATA					= 36,
+    PRIMITIVES						= 37,
+    PRIMVERTS						= 38,
+    PRIMINDICES						= 39,
+    PAKFILE							= 40,
+    CLIPPORTALVERTS					= 41,
+    CUBEMAPS						= 42,
+    TEXDATA_STRING_DATA				= 43,
+    TEXDATA_STRING_TABLE			= 44,
+    OVERLAYS						= 45,
+    LEAFMINDISTTOWATER				= 46,
+    FACE_MACRO_TEXTURE_INFO			= 47,
+    DISP_TRIS						= 48,
+    PHYSCOLLIDESURFACE				= 49,
+    WATEROVERLAYS					= 50,
+    LIGHTMAPEDGES					= 51,
+    LIGHTMAPPAGEINFOS				= 52,
+    LIGHTING_HDR					= 53, -- only used in version 20+ BSP files
+    WORLDLIGHTS_HDR					= 54, --
+    LEAF_AMBIENT_LIGHTING_HDR		= 55, --
+    LEAF_AMBIENT_LIGHTING			= 56, -- only used in version 20+ BSP files
+    XZIPPAKFILE						= 57,
+    FACES_HDR						= 58,
+    MAP_FLAGS						= 59,
+    OVERLAY_FADES					= 60,
+    OVERLAY_SYSTEM_LEVELS			= 61,
+    PHYSLEVEL						= 62,
+    DISP_MULTIBLEND					= 63,
 }
 local TextureFilterBits = bit.bor(unpack {
     SURF_SKY,
@@ -110,46 +110,46 @@ local function MakeBrushSurface(verts, disp)
         verts2D[i] = ss.To2D(v, center, angle)
     end
 
-    local function GetRotatedAABB(verts2D, angle)
+    local function GetRotatedAABB(v2d, ang)
         local mins = Vector(math.huge, math.huge)
         local maxs = -mins
-        for k, v in ipairs(verts2D) do
+        for _, v in ipairs(v2d) do
             v = Vector(v)
-            v:Rotate(angle)
+            v:Rotate(ang)
             mins = ss.MinVector(mins, v)
             maxs = ss.MaxVector(maxs, v)
         end
 
         return mins, maxs
     end
-    
-	local area, bound, minangle, minmins = math.huge, nil, nil, nil
-	for i, v in ipairs(verts2D) do -- Get minimum AABB with O(n^2)
+
+    local area, bound, minangle, minmins = math.huge, nil, nil, nil
+    for i, v in ipairs(verts2D) do -- Get minimum AABB with O(n^2)
         local segment = verts2D[i % #verts2D + 1] - v -- succeeding vertex - v
         local degrees = -math.deg(math.atan2(segment.y, segment.x))
-		local ang = Angle(0, degrees + 90, 0)
-		local mins, maxs = GetRotatedAABB(verts2D, ang)
+        local ang = Angle(0, degrees + 90, 0)
+        local mins, maxs = GetRotatedAABB(verts2D, ang)
         local size = maxs - mins
-		if area > size.x * size.y then
-			if size.x < size.y then
-				ang.yaw = degrees
-				minmins, maxs = GetRotatedAABB(verts2D, ang)
-			else
-				minmins = mins
-			end
+        if area > size.x * size.y then
+            if size.x < size.y then
+                ang.yaw = degrees
+                minmins, maxs = GetRotatedAABB(verts2D, ang)
+            else
+                minmins = mins
+            end
 
-			minangle = -ang
-			bound = maxs - minmins
-			area = bound.x * bound.y
-		end
-	end
-    
+            minangle = -ang
+            bound = maxs - minmins
+            area = bound.x * bound.y
+        end
+    end
+
     if area == 0 then return end
-	minmins:Rotate(minangle)
-	center = ss.To3D(minmins, center, angle)
-	angle:RotateAroundAxis(normal, minangle.yaw)
+    minmins:Rotate(minangle)
+    center = ss.To3D(minmins, center, angle)
+    angle:RotateAroundAxis(normal, minangle.yaw)
     bound.z = minangle.yaw
-    
+
     return {
         AABB = {
             maxs = max,
@@ -171,7 +171,7 @@ end
 local function IsExposed(verts, normal)
     local issolid = true
     local center = Vector()
-    for i, v in ipairs(verts) do center:Add(v) end
+    for _, v in ipairs(verts) do center:Add(v) end
     center = center / #verts
     local sample_points = {center}
     for i = 1, #verts do
@@ -191,26 +191,26 @@ local function IsExposed(verts, normal)
 end
 
 local function read(arg)
-	if isstring(arg) then
-		if arg == "SignedByte" then
-			local n = BSPFile:ReadByte()
-			return n - (n > 127 and 256 or 0)
-		elseif arg == "ShortVector" then
-			local x = BSPFile:ReadShort()
-			local y = BSPFile:ReadShort()
-			local z = BSPFile:ReadShort()
-			return Vector(x, y, z)
-		elseif arg == "Vector" then
-			local x = BSPFile:ReadFloat()
-			local y = BSPFile:ReadFloat()
-			local z = BSPFile:ReadFloat()
-			return Vector(x, y, z)
-		else
-			return ss.ProtectedCall(BSPFile["Read" .. arg], BSPFile)
-		end
-	else
-		return BSPFile:Read(arg)
-	end
+    if isstring(arg) then
+        if arg == "SignedByte" then
+            local n = BSPFile:ReadByte()
+            return n - (n > 127 and 256 or 0)
+        elseif arg == "ShortVector" then
+            local x = BSPFile:ReadShort()
+            local y = BSPFile:ReadShort()
+            local z = BSPFile:ReadShort()
+            return Vector(x, y, z)
+        elseif arg == "Vector" then
+            local x = BSPFile:ReadFloat()
+            local y = BSPFile:ReadFloat()
+            local z = BSPFile:ReadFloat()
+            return Vector(x, y, z)
+        else
+            return ss.ProtectedCall(BSPFile["Read" .. arg], BSPFile)
+        end
+    else
+        return BSPFile:Read(arg)
+    end
 end
 
 local function ReadBSPHeader()
@@ -241,12 +241,12 @@ local function ReadPlanes()
 end
 
 local function ReadVertexes()
-	local size = 12
+    local size = 12
     local header = BSP.Header[LUMP.VERTEXES]
     local lump = BSP.Data[LUMP.VERTEXES]
     BSPFile:Seek(header.offset)
-	header.num = math.min(math.floor(header.length / size) - 1, 65536 - 1)
-	for i = 0, header.num do lump[i] = read "Vector" end
+    header.num = math.min(math.floor(header.length / size) - 1, 65536 - 1)
+    for i = 0, header.num do lump[i] = read "Vector" end
 end
 
 local function ReadEdges()
@@ -254,11 +254,11 @@ local function ReadEdges()
     local header = BSP.Header[LUMP.EDGES]
     local lump = BSP.Data[LUMP.EDGES]
     BSPFile:Seek(header.offset)
-	header.num = math.min(math.floor(header.length / size) - 1, 256000 - 1)
-	for i = 0, header.num do
-		lump[i] = {}
-		lump[i][1] = read "UShort"
-		lump[i][2] = read "UShort"
+    header.num = math.min(math.floor(header.length / size) - 1, 256000 - 1)
+    for i = 0, header.num do
+        lump[i] = {}
+        lump[i][1] = read "UShort"
+        lump[i][2] = read "UShort"
     end
 end
 
@@ -266,64 +266,64 @@ local function ReadSurfEdges()
     local size = 4
     local header = BSP.Header[LUMP.SURFEDGES]
     local lump = BSP.Data[LUMP.SURFEDGES]
-	local vertexes = BSP.Data[LUMP.VERTEXES]
-	local edges = BSP.Data[LUMP.EDGES]
+    local vertexes = BSP.Data[LUMP.VERTEXES]
+    local edges = BSP.Data[LUMP.EDGES]
     BSPFile:Seek(header.offset)
-	header.num = math.min(math.floor(header.length / size) - 1, 512000 - 1)
-	for i = 0, header.num do
-		local n = read "Long"
-		local absn = math.abs(n)
-		local e = edges[absn]
-		local v1, v2 = e[1], e[2]
-		lump[i] = vertexes[n < 0 and v2 or v1]
-	end
+    header.num = math.min(math.floor(header.length / size) - 1, 512000 - 1)
+    for i = 0, header.num do
+        local n = read "Long"
+        local absn = math.abs(n)
+        local e = edges[absn]
+        local v1, v2 = e[1], e[2]
+        lump[i] = vertexes[n < 0 and v2 or v1]
+    end
 end
 
 local function ReadTexData()
     local size = 32
     local header = BSP.Header[LUMP.TEXDATA]
     local lump = BSP.Data[LUMP.TEXDATA]
-	local strdata = BSP.Header[LUMP.TEXDATA_STRING_DATA]
-	local strtable = BSP.Header[LUMP.TEXDATA_STRING_TABLE]
+    local strdata = BSP.Header[LUMP.TEXDATA_STRING_DATA]
+    local strtable = BSP.Header[LUMP.TEXDATA_STRING_TABLE]
     BSPFile:Seek(header.offset)
-	header.num = math.min(math.floor(header.length / size) - 1, 2048 - 1)
-	for i = 0, header.num do
-		lump[i] = {}
-		BSPFile:Skip(12) -- reflectivity
-		local strID = read "Long" * 4
-		lump[i].name = ""
+    header.num = math.min(math.floor(header.length / size) - 1, 2048 - 1)
+    for i = 0, header.num do
+        lump[i] = {}
+        BSPFile:Skip(12) -- reflectivity
+        local strID = read "Long" * 4
+        lump[i].name = ""
 
-		local here = BSPFile:Tell() + 8 + 8 -- width, height, view_width, view_height
-		BSPFile:Seek(strtable.offset + strID)
-		local stroffset = read "Long"
-		BSPFile:Seek(strdata.offset + stroffset)
-		for _ = 1, 128 do
-			local chr = read(1)
-			if chr == "\x00" then break end
-			lump[i].name = lump[i].name .. chr
-		end
+        local here = BSPFile:Tell() + 8 + 8 -- width, height, view_width, view_height
+        BSPFile:Seek(strtable.offset + strID)
+        local stroffset = read "Long"
+        BSPFile:Seek(strdata.offset + stroffset)
+        for _ = 1, 128 do
+            local chr = read(1)
+            if chr == "\x00" then break end
+            lump[i].name = lump[i].name .. chr
+        end
 
-		BSPFile:Seek(here)
+        BSPFile:Seek(here)
     end
 end
 
 local function ReadTexInfos()
-	local size = 72
-	local TexData = BSP.Data[LUMP.TEXDATA]
+    local size = 72
+    local TexData = BSP.Data[LUMP.TEXDATA]
     local header = BSP.Header[LUMP.TEXINFO]
     local lump = BSP.Data[LUMP.TEXINFO]
     BSPFile:Seek(header.offset)
-	header.num = math.min(math.floor(header.length / size) - 1, 12288 - 1)
-	for i = 0, header.num do
-		BSPFile:Skip(32)
+    header.num = math.min(math.floor(header.length / size) - 1, 12288 - 1)
+    for i = 0, header.num do
+        BSPFile:Skip(32)
         lump[i] = {}
         lump[i].LightmapVecS = read "Vector"
         lump[i].LightmapOffsetS = read "Float"
         lump[i].LightmapVecT = read "Vector"
         lump[i].LightmapOffsetT = read "Float"
-		lump[i].flags = read "Long"
-		local texID = read "Long"
-		if texID >= 0 then lump[i].TexData = TexData[texID] end
+        lump[i].flags = read "Long"
+        local texID = read "Long"
+        if texID >= 0 then lump[i].TexData = TexData[texID] end
     end
 end
 
@@ -333,26 +333,25 @@ local function ReadFaces()
     local lump = BSP.Data[LUMP.FACES]
     local planes = BSP.Data[LUMP.PLANES]
     local surfedges = BSP.Data[LUMP.SURFEDGES]
-	local texinfo = BSP.Data[LUMP.TEXINFO]
+    local texinfo = BSP.Data[LUMP.TEXINFO]
     local dispinfooffset = BSP.Header[LUMP.DISPINFO].offset
     local dispvertsoffset = BSP.Header[LUMP.DISP_VERTS].offset
 
     BSPFile:Seek(header.offset)
     header.num = math.min(math.floor(header.length / size) - 1, 65536 - 1)
-    for i = 0, header.num do
+    for _ = 0, header.num do
         local face = {}
         local planeIndex = read "UShort"
         local PlaneTable = planes[planeIndex]
         local normal = PlaneTable.normal
-        local angle = normal:Angle()
         BSPFile:Skip(2)
         local firstedge = read "Long"
         local numedges = read "Short" - 1
-		local TexInfoTable = texinfo[read "Short"]
+        local TexInfoTable = texinfo[read "Short"]
         local dispinfo = read "Short"
         BSPFile:Skip(6) -- short surfaceFogVolumeID, byte[4] styles
         local lightofs = read "Long"
-        local area = read "Float"
+        read "Float" -- area
         local LightmapMinsU = read "Long"
         local LightmapMinsV = read "Long"
         local LightmapSizeU = read "Long"
@@ -372,13 +371,13 @@ local function ReadFaces()
         end
 
         center = center / #verts
-		local texname = TexInfoTable.TexData.name
+        local texname = TexInfoTable.TexData.name
         local texlow = texname:lower()
         local invalid = texlow:find "tools/" or texlow:find "water"
         or bit.band(TexInfoTable.flags, TextureFilterBits) ~= 0
         or Material(texname):GetString "$surfaceprop" == "metalgrate"
         or #verts < 3
-        
+
         local contents = util.PointContents(center - normal * 0.05)
         local issolid = bit.band(contents, MASK_SOLID) > 0
         local isdisplacement = dispinfo >= 0
@@ -407,25 +406,25 @@ local function ReadFaces()
                     dispverts[k].dist = read "Float"
                 end
                 BSPFile:Seek(here)
-        
+
                 -- DispInfo.startPosition isn't always equal to verts[1] so find correct one
-                do local i, min, start = {}, math.huge, 0
-                    for k, v in ipairs(verts) do
-                        local dist = startPosition:DistToSqr(v)
-                        if dist < min then start, min = k, dist end
+                local i, min, start = {}, math.huge, 0
+                for k, v in ipairs(verts) do
+                    local dist = startPosition:DistToSqr(v)
+                    if dist < min then
+                        start, min = k, dist
                     end
-        
-                    for k = 1, 4 do i[k] = (k + start - 2) % 4 + 1 end
-                    verts[1], verts[2], verts[3], verts[4]
-                    = verts[i[1]], verts[i[2]], verts[i[3]], verts[i[4]]
                 end
-        
+
+                for k = 1, 4 do i[k] = (k + start - 2) % 4 + 1 end
+                verts[1], verts[2], verts[3], verts[4] = verts[i[1]], verts[i[2]], verts[i[3]], verts[i[4]]
+
                 local disp = {
                     Triangles = {},
                     Vertices = {},
                     VerticesGrid = {},
                 }
-                local u1, u2 = verts[4] - verts[1], verts[3] - verts[2]
+                local u1 = verts[4] - verts[1]
                 local v1, v2 = verts[2] - verts[1], verts[3] - verts[4]
                 for k, v in ipairs(dispverts) do -- Get the world positions of the displacements
                     local x = (k - 1) % power -- 0 <= x <= power
@@ -443,7 +442,7 @@ local function ReadFaces()
                         disp.Triangles[#disp.Triangles + 1] = {k + 1 - invert, k + power, k + power + 1}
                     end
                 end
-        
+
                 face.Displacement = disp
             end
 
@@ -457,15 +456,15 @@ local function ReadGameLump()
     local lump = BSP.Data[LUMP.GAME_LUMP]
     BSPFile:Seek(header.offset)
 
-	local lumpCount = read "Long"
-	local headers = {}
-	for i = 1, lumpCount do
-		headers[i] = {}
-		headers[i].id = read "Long"
-		headers[i].flags = read "UShort"
-		headers[i].version = read "UShort"
-		headers[i].fileofs = read "Long"
-		headers[i].filelen = read "Long"
+    local lumpCount = read "Long"
+    local headers = {}
+    for i = 1, lumpCount do
+        headers[i] = {}
+        headers[i].id = read "Long"
+        headers[i].flags = read "UShort"
+        headers[i].version = read "UShort"
+        headers[i].fileofs = read "Long"
+        headers[i].filelen = read "Long"
     end
 
     local Axes = {x = {"y", "z"}, y = {"x", "z"}, z = {"x", "y"}}
@@ -508,9 +507,9 @@ local function ReadGameLump()
             local vertices_absolute = {}
             local convex_center = Vector()
             for i, v in ipairs(convex) do
-                local v = LocalToWorld(v.pos, angle_zero, origin, angles)
-                vertices_absolute[i] = v
-                convex_center:Add(v)
+                local worldpos = LocalToWorld(v.pos, angle_zero, origin, angles)
+                vertices_absolute[i] = worldpos
+                convex_center:Add(worldpos)
             end
 
             convex_center = convex_center / #convex
@@ -522,65 +521,63 @@ local function ReadGameLump()
                 local v2v1 = v1 - v2
                 local v2v3 = v3 - v2
                 local n = v2v1:Cross(v2v3) -- normal around v1<-v2->v3
-                if n:LengthSqr() > 4000 then -- normal is valid then
-                    n:Normalize() -- normalize the normal
-                    if IsExposed({v1, v2, v3}, n) then
-                        local component_sign, normal -- detect the appropriate projection plane
-                        local max_component = 0
-                        local projection_normal = Vector()
-                        for axis in pairs(Axes) do
-                            local abs_component = math.abs(n[axis])
-                            if abs_component > max_component then
-                                component_sign = n[axis] > 0 and 1 or -1
-                                max_component = abs_component
-                                normal = axis
-                            end
-                        end
-                        
-                        projection_normal[normal] = component_sign
-                        local minmax = component_sign > 0 and math.min or math.max
-                        local plane = projection_planes[tostring(projection_normal)]
-                        local verts = plane.Vertices
-                        local tris = plane.Triangles
-                        verts[#verts + 1] = v1
-                        verts[#verts + 1] = v2
-                        verts[#verts + 1] = v3
-                        tris[#tris + 1] = {#verts - 2, #verts - 1, #verts}
-                        plane.axis_n = normal
-                        plane.axis_t = Axes[plane.axis_n][1]
-                        plane.axis_b = Axes[plane.axis_n][2]
-                        plane.component_n = minmax(unpack {
-                            v1[plane.axis_n],
-                            v2[plane.axis_n],
-                            v3[plane.axis_n],
-                            plane.component_n,
-                        })
-                        plane.max_t = math.max(unpack {
-                            v1[plane.axis_t],
-                            v2[plane.axis_t],
-                            v3[plane.axis_t],
-                            plane.max_t,
-                        })
-                        plane.max_b = math.max(unpack {
-                            v1[plane.axis_b],
-                            v2[plane.axis_b],
-                            v3[plane.axis_b],
-                            plane.max_b,
-                        })
-                        plane.min_t = math.min(unpack {
-                            v1[plane.axis_t],
-                            v2[plane.axis_t],
-                            v3[plane.axis_t],
-                            plane.min_t,
-                        })
-                        plane.min_b = math.min(unpack {
-                            v1[plane.axis_b],
-                            v2[plane.axis_b],
-                            v3[plane.axis_b],
-                            plane.min_b,
-                        })
+                if n:LengthSqr() < 4000 then continue end -- normal is valid then
+                n:Normalize() -- normalize the normal
+                if not IsExposed({v1, v2, v3}, n) then continue end
+                local component_sign, normal -- detect the appropriate projection plane
+                local max_component = 0
+                local projection_normal = Vector()
+                for axis in pairs(Axes) do
+                    local abs_component = math.abs(n[axis])
+                    if abs_component > max_component then
+                        component_sign = n[axis] > 0 and 1 or -1
+                        max_component = abs_component
+                        normal = axis
                     end
                 end
+
+                projection_normal[normal] = component_sign
+                local minmax = component_sign > 0 and math.min or math.max
+                local plane = projection_planes[tostring(projection_normal)]
+                local verts = plane.Vertices
+                local tris = plane.Triangles
+                verts[#verts + 1] = v1
+                verts[#verts + 1] = v2
+                verts[#verts + 1] = v3
+                tris[#tris + 1] = {#verts - 2, #verts - 1, #verts}
+                plane.axis_n = normal
+                plane.axis_t = Axes[plane.axis_n][1]
+                plane.axis_b = Axes[plane.axis_n][2]
+                plane.component_n = minmax(unpack {
+                    v1[plane.axis_n],
+                    v2[plane.axis_n],
+                    v3[plane.axis_n],
+                    plane.component_n,
+                })
+                plane.max_t = math.max(unpack {
+                    v1[plane.axis_t],
+                    v2[plane.axis_t],
+                    v3[plane.axis_t],
+                    plane.max_t,
+                })
+                plane.max_b = math.max(unpack {
+                    v1[plane.axis_b],
+                    v2[plane.axis_b],
+                    v3[plane.axis_b],
+                    plane.max_b,
+                })
+                plane.min_t = math.min(unpack {
+                    v1[plane.axis_t],
+                    v2[plane.axis_t],
+                    v3[plane.axis_t],
+                    plane.min_t,
+                })
+                plane.min_b = math.min(unpack {
+                    v1[plane.axis_b],
+                    v2[plane.axis_b],
+                    v3[plane.axis_b],
+                    plane.min_b,
+                })
             end
 
             for n, p in pairs(projection_planes) do
@@ -613,8 +610,8 @@ local function ReadGameLump()
             end
         end
     end
-    
-	for _, l in ipairs(headers) do
+
+    for _, l in ipairs(headers) do
         if l.id == 1936749168 then -- id == "scrp", Static Prop Gamelump
             BSPFile:Seek(l.fileofs)
             local nextlump = l.fileofs + l.filelen
@@ -627,7 +624,7 @@ local function ReadGameLump()
                     modelnames[i] = modelnames[i] .. (c ~= "\x00" and c or "")
                 end
             end
-            
+
             BSPFile:Skip(read "Long" * 2) -- Leaf Indices
             entries = read "Long"
             local here = BSPFile:Tell()
@@ -646,8 +643,8 @@ local function ReadGameLump()
                 GetInfo(solidtype, mdlname, origin, angles)
             end
 
-		    return
-		end
+            return
+        end
     end
 end
 
@@ -663,7 +660,7 @@ ReadFaces()
 ReadGameLump()
 
 local NumDisplacements = 0
-for i, face in ipairs(BSP.Data[LUMP.FACES]) do
+for _, face in ipairs(BSP.Data[LUMP.FACES]) do
     if face.Vertices then
         SurfaceArray[#SurfaceArray + 1] = MakeBrushSurface(face.Vertices, face.Displacement)
         SurfaceArray[#SurfaceArray].LightmapInfo = {
@@ -719,7 +716,7 @@ end
 
 local function CreateWholeAABB(AABBs)
     local AABB = EmptyAABB()
-    for i, a in ipairs(AABBs) do
+    for _, a in ipairs(AABBs) do
         AABB = MergeAABB(AABB, SurfaceArray[a].AABB)
     end
 
@@ -802,7 +799,7 @@ local function ConstructAABBTree(Tree, AABBs, nodeIndex)
             rightAABBs[#rightAABBs + 1] = a
         end
     end
-    
+
     ConstructAABBTree(Tree, leftAABBs, node.Children[1])
     ConstructAABBTree(Tree, rightAABBs, node.Children[2])
 end
@@ -813,7 +810,7 @@ print("MAKE", util.TimerCycle())
 ss.AABBTree = AABBTree
 ss.NumDisplacements = NumDisplacements
 ss.SurfaceArray = SurfaceArray
-for i, s in ipairs(SurfaceArray) do
+for _, s in ipairs(SurfaceArray) do
     ss.AreaBound = ss.AreaBound + s.Area
     ss.AspectSum = ss.AspectSum + s.Bound.y / s.Bound.x
     ss.AspectSumX = ss.AspectSumX + s.Bound.x
