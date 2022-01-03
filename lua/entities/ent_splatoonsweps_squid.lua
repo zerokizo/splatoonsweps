@@ -76,11 +76,11 @@ function ENT:CalcAbsolutePosition(_pos, _ang)
     elseif a.p >= 270 and a.p < 300 then
         a.p = 300
     end
-    
+
     a.p = a.p - 90
     a.y = yaw
     a.r = 180
-    
+
     if owner:OnGround() then
         local t = util.QuickTrace(
             owner:WorldSpaceCenter(),
@@ -95,7 +95,7 @@ function ENT:CalcAbsolutePosition(_pos, _ang)
             pos = t.HitPos
         end
     end
-    
+
     return pos + vector_up * 3, a
 end
 
@@ -134,7 +134,7 @@ function ENT:Initialize()
         return
     end
 
-	local index = ss.SquidmodelIndex[weapon:GetNWInt "playermodel"] or ss.SQUID.INKLING
+    local index = ss.SquidmodelIndex[weapon:GetNWInt "playermodel"] or ss.SQUID.INKLING
     local modelpath = ss.Squidmodel[index]
 
     self:SetModel(modelpath)

@@ -162,7 +162,7 @@ ss.sprinkler = {
         Spout_NearRatioD = "du",
         Spout_StraightFrame = "f",
         InitInkRadius = "du",
-    
+
         Fly_InitVel_Estimated = "du/f",
         Fly_AirFrm = "f",
     },

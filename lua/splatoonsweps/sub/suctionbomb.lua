@@ -96,7 +96,7 @@ ss.suctionbomb = {
         Shape_SphereD = "du",
         Shape_SphereR = "du",
         WallCheckOffsetY = "du",
-    
+
         Fly_InitVel_Estimated = "du/f",
     },
     BurstSound = "SplatoonSWEPs.BombExplosion",

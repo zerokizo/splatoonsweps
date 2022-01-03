@@ -30,7 +30,7 @@ ss.splashwall = {
         Fly_VelKd = 0.94134,
         mInkConsume = 0.6,
         mInkRecoverStop = 80, -- 160 after ver. 2.2.0
-        
+
         Fly_InitVel_Estimated = 6,
     },
     Units = {
@@ -57,7 +57,7 @@ ss.splashwall = {
         Fly_VelKd = "ratio",
         mInkConsume = "ink",
         mInkRecoverStop = "f",
-        
+
         Fly_InitVel_Estimated = "du/f",
     },
 }

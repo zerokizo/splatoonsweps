@@ -32,11 +32,11 @@ return {CVars = {
     NPCInkColor = {
         Citizen = "Ink color for citizen.",
         Combine = "Ink color for Combine forces.",
-		Military = "Ink color for military forces.",
-		Zombie = "Ink color for zombies.",
-		Antlion = "Ink color for antlions.",
-		Alien = "Ink color for aliens.",
-		Barnacle = "Ink color for barnacles.",
+        Military = "Ink color for military forces.",
+        Zombie = "Ink color for zombies.",
+        Antlion = "Ink color for antlions.",
+        Alien = "Ink color for aliens.",
+        Barnacle = "Ink color for barnacles.",
         Others = "Ink color for other NPCs.",
     },
     Playermodel = "Your thirdperson model.  Available values are:\n",
@@ -75,11 +75,11 @@ Make sure your graphics card has enough space of video memory.
     weapon_splatoonsweps_slosher_base = {
         Automatic = "Automatically swing sloshers. (1: enabled, 0: disabled)",
     },
-	weapon_splatoonsweps_roller = {
+    weapon_splatoonsweps_roller = {
         AutomaticBrush = "Automatically swing brushes repeatedly. (1: enabled, 0: disabled)",
         DropAtFeet = "Like version 2.8.0 or above, when repeatedly using swinging attacks, ink will also be painted where the player is standing. (1: enabled, 0: disabled)",
-		weapon_splatoonsweps_heroroller = {
+        weapon_splatoonsweps_heroroller = {
             Level = "The level of Hero Roller Replica. (0, 1, 2, 3 -> Level 1, 2, 3, 4)",
         },
-	},
+    },
 }}

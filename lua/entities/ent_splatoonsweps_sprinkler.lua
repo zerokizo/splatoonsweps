@@ -58,26 +58,26 @@ function ENT:Spout()
     local ink = ss.MakeProjectileStructure()
     local p = self.Parameters
     table.Merge(ink, {
-		AirResist = p.Spout_AirResist,
-		Color = self:GetNWInt "inkcolor",
-		ColRadiusEntity = p.Spout_SplashCollisionR_First,
-		ColRadiusWorld = p.Spout_SplashCollisionR_First,
-		DoDamage = true,
-		DamageMax = p.Spout_SplashDamage,
-		DamageMin = p.Spout_SplashDamage,
-		Gravity = p.Spout_Gravity,
-		ID = CurTime() + self:EntIndex(),
-		PaintFarDistance = p.Spout_SplashPaintR_MinHeight,
-		PaintFarRadius = p.Spout_SplashPaintR_First * p.Spout_SplashPaintR_MinRate,
-		PaintFarRatio = p.Spout_FarRatio,
-		PaintNearDistance = p.Spout_SplashPaintR_MaxHeight,
-		PaintNearRadius = p.Spout_SplashPaintR_First,
-		PaintNearRatio = p.Spout_NearRatio,
+        AirResist = p.Spout_AirResist,
+        Color = self:GetNWInt "inkcolor",
+        ColRadiusEntity = p.Spout_SplashCollisionR_First,
+        ColRadiusWorld = p.Spout_SplashCollisionR_First,
+        DoDamage = true,
+        DamageMax = p.Spout_SplashDamage,
+        DamageMin = p.Spout_SplashDamage,
+        Gravity = p.Spout_Gravity,
+        ID = CurTime() + self:EntIndex(),
+        PaintFarDistance = p.Spout_SplashPaintR_MinHeight,
+        PaintFarRadius = p.Spout_SplashPaintR_First * p.Spout_SplashPaintR_MinRate,
+        PaintFarRatio = p.Spout_FarRatio,
+        PaintNearDistance = p.Spout_SplashPaintR_MaxHeight,
+        PaintNearRadius = p.Spout_SplashPaintR_First,
+        PaintNearRatio = p.Spout_NearRatio,
         PaintRatioFarDistance = p.Spout_FarRatioD,
         PaintRatioNearDistance = p.Spout_NearRatioD,
-		StraightFrame = p.Spout_StraightFrame,
-		Type = ss.GetShooterInkType(),
-		Weapon = self.Weapon,
+        StraightFrame = p.Spout_StraightFrame,
+        Type = ss.GetShooterInkType(),
+        Weapon = self.Weapon,
     })
 
     local DegBias = p.Spout_SplashDegBias
@@ -100,7 +100,7 @@ function ENT:Spout()
         ink.Yaw     = ang.yaw
         local t = ss.AddInk({}, ink)
         t.SprinklerHitEffect = true
-        
+
         local e = EffectData()
         ss.SetEffectColor(e, ink.Color)
         ss.SetEffectColRadius(e, ink.ColRadiusWorld)
@@ -154,7 +154,7 @@ function ENT:PhysicsCollide(data, collider)
     collider:EnableMotion(not data.HitEntity:IsWorld())
     collider:SetPos(data.HitPos)
     collider:SetAngles(ang)
-    
+
     timer.Simple(0.125, function()
         if not IsValid(self) then return end
         self:ResetSequenceInfo()

@@ -68,7 +68,7 @@ function ENT:Think()
         self:SetFlexWeight(0, f)
         self:SetSkin(pulse > 0 and 1 or 0)
     end
-    
+
     if self:GetClass() ~= "ent_splatoonsweps_splatbomb" or p:GetStress() > 0 then
         if self:GetContactTime() > self.BurstTotalFrame then
             self:Detonate()
@@ -82,7 +82,7 @@ function ENT:Think()
         self.ContactTotalTime = t
         self.WarnSound:PlayEx(0, 100)
     end
-    
+
     return true
 end
 

@@ -12,7 +12,7 @@ function ENT:PhysicsCollide(data, collider)
     self:StopSound "SplatoonSWEPs.SubWeaponThrown"
     self:EmitSound(ss.disruptor.BurstSound)
     SafeRemoveEntity(self)
-    
+
     local c = self:GetNWInt "inkcolor"
     local e = EffectData()
     local p = ss.disruptor.Parameters

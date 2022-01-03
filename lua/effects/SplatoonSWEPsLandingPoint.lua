@@ -97,7 +97,7 @@ function EFFECT:Think()
 
     self.Positions[#self.Positions + 1] = self.Positions[#self.Positions]
     + velocity * dt - self.Normal * TRACE_SIZE
-    
+
     RefreshPos(self)
     return self.Weapon:GetThrowing() and self.Weapon:GetKey() == IN_ATTACK2
 end

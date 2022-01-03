@@ -12,13 +12,13 @@ local AdvancedColourToolLoaded
 local AdvancedColourToolReplacedSetSubMaterial
 = AdvancedColourToolLoaded and FindMetaTable "Entity"._OldSetSubMaterial
 if AdvancedColourToolReplacedSetSubMaterial then
-	function ss.SetSubMaterial_Workaround(ent, ...)
-		ent:_OldSetSubMaterial(...)
-	end
+    function ss.SetSubMaterial_Workaround(ent, ...)
+        ent:_OldSetSubMaterial(...)
+    end
 else
-	function ss.SetSubMaterial_Workaround(ent, ...)
-		ent:SetSubMaterial(...)
-	end
+    function ss.SetSubMaterial_Workaround(ent, ...)
+        ent:SetSubMaterial(...)
+    end
 end
 ------------------------------------------
 --           !!!WORKAROUND!!!           --

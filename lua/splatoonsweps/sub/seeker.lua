@@ -30,7 +30,7 @@ ss.seeker = {
         InitInkRadius = 10,
         InkConsume = 0.8,
         InkRecoverStop = 70,
-        
+
         Fly_InitVel_Estimated = 1.5,
         SeThreshold = 150,
     },
@@ -56,7 +56,7 @@ ss.seeker = {
         InitInkRadius = "du",
         InkConsume = "ink",
         InkRecoverStop = "f",
-        
+
         Fly_InitVel_Estimated = "du/f",
         SeThreshold = "du",
     },

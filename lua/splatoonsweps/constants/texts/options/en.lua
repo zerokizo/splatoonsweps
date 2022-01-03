@@ -77,13 +77,13 @@ Otherwise, all victims splatted by the SWEPs will.]],
     weapon_splatoonsweps_slosher_base = {
         Automatic = "Fully-automatic",
     },
-	weapon_splatoonsweps_roller = {
+    weapon_splatoonsweps_roller = {
         AutomaticBrush = "Brushes: Fully-automatic",
         AutomaticBrush_help = "If checked, you will automatically swing your brush repeatedly.  You can't run by holding it as usual.",
         DropAtFeet = "Brushes: Paint where the player stands",
         DropAtFeet_help = "When repeatedly using swinging attacks, ink will also be painted where the player is standing.",
-		weapon_splatoonsweps_heroroller = {
+        weapon_splatoonsweps_heroroller = {
             Level = "Hero Roller Level",
         },
-	},
+    },
 }}

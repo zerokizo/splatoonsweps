@@ -133,11 +133,11 @@ ss.splatbomb = {
         Land_VelKdY = "ratio",
         Shape_SphereD = "du",
         Shape_SphereR = "du",
-        
+
         BombThrow_VelZ_Low = "du/f",
         BombThrow_VelZ_Mid = "du/f",
         BombThrow_VelZ_High = "du/f",
-    
+
         Fly_InitVel_Estimated = "du/f",
     },
     BurstSound = "SplatoonSWEPs.BombExplosion",
@@ -155,7 +155,7 @@ ss.ConvertUnits(ss.splatbomb.Parameters, ss.splatbomb.Units)
 local module = ss.splatbomb.Merge
 local p = ss.splatbomb.Parameters
 function module:SharedSecondaryAttack(throwable)
-    
+
 end
 
 function module:CanSecondaryAttack()

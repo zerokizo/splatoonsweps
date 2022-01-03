@@ -232,7 +232,7 @@ function ENT:PhysicsCollide(data, collider)
     self.ContactPhysObj = data.HitObject
     self.ContactStartTime = self.ContactStartTime or CurTime()
     self:Weld()
-    
+
     if self.IsFirstTimeContact then
         self.IsFirstTimeContact = false
         self:EmitSound "SplatoonSWEPs.SplashWallDeploy"

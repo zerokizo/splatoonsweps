@@ -87,7 +87,7 @@ end
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
     if not self.Owner:OnGround() then return end
-    
+
     self.ExistingBeakons = self.ExistingBeakons or {}
     if self.NumBeakons >= p.MaxBeakons then
         local beakon = NULL
@@ -114,7 +114,7 @@ function module:ServerSecondaryAttack(throwable)
     e:SetPos(tr.HitPos + tr.HitNormal)
     e:SetAngles(ang)
     e:Spawn()
-    
+
     self.NumBeakons = self.NumBeakons + 1
     table.insert(self.ExistingBeakons, e)
 

@@ -31,7 +31,7 @@ ss.pointsensor = {
         Fly_VelKd = "ratio",
         InkConsume = "ink",
         InkRecoverStop = "f",
-    
+
         Fly_InitVel_Estimated = "du/f",
         Fly_AirFrm = "f",
     },
