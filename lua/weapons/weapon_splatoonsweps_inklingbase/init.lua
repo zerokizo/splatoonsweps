@@ -180,8 +180,8 @@ function SWEP:RestoreInfo()
 	if istable(self.BackupPlayerInfo) then -- Restores owner's information.
 		self:ChangePlayermodel(self.BackupPlayerInfo.Playermodel)
 		self:GetOwner():SetColor(self.BackupPlayerInfo.Color)
-	--	self:GetOwner():RemoveFlags(self:GetOwner():GetFlags()) -- Restores no target flag and something.
-	--	self:GetOwner():AddFlags(self.BackupPlayerInfo.Flags)
+		-- self:GetOwner():RemoveFlags(self:GetOwner():GetFlags()) -- Restores no target flag and something.
+		-- self:GetOwner():AddFlags(self.BackupPlayerInfo.Flags)
 		self:GetOwner():SetJumpPower(self.BackupPlayerInfo.JumpPower)
 		self:GetOwner():SetRenderMode(self.BackupPlayerInfo.RenderMode)
 		self:GetOwner():SetCrouchedWalkSpeed(self.BackupPlayerInfo.Speed.Crouched)

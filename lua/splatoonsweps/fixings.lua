@@ -3,9 +3,9 @@ local ss = SplatoonSWEPs
 if not ss then return end
 
 ------------------------------------------
---			!!!WORKAROUND!!!			--
---	This should be removed after		--
---	Adv. Colour Tool fixed the bug!!	--
+--           !!!WORKAROUND!!!           --
+--  This should be removed after        --
+--  Adv. Colour Tool fixed the bug!!    --
 ------------------------------------------
 local AdvancedColourToolLoaded
 = file.Exists("weapons/gmod_tool/stools/adv_colour.lua", "LUA")
@@ -21,7 +21,7 @@ else
 	end
 end
 ------------------------------------------
---			!!!WORKAROUND!!!			--
+--           !!!WORKAROUND!!!           --
 ------------------------------------------
 
 

@@ -1,5 +1,5 @@
 
---Weapon information in default SWEP structure.
+-- Weapon information in default SWEP structure.
 local ss = SplatoonSWEPs
 if not ss then return end
 

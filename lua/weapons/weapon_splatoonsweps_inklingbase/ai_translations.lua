@@ -1,8 +1,8 @@
 
---[[---------------------------------------------------------
-   Name: SetupWeaponHoldTypeForAI
-   Desc: Mainly a Todo.. In a seperate file to clean up the init.lua
------------------------------------------------------------]]
+-------------------------------------------------------------
+-- Name: SetupWeaponHoldTypeForAI
+-- Desc: Mainly a Todo.. In a seperate file to clean up the init.lua
+-------------------------------------------------------------
 function SWEP:SetupWeaponHoldTypeForAI(t)
 
 	self.ActivityTranslateAI = self.ActivityTranslateAI or {}

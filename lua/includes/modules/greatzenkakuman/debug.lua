@@ -1,5 +1,5 @@
 
---Debugging code
+-- Debugging code
 AddCSLuaFile()
 module("greatzenkakuman.debug", package.seeall)
 

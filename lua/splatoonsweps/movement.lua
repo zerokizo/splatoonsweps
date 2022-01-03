@@ -223,7 +223,7 @@ local function ComputeConstraintSpeedFactor()
 
 	local flFrac = (math.sqrt(flDistSq) - (me.m_flConstraintRadius[ply] - me.m_flConstraintRadius[ply])) / me.m_flConstraintRadius[ply]
 
-	return Lerp(flFrac, 1, me.m_flConstraintSpeedFactor[ply]) --flSpeedFactor
+	return Lerp(flFrac, 1, me.m_flConstraintSpeedFactor[ply]) -- flSpeedFactor
 end
 
 local function TracePlayerBBox(start, endpos, fMask, collisionGroup)
@@ -277,7 +277,7 @@ local function TryTouchGroundInQuadrants(start, endpos, fMask, collisionGroup, p
 end
 
 local function CategorizeGroundSurface(pm)
-	-- local physprops = MoveHelper():GetSurfaceProps() --IPhysicsSurfaceProps
+	-- local physprops = MoveHelper():GetSurfaceProps() -- IPhysicsSurfaceProps
 	me.m_surfaceProps[ply] = pm.SurfaceProps
 	-- me.m_pSurfaceData[ply] = physprops:GetSurfaceData(me.m_surfaceProps[ply])
 	-- physprops:GetPhysicsProperties(me.m_surfaceProps[ply], nil, nil, me.m_surfaceFriction[ply], nil)
@@ -440,7 +440,7 @@ local function ClipVelocity(vin, normal, out, overbounce)
 	local adjust = out:Dot(normal)
 	if adjust < 0.0 then
 		out:Sub(normal * adjust)
-		--Msg(string.format("Adjustment = %lf\n", adjust))
+		-- Msg(string.format("Adjustment = %lf\n", adjust))
 	end
 
 	return blocked -- Return blocking flags.

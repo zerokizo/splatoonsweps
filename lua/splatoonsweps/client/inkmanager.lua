@@ -139,7 +139,7 @@ local function ProcessPaintQueue()
 			End2D()
 			PopRenderTarget()
 			
-			--Draw on lightmap
+			-- Draw on lightmap
 			PushRenderTarget(Lightmap)
 			SetScissorRect(q.start.x, q.start.y, q.endpos.x, q.endpos.y, true)
 			Start2D()
