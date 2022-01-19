@@ -165,8 +165,6 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	local c = self:GetNWInt "inkcolor"
 	local filter = {self, self:GetOwner()}
 	local org = self:GetOwner():GetPos()
-	local center = self:GetOwner():WorldSpaceCenter()
-	local mean = (center + org) / 2
 	local fw, right = ang:Forward() * InkTraceLength, ang:Right() * InkTraceLength
 	local mins, maxs = self:GetOwner():GetCollisionBounds()
 	local ink_t = {filter = filter, mask = MASK_SHOT, maxs = maxs, mins = mins}
@@ -174,7 +172,7 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	local onink = gcolor >= 0
 	local onourink = gcolor == c
 	local onenemyink = onink and not onourink
-	
+
 	ink_t.start = org
 	local dz = vector_up * maxs.z / InkTraceZSteps
 	local normal, onwallink = Vector(), false
@@ -195,7 +193,7 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 			end
 		end
 	end
-	
+
 	local inwallink = self:Crouching() and onwallink
 	local inink = self:Crouching() and (onink and onourink or self:GetInWallInk())
 	if onenemyink and not self:GetOnEnemyInk() then
@@ -206,10 +204,8 @@ function SWEP:UpdateInkState() -- Set if player is in ink
 	end
 	if inink and not self:GetInInk() then self:GetOwner():SetDSP(14) end
 	if not inink and self:GetInInk() then self:GetOwner():SetDSP(1) end
-	if self:GetOwner():IsPlayer() then
-		if not (self:GetOnEnemyInk() and self:GetOwner():KeyDown(IN_DUCK)) then
-			self:SetEnemyInkTouchTime(CurTime())
-		end
+	if self:GetOwner():IsPlayer() and not (self:GetOnEnemyInk() and self:GetOwner():KeyDown(IN_DUCK)) then
+		self:SetEnemyInkTouchTime(CurTime())
 	end
 
 	self:SetGroundColor(gcolor)
@@ -334,7 +330,7 @@ function SWEP:SharedThinkBase()
 	and vm:GetSequenceActivity(vm:GetSequence()) == ACT_VM_DRAW then
 		self:SetWeaponAnim(ACT_VM_IDLE)
 	end
-	
+
 	local ShouldNoDraw = Either(self:GetNWBool "becomesquid", self:Crouching(), self:GetInInk())
 	self:GetOwner():DrawShadow(not ShouldNoDraw)
 	self:DrawShadow(not ShouldNoDraw)
@@ -486,7 +482,7 @@ function SWEP:SetupDataTables()
 		else
 			delay = delay / gain "healspeedstand"
 		end
-		
+
 		if schedule:GetDelay() ~= delay then schedule:SetDelay(delay) end
 		if not self:GetOnEnemyInk() and (self:GetNWBool "canhealstand" or healink) then
 			local health = math.Clamp(self:GetOwner():Health() + 1, 0, self:GetOwner():GetMaxHealth())
@@ -517,4 +513,16 @@ function SWEP:SetupDataTables()
 
 	ss.ProtectedCall(self.CustomDataTables, self)
 	self:NetworkVarNotify("Throwing", self.ChangeThrowing)
+	if pac then
+		self:NetworkVarNotify("InInk", function(self, name, old, new)
+			if tobool(old) == tobool(new) then return end
+			pac.TogglePartDrawing(self:GetOwner(),
+			not (new or self:GetOldCrouching() and self:GetNWBool "becomesquid"))
+		end)
+		self:NetworkVarNotify("OldCrouching", function(self, name, old, new)
+			if tobool(old) == tobool(new) then return end
+			if new and not self:GetNWBool "becomesquid" then return end
+			pac.TogglePartDrawing(self:GetOwner(), not tobool(new))
+		end)
+	end
 end

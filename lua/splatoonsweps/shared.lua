@@ -232,7 +232,6 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 
 			if IsFirstTimePredicted() then
 				ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToSquid")
-				if pac and w:GetNWBool "becomesquid" then pac.TogglePartDrawing(ply, false) end
 			end
 		end
 	elseif w:GetOldCrouching() then
@@ -240,7 +239,6 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 		w:SetWeaponAnim(w:GetThrowing() and ss.ViewModel.Throwing or ss.ViewModel.Standing)
 		if IsFirstTimePredicted() then
 			ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToHuman")
-			if pac and w:GetNWBool "becomesquid" then pac.TogglePartDrawing(ply, true) end
 		end
 	end
 
