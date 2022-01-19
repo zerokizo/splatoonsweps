@@ -33,12 +33,11 @@ function ss.SearchAABB(AABB, normal)
 		local t = {}
 		if a.SurfIndices then
 			for _, i in ipairs(a.SurfIndices) do
-				local a = ss.SurfaceArray[i]
-				local max_diff = a.Displacement and ss.MAX_COS_DIFF_DISP or ss.MAX_COS_DIFF
-				if a.Normal:Dot(normal) > max_diff then
-					if ss.CollisionAABB(a.AABB.mins, a.AABB.maxs, AABB.mins, AABB.maxs) then
-						t[#t + 1] = a
-					end
+				local surf = ss.SurfaceArray[i]
+				local max_diff = surf.Displacement and ss.MAX_COS_DIFF_DISP or ss.MAX_COS_DIFF
+				if surf.Normal:Dot(normal) > max_diff
+				and ss.CollisionAABB(surf.AABB.mins, surf.AABB.maxs, AABB.mins, AABB.maxs) then
+					t[#t + 1] = surf
 				end
 			end
 		else
@@ -121,7 +120,7 @@ include "weapons.lua"
 include "weaponregistration.lua"
 
 local path = "splatoonsweps/sub/%s"
-for i, filename in ipairs(file.Find("splatoonsweps/sub/*.lua", "LUA")) do
+for _, filename in ipairs(file.Find("splatoonsweps/sub/*.lua", "LUA")) do
 	include(path:format(filename))
 end
 
@@ -150,7 +149,7 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 		if w:GetNWBool "allowsprint" and not (crouching or w:GetInInk() or w:GetOnEnemyInk()) then
 			maxspeed = Lerp(0.5, maxspeed, w.SquidSpeed) -- Sprint speed
 		end
-		
+
 		mv:SetMaxSpeed(maxspeed)
 		ply:SetRunSpeed(maxspeed)
 	end
@@ -172,55 +171,54 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 		[mv:GetVelocity()] = true, -- Current velocity
 		[ss.MoveEmulation.m_vecVelocity[ply] or false] = false,
 	} do
-		if v then
-			local speed, vz = v:Length2D(), v.z -- Horizontal speed, Z component
-			if w:GetInWallInk() and mv:KeyDown(WALLCLIMB_KEYS) then -- Wall climbing
-				local sp = ply:GetShootPos()
-				local t = {
-					start = sp, endpos = sp + ply:GetForward() * 32768,
-					mask = ss.SquidSolidMask,
-					collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
-					filter = ply,
-				}
-				local fw = util.TraceLine(t)
-				t.endpos = sp - ply:GetForward() * 32768
-				local bk = util.TraceLine(t)
-				if fw.Fraction < bk.Fraction == mv:KeyDown(IN_FORWARD) then
-					vz = math.max(math.abs(vz) * -.75,
-					vz + math.min(12 + (mv:KeyPressed(IN_JUMP) and maxspeed / 4 or 0), maxspeed))
-					if ply:OnGround() then
-						t.endpos = sp + ply:GetRight() * 32768
-						local r = util.TraceLine(t)
-						t.endpos = sp - ply:GetRight() * 32768
-						local l = util.TraceLine(t)
-						if math.min(fw.Fraction, bk.Fraction) < math.min(r.Fraction, l.Fraction) then
-							mv:AddKey(IN_JUMP)
-						end
-					end
-				end
-
-				t.start = mv:GetOrigin()
-				t.endpos = t.start + vector_up * ss.WALLCLIMB_STEP_CHECK_LENGTH
-				t.mins, t.maxs = ply:GetCollisionBounds()
-				local tr = util.TraceHull(t)
-				if tr.HitWorld then
-					t.start = t.endpos + w:GetWallNormal() * ss.MAX_WALLCLIMB_STEP
-					tr = util.TraceHull(t)
-					if not tr.StartSolid and math.abs(tr.HitNormal.z) < ss.MAX_COS_DIFF then
-						mv:SetOrigin(tr.HitPos)
+		if not v then continue end
+		local speed, vz = v:Length2D(), v.z -- Horizontal speed, Z component
+		if w:GetInWallInk() and mv:KeyDown(WALLCLIMB_KEYS) then -- Wall climbing
+			local sp = ply:GetShootPos()
+			local t = {
+				start = sp, endpos = sp + ply:GetForward() * 32768,
+				mask = ss.SquidSolidMask,
+				collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
+				filter = ply,
+			}
+			local fw = util.TraceLine(t)
+			t.endpos = sp - ply:GetForward() * 32768
+			local bk = util.TraceLine(t)
+			if fw.Fraction < bk.Fraction == mv:KeyDown(IN_FORWARD) then
+				vz = math.max(math.abs(vz) * -.75,
+				vz + math.min(12 + (mv:KeyPressed(IN_JUMP) and maxspeed / 4 or 0), maxspeed))
+				if ply:OnGround() then
+					t.endpos = sp + ply:GetRight() * 32768
+					local r = util.TraceLine(t)
+					t.endpos = sp - ply:GetRight() * 32768
+					local l = util.TraceLine(t)
+					if math.min(fw.Fraction, bk.Fraction) < math.min(r.Fraction, l.Fraction) then
+						mv:AddKey(IN_JUMP)
 					end
 				end
 			end
 
-			if not (crouching and ply:OnGround()) and speed > maxspeed then -- Limits horizontal speed
-				v:Mul(maxspeed / speed)
-				speed = math.min(speed, maxspeed)
+			t.start = mv:GetOrigin()
+			t.endpos = t.start + vector_up * ss.WALLCLIMB_STEP_CHECK_LENGTH
+			t.mins, t.maxs = ply:GetCollisionBounds()
+			local tr = util.TraceHull(t)
+			if tr.HitWorld then
+				t.start = t.endpos + w:GetWallNormal() * ss.MAX_WALLCLIMB_STEP
+				tr = util.TraceHull(t)
+				if not tr.StartSolid and math.abs(tr.HitNormal.z) < ss.MAX_COS_DIFF then
+					mv:SetOrigin(tr.HitPos)
+				end
 			end
-
-			v.z = w.OnOutofInk and not w:GetInWallInk()
-			and math.min(vz, ply:GetJumpPower() * .7) or vz
-			if i then mv:SetVelocity(v) end
 		end
+
+		if not (crouching and ply:OnGround()) and speed > maxspeed then -- Limits horizontal speed
+			v:Mul(maxspeed / speed)
+			speed = math.min(speed, maxspeed)
+		end
+
+		v.z = w.OnOutofInk and not w:GetInWallInk()
+		and math.min(vz, ply:GetJumpPower() * .7) or vz
+		if i then mv:SetVelocity(v) end
 	end
 
 	-- Send viewmodel animation.
@@ -234,6 +232,7 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 
 			if IsFirstTimePredicted() then
 				ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToSquid")
+				if pac then pac.TogglePartDrawing(ply, false) end
 			end
 		end
 	elseif w:GetOldCrouching() then
@@ -241,6 +240,7 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
 		w:SetWeaponAnim(w:GetThrowing() and ss.ViewModel.Throwing or ss.ViewModel.Standing)
 		if IsFirstTimePredicted() then
 			ss.EmitSoundPredicted(ply, w, "SplatoonSWEPs_Player.ToHuman")
+			if pac then pac.TogglePartDrawing(ply, true) end
 		end
 	end
 
@@ -486,7 +486,7 @@ function ss.KeyPress(self, ply, key)
 		table.RemoveByValue(self.KeyPressedOrder, key)
 		self.KeyPressedOrder[#self.KeyPressedOrder + 1] = key
 	end
-	
+
 	ss.ProtectedCall(self.KeyPress, self, ply, key)
 	if CLIENT and key == IN_SPEED then ss.OpenMiniMap() end
 
