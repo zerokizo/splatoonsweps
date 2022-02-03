@@ -2,7 +2,6 @@ AddCSLuaFile()
 local serverflags = {FCVAR_ARCHIVE, FCVAR_REPLICATED, FCVAR_SERVER_CAN_EXECUTE}
 local clientflags = {FCVAR_ARCHIVE, FCVAR_USERINFO}
 local cvarlist = {}
-local cvarname = ""
 local cvarprefix = {}
 local cvarseparator = "_"
 module("greatzenkakuman.cvartree", package.seeall)
@@ -127,8 +126,8 @@ end
 
 function IteratePreferences(root)
     local t = root and GetCVarTable(root) or cvarlist
-    local function f(root)
-        for p, pt in pairs(root or t) do
+    local function f(r)
+        for p, pt in pairs(r or t) do
             if istable(pt) then
                 if pt.iscvarlayer then
                     f(pt)
@@ -181,11 +180,11 @@ end)
 
 -- PreferenceTable -> pt, IsEnabledPanel -> e
 local idprefix = "GreatZenkakuMan's Module: CVarTree"
-local function EnablePanel(panel, type, enabled, func)
+local function EnablePanel(panel, panelType, enabled, func)
     panel:SetEnabled(enabled)
     for _, c in ipairs(panel:GetChildren()) do c:SetEnabled(enabled) end
 
-    if type == "number" then
+    if panelType == "number" then
         local s = enabled and "Dark" or "Default"
         local l, t = panel.Label, panel:GetTextArea()
         l:SetTextColor(l:GetSkin().Colours.Label[s])
@@ -199,7 +198,6 @@ local function EnablePanel(panel, type, enabled, func)
     end
 end
 
-local waitafterchange = .1
 local function GetCVarOnChange(pt)
     if pt.options.type == "boolean" then
         return function(convar, old, new)
@@ -279,17 +277,17 @@ local function MakeElement(p, admin, pt)
             override:SetValue(checked)
             cvars.AddChangeCallback(pt[panel].CVarName, function(convar, old, new)
                 if not (IsValid(LocalPlayer()) and LocalPlayer():IsAdmin()) then return end
-                local checked = tonumber(new) ~= -1
-                override:SetChecked(checked)
-                EnablePanel(pt.paneladmin, pt.options.type, checked)
+                local chk = tonumber(new) ~= -1
+                override:SetChecked(chk)
+                EnablePanel(pt.paneladmin, pt.options.type, chk)
             end)
 
-            function override:OnChange(checked)
-                EnablePanel(pt.paneladmin, pt.options.type, checked)
+            function override:OnChange(chk)
+                EnablePanel(pt.paneladmin, pt.options.type, chk)
                 dermaonchange(pt.paneladmin, pt.cl:GetDefault())
                 net.Start "greatzenkakuman.cvartree.adminchange"
                 net.WriteString(pt[panel].CVarName)
-                net.WriteString(checked and pt.cl:GetDefault() or "-1")
+                net.WriteString(chk and pt.cl:GetDefault() or "-1")
                 net.SendToServer()
             end
         end

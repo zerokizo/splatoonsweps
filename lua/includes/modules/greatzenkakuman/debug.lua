@@ -6,7 +6,7 @@ module("greatzenkakuman.debug", package.seeall)
 local t = 5 -- Debugoverlay time
 local csv = Color(0, 255, 255)
 local ccl = Color(255, 255, 0) -- Debugoverlay color
-local g = true -- Debugoverlay ignoreZ
+local igz = true -- Debugoverlay ignoreZ
 local sp = game.SinglePlayer()
 local d = sp or CLIENT
 local dcolor = "greatzenkakuman.debug.DColor(%s,%s,%s,%s,1)"
@@ -45,7 +45,7 @@ function DColor(r, g, b, a, sv)
 end
 
 function DAxis(v, a, z, l)
-    a, z, l = a or angle_zero, Either(z ~= nil, z, g), l or 20
+    a, z, l = a or angle_zero, Either(z ~= nil, z, igz), l or 20
     if d then
         debugoverlay.Axis(v, a, l, t, z)
     else
@@ -54,7 +54,7 @@ function DAxis(v, a, z, l)
 end
 
 function DLine(x, y, z, sv)
-    z = Either(z ~= nil, z, g)
+    z = Either(z ~= nil, z, igz)
     if d then
         debugoverlay.Line(x, y, t, sv and csv or ccl, z)
     else
@@ -63,7 +63,7 @@ function DLine(x, y, z, sv)
 end
 
 function DText(v, x, z)
-    z = Either(z ~= nil, z, g)
+    z = Either(z ~= nil, z, igz)
     x = tostring(x)
     if d then
         debugoverlay.Text(v, x, t, not z)
@@ -73,7 +73,7 @@ function DText(v, x, z)
 end
 
 function DTri(a, b, c, z, sv)
-    z = Either(z ~= nil, z, g)
+    z = Either(z ~= nil, z, igz)
     if d then
         debugoverlay.Triangle(a, b, c, t, sv and csv or ccl, z)
     else
@@ -82,7 +82,7 @@ function DTri(a, b, c, z, sv)
 end
 
 function DPlane(v, n, z, sv)
-    z = Either(z ~= nil, z, g)
+    z = Either(z ~= nil, z, igz)
     if d then
         local l = 50
         local a = n:Angle()
@@ -98,7 +98,7 @@ end
 
 function DPoint(v, s, z, sv)
     if s == nil or isbool(s) then s, z, sv = 10, s, z end
-    z = Either(z ~= nil, z, g)
+    z = Either(z ~= nil, z, igz)
     if d then
         debugoverlay.Cross(v, s, t, sv and csv or ccl, z)
     else
@@ -116,7 +116,7 @@ function DSText(u, v, x, sv)
 end
 
 function DSphere(v, r, z, sv)
-    z = Either(z ~= nil, z, g)
+    z = Either(z ~= nil, z, igz)
     if d then
         debugoverlay.Sphere(v, r, t, sv and csv or ccl, z)
     else
@@ -125,7 +125,7 @@ function DSphere(v, r, z, sv)
 end
 
 function DVector(v, n, z, sv)
-    z = Either(z ~= nil, z, g)
+    z = Either(z ~= nil, z, igz)
     if d then
         debugoverlay.Line(v, v + n, t, sv and csv or ccl, z)
     else
@@ -181,7 +181,7 @@ function DTrace(v, z, sv)
     if v.mins and v.maxs then
         DSBox(v.mins, v.maxs, v.start, v.endpos, nil, SERVER)
     else
-        z = Either(z ~= nil, z, g)
+        z = Either(z ~= nil, z, igz)
         DLine(v.StartPos or v.start, v.HitPos or v.endpos, z)
     end
 end

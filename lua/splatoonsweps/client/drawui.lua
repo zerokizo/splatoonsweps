@@ -5,8 +5,8 @@ if not ss then return end
 local function PrecacheArc(cx, cy, radius, thickness, startang, endang, roughness)
     local triarc, inner, outer = {}, {}, {}
     local step = math.max(roughness or 20, 1) -- Define step
-    local thickness = thickness or radius
-    local startang, endang = startang or 0, endang or 360 -- Correct start/end ang
+    thickness = thickness or radius
+    startang, endang = startang or 0, endang or 360 -- Correct start/end ang
     if startang > endang then endang = endang + 360 end
 
     -- Create the inner and outer circle's points.
@@ -130,7 +130,6 @@ end
 
 local function FourLinesAround(org, right, dir, range, degx, degy, dx, dy, drawfunc)
     local ndir = dir:GetNormalized()
-    local ldir = dir:Length()
     local up = right:Cross(ndir)
     for i = 1, 4 do
         local rot = dir:Angle()
@@ -152,7 +151,6 @@ function ss.DrawCrosshair.FourLinesAround(org, right, dir, range, degx, degy, dx
     local SIZE_ORIGINAL = 18 -- in pixels
     local WIDTH_ORIGINAL = 4 -- in pixels
     local scale = ScrH() / SCRH_REF
-    local size = SIZE_ORIGINAL * scale -- width + length
     local width = (WIDTH_ORIGINAL / sin45) * scale
     local length = ((SIZE_ORIGINAL - WIDTH_ORIGINAL) / sin45) * scale
     local diff = OUTER_CIRCLE_OUTER_DIAMETER / 2 * scale
@@ -256,12 +254,12 @@ local function Flash(x, y, mul, color, frac, diameter)
     local ALPHA_MAX = 255
     local ALPHA_MIN = 0
     local scale = ScrH() / SCRH_REF * (mul or 1)
-    local diameter = diameter * scale
-    local radius = diameter / 2
+    local d = diameter * scale
+    local radius = d / 2
     local alpha = Lerp(frac, ALPHA_MAX, ALPHA_MIN)
     surface.SetMaterial(ss.Materials.Crosshair.Flash)
     surface.SetDrawColor(ColorAlpha(color, alpha))
-    surface.DrawTexturedRect(x - radius, y - radius, diameter, diameter)
+    surface.DrawTexturedRect(x - radius, y - radius, d, d)
 end
 
 function ss.DrawCrosshair.ChargerFlash(x, y, mul, color, frac)
@@ -271,7 +269,7 @@ end
 function ss.DrawCrosshair.SplatlingBaseCircle(x, y)
     local OUTER_DIAMETER = 54
     local INNER_DIAMETER = 44 + 2
-    DrawCircle(x, y, ss.CrosshairBaseColor, OUTER_DIAMETER, INNER_DIAMETER, mul)
+    DrawCircle(x, y, ss.CrosshairBaseColor, OUTER_DIAMETER, INNER_DIAMETER)
 end
 
 local SPLATLING_OUTER_DIAMETER = 70
