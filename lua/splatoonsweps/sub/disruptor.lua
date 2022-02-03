@@ -60,7 +60,7 @@ end
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
     local e = ents.Create "ent_splatoonsweps_disruptor"
-    e.Owner = self.Owner
+    e:SetOwner(self:GetOwner())
     e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
     e:SetInkColorProxy(self:GetInkColorProxy())
     e:SetPos(self:GetShootPos() + self:GetAimVector() * 20)

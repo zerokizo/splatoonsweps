@@ -86,7 +86,7 @@ end
 
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
-    if not self.Owner:OnGround() then return end
+    if not self:GetOwner():OnGround() then return end
 
     self.ExistingBeakons = self.ExistingBeakons or {}
     if self.NumBeakons >= p.MaxBeakons then
@@ -98,17 +98,17 @@ function module:ServerSecondaryAttack(throwable)
         SafeRemoveEntity(beakon)
     end
 
-    local start = self.Owner:GetPos()
+    local start = self:GetOwner():GetPos()
     local tracedz = -vector_up * p.CrossPaintRayLength
-    local tr = util.QuickTrace(start, tracedz, self.Owner)
+    local tr = util.QuickTrace(start, tracedz, self:GetOwner())
     if not tr.Hit then return end
 
     local inkcolor = self:GetNWInt "inkcolor"
     local e = ents.Create "ent_splatoonsweps_squidbeakon"
     local ang = Angle()
-    ang.yaw = self.Owner:GetAngles().yaw
+    ang.yaw = self:GetOwner():GetAngles().yaw
     e.Weapon = self
-    e:SetOwner(self.Owner)
+    e:SetOwner(self:GetOwner())
     e:SetNWInt("inkcolor", inkcolor)
     e:SetInkColorProxy(self:GetInkColorProxy())
     e:SetPos(tr.HitPos + tr.HitNormal)
@@ -122,11 +122,11 @@ function module:ServerSecondaryAttack(throwable)
     self:SetReloadDelay(p.InkRecoverStop)
 
     ss.Paint(tr.HitPos, tr.HitNormal, p.InitInkRadius,
-    inkcolor, ang.yaw, ss.GetDropType(), 1, self.Owner, self:GetClass())
+    inkcolor, ang.yaw, ss.GetDropType(), 1, self:GetOwner(), self:GetClass())
 
-    local p = e:GetPhysicsObject()
-    if not IsValid(p) then return end
-    p:EnableMotion(not tr.Entity:IsWorld())
+    local ph = e:GetPhysicsObject()
+    if not IsValid(ph) then return end
+    ph:EnableMotion(not tr.Entity:IsWorld())
 
     e.HitNormal = tr.HitNormal
     e.ContactEntity = tr.Entity

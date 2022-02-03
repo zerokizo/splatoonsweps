@@ -73,15 +73,14 @@ if CLIENT then
 end
 
 function ENT:IsEnemyNearby()
-    local r = ss.inkmine.Parameters.PlayerColRadius^2
-    for _, p in ipairs(ents.GetAll()) do
-        if IsValid(p) and (p:IsPlayer() or p:IsNPC()) and p ~= self:GetOwner() then
-            local w = ss.IsValidInkling(p)
-            if not w or w:GetNWInt "inkcolor" ~= self:GetNWInt "inkcolor" then
-                if p:GetPos():DistToSqr(self:GetPos()) < r then
-                    return true
-                end
-            end
+    local r = ss.inkmine.Parameters.PlayerColRadius
+    for _, p in ipairs(ents.FindInSphere(self:GetPos(), r)) do
+        if not IsValid(p) then continue end
+        if not (p:IsPlayer() or p:IsNPC()) then continue end
+        if p == self:GetOwner() then continue end
+        local w = ss.IsValidInkling(p)
+        if not w or w:GetNWInt "inkcolor" ~= self:GetNWInt "inkcolor" then
+            return true
         end
     end
 end

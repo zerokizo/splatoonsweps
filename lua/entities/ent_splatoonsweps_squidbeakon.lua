@@ -59,7 +59,6 @@ function ENT:UpdateLightEmission()
     local t = CurTime() - t0
     if t <= 0 then self:SetSkin(1) return end
 
-    local p = self.Parameters
     local state = self:GetLightEmitState()
     self:SetSkin((state == 1 or state == 3) and 0 or 1)
 
@@ -135,11 +134,9 @@ function ENT:Think()
         if color then self:SetInkColorProxy(color:ToVector()) end
     end
 
-    if self:GetSequence() ~= self:LookupSequence "idle" then
-        if self:IsSequenceFinished() then
-            self:ResetSequence "idle"
-            self:SetNWFloat("DeployFinishedTime", CurTime() + self.Parameters.RotationDelay)
-        end
+    if self:GetSequence() ~= self:LookupSequence "idle" and self:IsSequenceFinished() then
+        self:ResetSequence "idle"
+        self:SetNWFloat("DeployFinishedTime", CurTime() + self.Parameters.RotationDelay)
     end
 
     return true

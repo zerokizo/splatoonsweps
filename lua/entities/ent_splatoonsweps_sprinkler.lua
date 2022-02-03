@@ -119,8 +119,8 @@ end
 
 function ENT:Think()
     if not IsValid(self.Weapon)
-    or not IsValid(self.Owner)
-    or self.Owner:Health() == 0 then
+    or not IsValid(self:GetOwner())
+    or self:GetOwner():Health() == 0 then
         SafeRemoveEntity(self)
     end
 
@@ -174,7 +174,7 @@ function ENT:PhysicsCollide(data, collider)
 
     local inkcolor = self:GetNWInt "inkcolor"
     ss.Paint(data.HitPos, self.HitNormal, self.Parameters.InitInkRadius,
-    inkcolor, 0, ss.GetDropType(), 1, self.Owner, self.WeaponClassName)
+    inkcolor, 0, ss.GetDropType(), 1, self:GetOwner(), self.WeaponClassName)
 
     if IsValid(self.DestroyOnLand) then
         SafeRemoveEntity(self.DestroyOnLand)

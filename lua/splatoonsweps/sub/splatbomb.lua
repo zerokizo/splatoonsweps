@@ -174,7 +174,7 @@ end
 if SERVER then
     function module:ServerSecondaryAttack(throwable)
         local e = ents.Create "ent_splatoonsweps_splatbomb"
-        e.Owner = self.Owner
+        e:SetOwner(self:GetOwner())
         e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
         e:SetInkColorProxy(self:GetInkColorProxy())
         e:SetPos(self:GetShootPos())
