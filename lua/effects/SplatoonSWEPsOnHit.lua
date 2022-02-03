@@ -87,9 +87,9 @@ function EFFECT:Init(e)
 end
 
 function EFFECT:Render()
-    local t = self:GetPos():ToScreen()
-    if not t.visible then return end
-    local x, y, t = t.x, t.y, CurTime() - self.Time
+    local toscr = self:GetPos():ToScreen()
+    if not toscr.visible then return end
+    local x, y, t = toscr.x, toscr.y, CurTime() - self.Time
     self:Animate(t)
     cam.Start2D()
     surface.SetDrawColor(ColorAlpha(self.Color, self.Alpha))

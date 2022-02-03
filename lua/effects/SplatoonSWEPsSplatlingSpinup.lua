@@ -9,11 +9,11 @@ local LifeSpan = .2
 local Swirl = Material "particle/particle_crescent"
 local dr = math.rad(30)
 local drdt = math.rad(-2700)
-local dz = -3
+local dzDefault = -3
 local function Think(self)
     if not IsValid(self.Enttiy) then return end
     local a = self.Entity:GetAttachment(self.Attachment)
-    self:SetPos(a.Pos + a.Ang:Forward() * self.Offset + a.Ang:Up() * dz)
+    self:SetPos(a.Pos + a.Ang:Forward() * self.Offset + a.Ang:Up() * dzDefault)
     self:SetNextThink(CurTime())
 end
 
@@ -29,14 +29,14 @@ function EFFECT:Think()
     local t = CurTime() - self.Time
     local a = ent:GetAttachment(i)
     local dx = self.TPS and -30 or -15
-    local dz = self.TPS and dz or dz / 2
+    local dz = self.TPS and dzDefault or dzDefault / 2
     local dt = EmissionDelay * (self.TPS and 1 or 2)
     self.Emitter:SetPos(a.Pos)
     while t < EmissionDuration and self.Count < math.floor(t / dt) do
-        local dx = math.Remap(self.Count * dt, EmissionDuration, 0, dx, 0)
-        local p = self.Emitter:Add(Swirl, a.Pos + a.Ang:Forward() * dx + a.Ang:Up() * dz)
+        local dx2 = math.Remap(self.Count * dt, EmissionDuration, 0, dx, 0)
+        local p = self.Emitter:Add(Swirl, a.Pos + a.Ang:Forward() * dx2 + a.Ang:Up() * dz)
         local r = math.Remap(t, 0, EmissionDuration, 1, 2 - self.Flags)
-        p.Attachment, p.Entity, p.Offset = i, ent, dx
+        p.Attachment, p.Entity, p.Offset = i, ent, dx2
         p:SetColor(self.r, self.g, self.b)
         p:SetDieTime(LifeSpan)
         p:SetRoll(math.Rand(-dr, dr))

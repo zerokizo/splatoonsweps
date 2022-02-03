@@ -39,7 +39,7 @@ function EFFECT:Render()
     local col = ss.vector_one * self:GetColRadius(true)
     local range = self:GetRange(true)
     local tb = ss.SquidTrace
-    if self.Owner:IsNPC() then
+    if self:GetOwner():IsNPC() then
         local target = self:GetNPCTarget()
         if IsValid(target) then dir = (target:WorldSpaceCenter() - shootpos):GetNormalized() end
     end
@@ -48,13 +48,13 @@ function EFFECT:Render()
     tb.endpos = shootpos + dir * range
     tb.mins = -col
     tb.maxs = col
-    tb.filter = {self, self.Owner}
+    tb.filter = {self, self:GetOwner()}
     local tr = util.TraceHull(tb)
     if tr.StartSolid then return end
 
     tb.start = shootpos
-    local tr = util.TraceHull(tb)
-    local trlp = self.Owner ~= LocalPlayer() and ss.TraceLocalPlayer(tb.start, tb.endpos - tb.start)
+    tr = util.TraceHull(tb)
+    local trlp = self:GetOwner() ~= LocalPlayer() and ss.TraceLocalPlayer(tb.start, tb.endpos - tb.start)
     local texpos, dp = prog * tr.Fraction * 2 / interp, CurTime() / 5
     tr.HitPos = trlp or tr.HitPos
     local length = tr.HitPos:Distance(pos)
@@ -86,8 +86,8 @@ function EFFECT:Render()
     for _, m in ipairs {beam, beamlight} do
         render.SetMaterial(m)
         render.StartBeam(interp + 2)
-        for i, p in ipairs(points) do
-            render.AddBeam(p, i == #points and .25 or 1, tpoints[i], color)
+        for i, pi in ipairs(points) do
+            render.AddBeam(pi, i == #points and .25 or 1, tpoints[i], color)
         end
         render.EndBeam()
     end

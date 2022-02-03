@@ -11,7 +11,6 @@ local rollerink1 = Material "splatoonsweps/effects/rollerink1"
 local rollerink2 = Material "splatoonsweps/effects/rollerink2"
 local inksplash = Material "splatoonsweps/effects/muzzlesplash"
 local inkring = Material "splatoonsweps/effects/inkring"
-local OrdinalNumbers = {"First", "Second", "Third"}
 local RenderFuncs = {
     weapon_splatoonsweps_blaster_base = "RenderBlaster",
     weapon_splatoonsweps_roller = "RenderSplash",
@@ -70,15 +69,14 @@ function EFFECT:Init(e)
     local InitDir = InitVel:GetNormalized()
     local InitSpeed = InitVel:Length()
     local IsDrop = bit.band(f, 1) > 0
-    local IsBlasterSphereSplashDrop = bit.band(f, 2) > 0
-    local IsRollerSubSplash = bit.band(f, 4) > 0
+    -- local IsBlasterSphereSplashDrop = bit.band(f, 2) > 0
+    -- local IsRollerSubSplash = bit.band(f, 4) > 0
     local IsBombSplash = bit.band(f, 8) > 0
     local IsLP = bit.band(f, 128) > 0 -- IsCarriedByLocalPlayer
     local IsBlaster = Weapon.IsBlaster
     local IsCharger = Weapon.IsCharger
     local IsRoller = Weapon.IsRoller
     local IsSlosher = Weapon.IsSlosher
-    local Order = OrdinalNumbers[BulletGroup]
     local Ping = IsLP and Weapon:Ping() or 0
     local Splash = ss.GetEffectSplash(e)
     local SplashInitRateVector = ss.GetEffectSplashInitRate(e)
@@ -90,7 +88,6 @@ function EFFECT:Init(e)
     local StraightFrame = ss.GetEffectStraightFrame(e)
     local DrawRadius = ss.GetEffectDrawRadius(e)
     local RenderFunc = RenderFuncs[Weapon.ClassName] or RenderFuncs[Weapon.Base] or "RenderGeneral"
-    local mat1 = math.random() > 0.5 and inkspla
     local material = math.random() > 0.5 and inksplash or inkring
     if IsSlosher or IsRoller then
         material = math.random() > 0.5 and rollerink1 or rollerink2
@@ -125,6 +122,8 @@ function EFFECT:Init(e)
         Gravity = Gravity,
         InitPos = InitPos,
         InitVel = InitVel,
+        InitDir = InitDir,
+        InitSpeed = InitSpeed,
         SplashColRadius = SplashColRadius,
         SplashDrawRadius = SplashDrawRadius,
         SplashInitRate = SplashInitRate,
@@ -140,8 +139,6 @@ function EFFECT:Init(e)
     self.Ink.Trace.maxs:Mul(ColRadius)
     self.Ink.Trace.mins:Mul(ColRadius)
     self.Ink.Trace.endpos:Set(self.Ink.Data.InitPos)
-    self.Ink.Data.InitDir = self.Ink.Data.InitVel:GetNormalized()
-    self.Ink.Data.InitSpeed = self.Ink.Data.InitVel:Length()
 
     self.Color = ColorValue
     self.ColorVector = ColorValue:ToVector()
@@ -191,8 +188,6 @@ function EFFECT:Think()
     -- Check collision agains local player
     self.Ink.Trace.filter = ss.MakeAllyFilter(Weapon:GetOwner())
     local tr = util.TraceHull(self.Ink.Trace)
-    local lp = LocalPlayer()
-    local la = Angle(0, lp:GetAngles().yaw, 0)
     local trlp = Weapon:GetOwner() ~= LocalPlayer()
     local start, endpos = self.Ink.Trace.start, self.Ink.Trace.endpos
     local t = self.Ink.Trace.LifeTime
@@ -200,7 +195,6 @@ function EFFECT:Think()
     if tr.HitWorld and self.Ink.Trace.LifeTime > ss.FrameToSec then self:HitEffect(tr) end
     if (tr.Hit or trlp) and not (tr.StartSolid and t < ss.FrameToSec) then return false end
 
-    local t0 = self.Ink.InitTime
     local initpos = self.Ink.Data.InitPos
     local offset = endpos - initpos
     self:SetPos(LerpVector(math.min(t / ApparentMergeTime, 1), self.ApparentInitPos + offset, endpos))
@@ -256,7 +250,6 @@ function EFFECT:RenderGeneral()
 end
 
 -- A render function for roller, slosher, etc.
-local duration = 60 * ss.FrameToSec
 function EFFECT:RenderSplash()
     self.Frame = math.min(math.floor(self.Ink.Trace.LifeTime * 30), 15)
     self.Material:SetInt("$frame", self.Frame)
@@ -266,7 +259,6 @@ function EFFECT:RenderSplash()
 end
 
 function EFFECT:RenderBlaster() -- Blaster bullet
-    local t = math.max(CurTime() - self.Ink.InitTime, 0)
     local color = self:GetRenderColor()
     render.SetMaterial(mat)
     mat:SetVector("$color", self.ColorVector)

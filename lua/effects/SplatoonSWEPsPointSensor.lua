@@ -45,7 +45,9 @@ function EFFECT:Render()
         end
 
         render.StartBeam(ns)
-        for i = 1, ns do render.AddBeam(pos[i], w, i / ns * 5, self.Color) end
+        for k = 1, ns do
+            render.AddBeam(pos[k], w, k / ns * 5, self.Color)
+        end
         render.EndBeam()
     end
 end

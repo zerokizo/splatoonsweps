@@ -5,8 +5,6 @@ if not ss then return end
 local MinLength = 3
 local Division = 16
 local DegStep = 360 / Division
-local RadStep = math.rad(DegStep)
-local LifeTime = 7 * ss.FrameToSec
 local drawviewmodel = GetConVar "r_drawviewmodel"
 local deep = "SplatoonSWEPs_Player.InkDiveDeep"
 local shallow = "SplatoonSWEPs_Player.InkDiveShallow"
@@ -113,7 +111,7 @@ function EFFECT:Render()
             local nextdir = a:Right() a:RotateAroundAxis(norm, DegStep)
             local nextdir2 = a:Right() a:RotateAroundAxis(norm, -DegStep * 3)
             local prevdir = a:Right()
-            local n = norm:Cross((prevdir - nextdir):GetNormalized())
+            local n1 = norm:Cross((prevdir - nextdir):GetNormalized())
             local n2 = norm:Cross((dir - nextdir2):GetNormalized())
             local p1 = dir * r + norm * t
             local p2 = nextdir * r + norm * t
@@ -127,7 +125,7 @@ function EFFECT:Render()
             end
 
             AdvanceVertex(self, pos, -norm, .5, .5)
-            AdvanceVertex(self, pos + p1, n, u[i], v[i])
+            AdvanceVertex(self, pos + p1, n1, u[i], v[i])
             AdvanceVertex(self, pos + p2, n2, u[i + 1], v[i + 1])
         end
         mesh.End()
