@@ -30,7 +30,7 @@ ss.splashwall = {
         Fly_VelKd = 0.94134,
         mInkConsume = 0.6,
         mInkRecoverStop = 80, -- 160 after ver. 2.2.0
-        
+
         Fly_InitVel_Estimated = 6,
     },
     Units = {
@@ -57,7 +57,7 @@ ss.splashwall = {
         Fly_VelKd = "ratio",
         mInkConsume = "ink",
         mInkRecoverStop = "f",
-        
+
         Fly_InitVel_Estimated = "du/f",
     },
 }
@@ -85,8 +85,8 @@ end
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
     local e = ents.Create "ent_splatoonsweps_splashwall"
-    e.Owner = self.Owner
     e.Weapon = self
+    e:SetOwner(self:GetOwner())
     e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
     e:SetInkColorProxy(self:GetInkColorProxy())
     e:SetPos(self:GetShootPos())

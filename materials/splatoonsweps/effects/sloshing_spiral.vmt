@@ -1,8 +1,8 @@
 "UnlitGeneric"
 {
-	"$basetexture" "splatoonsweps/effects/inkring"
-	"$bumpmap" "splatoonsweps/effects/inkringn"
-	"$model" "1"
-	"$nocull" "1"
-	"$translucent" "1"
+    "$basetexture" "splatoonsweps/effects/inkring"
+    "$bumpmap" "splatoonsweps/effects/inkringn"
+    "$model" "1"
+    "$nocull" "1"
+    "$translucent" "1"
 }

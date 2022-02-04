@@ -57,7 +57,7 @@ function ENT:TracePaint()
     local t = util.QuickTrace(self:GetPos(), -vector_up * 10, self)
     if not t.Hit then return end
     ss.Paint(t.HitPos, t.HitNormal, self.TracePaintRadius, self:GetNWInt "inkcolor",
-    self:GetAngles().yaw + 90, math.random(10, 12), 0.5, self.Owner, self.WeaponClassName)
+    self:GetAngles().yaw + 90, math.random(10, 12), 0.5, self:GetOwner(), self.WeaponClassName)
 end
 
 function ENT:MakeCollisionMesh()
@@ -131,7 +131,7 @@ function ENT:Paint()
 
     for _, t in ipairs(paintPos) do
         ss.Paint(t.HitPos, t.HitNormal, radius / ratio, inkcolor, self:GetAngles().yaw + 90,
-        ss.GetDropType(), ratio, self.Owner, self.WeaponClassName)
+        ss.GetDropType(), ratio, self:GetOwner(), self.WeaponClassName)
     end
 end
 
@@ -169,14 +169,13 @@ function ENT:Think()
         self:PhysicsInitConvex(self.CollisionMesh)
         self:EnableCustomCollisions(true)
         self:Weld()
-        local p = self:GetPhysicsObject()
-        if IsValid(p) then
-            p:EnableMotion(not self.ContactEntity:IsWorld())
+        local ph = self:GetPhysicsObject()
+        if IsValid(ph) then
+            ph:EnableMotion(not self.ContactEntity:IsWorld())
         end
     end
 
     self:Paint()
-
     return true
 end
 
@@ -202,7 +201,7 @@ function ENT:PhysicsCollide(data, collider)
             d:SetDamagePosition(data.HitPos)
             d:SetDamageType(dt)
             d:SetReportedPosition(data.HitPos)
-            d:SetAttacker(self.Owner)
+            d:SetAttacker(self:GetOwner())
             d:SetInflictor(self)
             d:ScaleDamage(ss.ToHammerHealth)
             data.HitEntity:TakeDamageInfo(d)
@@ -232,7 +231,7 @@ function ENT:PhysicsCollide(data, collider)
     self.ContactPhysObj = data.HitObject
     self.ContactStartTime = self.ContactStartTime or CurTime()
     self:Weld()
-    
+
     if self.IsFirstTimeContact then
         self.IsFirstTimeContact = false
         self:EmitSound "SplatoonSWEPs.SplashWallDeploy"

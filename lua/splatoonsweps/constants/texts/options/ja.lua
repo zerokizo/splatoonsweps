@@ -77,13 +77,13 @@ return {Options = {
     weapon_splatoonsweps_slosher_base = {
         Automatic = "フルオート",
     },
-	weapon_splatoonsweps_roller = {
+    weapon_splatoonsweps_roller = {
         AutomaticBrush = "フデ: フルオート連打",
         AutomaticBrush_help = "攻撃キーを押し続けると自動で連打する。塗り進みはできなくなる。",
         DropAtFeet = "フデ: 足元を塗る",
         DropAtFeet_help = "連続で振り攻撃をした場合に、足元にもインクが塗られるようにする。",
-		weapon_splatoonsweps_heroroller = {
+        weapon_splatoonsweps_heroroller = {
             Level = "ヒーローローラーのレベル",
         },
-	},
+    },
 }}

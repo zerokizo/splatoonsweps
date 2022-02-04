@@ -77,11 +77,11 @@ end
 
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
-    if not self.Owner:OnGround() then return end
+    if not self:GetOwner():OnGround() then return end
     if self.NumInkmines >= p.MaxInkmines then return end
-    local start = self.Owner:GetPos()
+    local start = self:GetOwner():GetPos()
     local tracedz = -vector_up * p.CrossPaintRayLength
-    local tr = util.QuickTrace(start, tracedz, self.Owner)
+    local tr = util.QuickTrace(start, tracedz, self:GetOwner())
     if not tr.Hit then return end
 
     local inkcolor = self:GetNWInt "inkcolor"
@@ -89,7 +89,7 @@ function module:ServerSecondaryAttack(throwable)
     local ang = (tr.Hit and tr.HitNormal or vector_up):Angle()
     ang:RotateAroundAxis(ang:Right(), -90)
     e.Weapon = self
-    e:SetOwner(self.Owner)
+    e:SetOwner(self:GetOwner())
     e:SetNWInt("inkcolor", inkcolor)
     e:SetPos(tr.HitPos + tr.HitNormal * 9)
     e:SetAngles(ang)
@@ -99,5 +99,5 @@ function module:ServerSecondaryAttack(throwable)
     self:SetReloadDelay(p.InkRecoverStop)
 
     ss.Paint(tr.HitPos, tr.HitNormal, p.InitInkRadius,
-    inkcolor, ang.yaw, ss.GetDropType(), 1, self.Owner, self:GetClass())
+    inkcolor, ang.yaw, ss.GetDropType(), 1, self:GetOwner(), self:GetClass())
 end

@@ -39,7 +39,7 @@ function ENT:Initialize()
     self:SetSkin(1)
     self:SetLightEmitState(1)
     self:SetLightEmitTime(CurTime() + p.LightEmitInitialDelay)
-    timer.Simple(p.DeploySoundDelay, function() 
+    timer.Simple(p.DeploySoundDelay, function()
         if not IsValid(self) then return end
         self:EmitSound "SplatoonSWEPs.BeakonDeploy"
     end)
@@ -58,8 +58,7 @@ function ENT:UpdateLightEmission()
     local t0 = self:GetLightEmitTime()
     local t = CurTime() - t0
     if t <= 0 then self:SetSkin(1) return end
-    
-    local p = self.Parameters
+
     local state = self:GetLightEmitState()
     self:SetSkin((state == 1 or state == 3) and 0 or 1)
 
@@ -80,7 +79,7 @@ if CLIENT then
 
         local dt = CurTime() - td
         if dt <= 0 then return true end
-        
+
         local bone = self:LookupBone "neck"
         local pitch = dt * self.Parameters.RotationSpeed
         self:ManipulateBoneAngles(bone, Angle(pitch, 0, 0))
@@ -135,11 +134,9 @@ function ENT:Think()
         if color then self:SetInkColorProxy(color:ToVector()) end
     end
 
-    if self:GetSequence() ~= self:LookupSequence "idle" then
-        if self:IsSequenceFinished() then
-            self:ResetSequence "idle"
-            self:SetNWFloat("DeployFinishedTime", CurTime() + self.Parameters.RotationDelay)
-        end
+    if self:GetSequence() ~= self:LookupSequence "idle" and self:IsSequenceFinished() then
+        self:ResetSequence "idle"
+        self:SetNWFloat("DeployFinishedTime", CurTime() + self.Parameters.RotationDelay)
     end
 
     return true

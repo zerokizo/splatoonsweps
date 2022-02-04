@@ -34,8 +34,8 @@ hook.Add("ShouldCollide", "SplatoonSWEPs: Sub weapon filter", function(e1, e2)
 end)
 
 function ENT:Initialize()
-    if IsValid(self.Owner) then
-        local w = ss.IsValidInkling(self.Owner)
+    if IsValid(self:GetOwner()) then
+        local w = ss.IsValidInkling(self:GetOwner())
         if w then self.WeaponClassName = w:GetClass() end
     end
 

@@ -21,21 +21,21 @@ function ENT:PhysicsCollide(data, collider)
     e:SetColor(self:GetNWInt "inkcolor")
     util.Effect("SplatoonSWEPsPointSensor", e)
 
-    for _, e in ipairs(ents.FindInSphere(self:GetPos(), p.Burst_Radius)) do
-        local w = ss.IsValidInkling(e)
-        if (e:IsPlayer() or e:IsNPC() or e:IsNextBot()) and not (w and ss.IsAlly(self, w)) then
+    for _, ent in ipairs(ents.FindInSphere(self:GetPos(), p.Burst_Radius)) do
+        local w = ss.IsValidInkling(ent)
+        if (ent:IsPlayer() or ent:IsNPC() or ent:IsNextBot()) and not (w and ss.IsAlly(self, w)) then
             hit = true
-            e:EmitSound "SplatoonSWEPs.PointSensorTaken"
-            e:SetNWBool("SplatoonSWEPs: IsMarked", true)
-            e:SetNWInt("SplatoonSWEPs: PointSensorMarkedBy", self:GetNWInt "inkcolor")
-            e:SetNWFloat("SplatoonSWEPs: PointSensorEndTime", CurTime() + ss.PointSensorDuration)
-            local name = "SplatoonSWEPs: Timer for Point Sensor duration " .. e:EntIndex()
+            ent:EmitSound "SplatoonSWEPs.PointSensorTaken"
+            ent:SetNWBool("SplatoonSWEPs: IsMarked", true)
+            ent:SetNWInt("SplatoonSWEPs: PointSensorMarkedBy", self:GetNWInt "inkcolor")
+            ent:SetNWFloat("SplatoonSWEPs: PointSensorEndTime", CurTime() + ss.PointSensorDuration)
+            local name = "SplatoonSWEPs: Timer for Point Sensor duration " .. ent:EntIndex()
             timer.Create(name, 0, 0, function()
-                if not IsValid(e) then timer.Remove(name) return end
-                if not e:GetNWBool "SplatoonSWEPs: IsMarked" then timer.Remove(name) return end
-                if CurTime() < e:GetNWFloat "SplatoonSWEPs: PointSensorEndTime" then return end
-                e:SetNWBool("SplatoonSWEPs: IsMarked", false)
-                e:EmitSound "SplatoonSWEPs.PointSensorLeft"
+                if not IsValid(ent) then timer.Remove(name) return end
+                if not ent:GetNWBool "SplatoonSWEPs: IsMarked" then timer.Remove(name) return end
+                if CurTime() < ent:GetNWFloat "SplatoonSWEPs: PointSensorEndTime" then return end
+                ent:SetNWBool("SplatoonSWEPs: IsMarked", false)
+                ent:EmitSound "SplatoonSWEPs.PointSensorLeft"
                 timer.Remove(name)
             end)
         end
@@ -43,10 +43,10 @@ function ENT:PhysicsCollide(data, collider)
 
     if not hit then return end
     local ply = {}
-    for _, e in ipairs(player.GetAll()) do
-        local w = ss.IsValidInkling(e)
+    for _, ent in ipairs(player.GetAll()) do
+        local w = ss.IsValidInkling(ent)
         if w and ss.IsAlly(self, w) then
-            table.insert(ply, e)
+            table.insert(ply, ent)
         end
     end
 

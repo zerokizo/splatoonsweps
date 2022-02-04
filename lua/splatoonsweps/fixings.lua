@@ -3,25 +3,25 @@ local ss = SplatoonSWEPs
 if not ss then return end
 
 ------------------------------------------
---			!!!WORKAROUND!!!			--
---	This should be removed after		--
---	Adv. Colour Tool fixed the bug!!	--
+--           !!!WORKAROUND!!!           --
+--  This should be removed after        --
+--  Adv. Colour Tool fixed the bug!!    --
 ------------------------------------------
 local AdvancedColourToolLoaded
 = file.Exists("weapons/gmod_tool/stools/adv_colour.lua", "LUA")
 local AdvancedColourToolReplacedSetSubMaterial
 = AdvancedColourToolLoaded and FindMetaTable "Entity"._OldSetSubMaterial
 if AdvancedColourToolReplacedSetSubMaterial then
-	function ss.SetSubMaterial_Workaround(ent, ...)
-		ent:_OldSetSubMaterial(...)
-	end
+    function ss.SetSubMaterial_Workaround(ent, ...)
+        ent:_OldSetSubMaterial(...)
+    end
 else
-	function ss.SetSubMaterial_Workaround(ent, ...)
-		ent:SetSubMaterial(...)
-	end
+    function ss.SetSubMaterial_Workaround(ent, ...)
+        ent:SetSubMaterial(...)
+    end
 end
 ------------------------------------------
---			!!!WORKAROUND!!!			--
+--           !!!WORKAROUND!!!           --
 ------------------------------------------
 
 
@@ -62,7 +62,8 @@ if isfunction(FindMetaTable "Player".SplatoonOffsets) then
 end
 
 -- View Extension disables FOV changes so "fix" it
-if CLIENT and hook.GetTable().CalcView["ViewExtension:CalcView"] then
+local ht = hook.GetTable()
+if CLIENT and ht.CalcView and ht.CalcView["ViewExtension:CalcView"] then
     ss.ViewExtensionCalcView = ss.ViewExtensionCalcView or hook.GetTable().CalcView["ViewExtension:CalcView"]
     hook.Remove("CalcView", "ViewExtension:CalcView")
     hook.Add("CalcView", "ViewExtension:CalcView", function( ply, org, ang, fov, zn, zf)

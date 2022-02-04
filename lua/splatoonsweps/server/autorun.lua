@@ -50,8 +50,11 @@ end, nil, ss.Text.CVars.Clear, FCVAR_SERVER_CAN_EXECUTE)
 -- Clears all ink in the world.
 -- Sends a net message to clear ink on clientside.
 function ss.ClearAllInk()
-    net.Start "SplatoonSWEPs: Send ink cleanup"
-    net.Send(ss.PlayersReady)
+    if player.GetCount() > 0 then
+        net.Start "SplatoonSWEPs: Send ink cleanup"
+        net.Send(ss.PlayersReady)
+    end
+
     table.Empty(ss.InkQueue)
     table.Empty(ss.PaintSchedule)
     if not ss.SurfaceArray then return end -- Workaround for changelevel
@@ -66,10 +69,10 @@ end
 
 -- Calls notification.AddLegacy serverside.
 -- Arguments:
---   string msg			| The message to display.
---   Player user		| The receiver.
---   number icon		| Notification icon.  Note that NOTIFY_Enums are only in clientside.
---   number duration	| The number of seconds to display the notification for.
+--   string msg      | The message to display.
+--   Player user     | The receiver.
+--   number icon     | Notification icon.  Note that NOTIFY_Enums are only in clientside.
+--   number duration | The number of seconds to display the notification for.
 function ss.SendError(msg, user, icon, duration)
     if IsValid(user) and not user:IsPlayer() then return end
     if not user and player.GetCount() == 0 then return end
@@ -86,9 +89,9 @@ end
 
 -- Gets an ink color for the given NPC, considering its faction.
 -- Argument:
---   Entity n			| The NPC
+--   Entity n     | The NPC
 -- Returnings:
---   number color		| The ink color for the given NPC.
+--   number color | The ink color for the given NPC.
 local NPCFactions = {
     [CLASS_NONE] = "others",
     [CLASS_PLAYER] = "player",
