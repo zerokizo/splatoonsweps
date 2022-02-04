@@ -26,7 +26,6 @@ function SWEP:GetFirePosition(ping)
     end
 
     local tr = util.TraceLine(t)
-    local trhull = util.TraceHull(t)
     local pos = shootpos + dp
     local min = {dir = 1, dist = math.huge, pos = pos}
 
@@ -159,7 +158,6 @@ function SWEP:SharedHolster()
 end
 
 local randinit = "SpaltoonSWEPs: Slosher splash init rate"
-local randink = "SplatoonSWEPs: Shooter ink type"
 local randspread = "SplatoonSWEPs: Slosher random spread"
 function SWEP:CreateInk(number, spawncount) -- Group #, spawncount-th bullet(0, 1, 2, ...)
     if not self:IsFirstTimePredicted() then return end
@@ -168,7 +166,6 @@ function SWEP:CreateInk(number, spawncount) -- Group #, spawncount-th bullet(0, 
     local p = self.Parameters
     local dir = self:GetAimVector()
     local pos = self:GetShootPos()
-    local right = self:GetOwner():GetRight()
     local iscenter = p["m" .. order .. "GroupCenterLine"]
     local isside = p["m" .. order .. "GroupSideLine"]
     local splashcolradius = p["m" .. order .. "GroupSplashColRadius"]

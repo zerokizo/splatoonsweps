@@ -3,23 +3,6 @@ local ss = SplatoonSWEPs
 if not ss then return end
 include "shared.lua"
 
-local crosshairalpha = 64
-local originalres = 1920 * 1080
-local hitline, hitwidth = 50, 3
-local line, linewidth = 16, 3
-local texlinesize = 128 / 2
-local texlinewidth = 8 / 2
-SWEP.Crosshair = {
-    color_circle = ColorAlpha(color_black, crosshairalpha),
-    color_nohit = ColorAlpha(color_white, crosshairalpha),
-    color_hit = ColorAlpha(color_white, 192),
-    Dot = 5, HitLine = 20, HitWidth = 2, -- in pixel
-    Inside1 = 40, Inside2 = 46, Outside1 = 56, Outside2 = 64,
-    InsideColored = 60, OutsideColored = 70,
-    InsideCenter = 44, OutsideCenter = 52,
-    HitLineSize = 114,
-}
-
 local function Spin(self, vm, weapon, ply)
     if self:GetCharge() < math.huge or self:GetFireInk() > 0 then
         local sgn = self:GetNWBool "lefthand" and 1 or -1
@@ -30,8 +13,8 @@ local function Spin(self, vm, weapon, ply)
         a.y = a.y + sgn * dy
         self:ManipulateBoneAngles(b, a)
         if not IsValid(vm) then return end
-        local b = vm:LookupBone "rotate_1" or 0
-        local a = vm:GetManipulateBoneAngles(b)
+        b = vm:LookupBone "rotate_1" or 0
+        a = vm:GetManipulateBoneAngles(b)
         a.y = a.y + sgn * dy
         vm:ManipulateBoneAngles(b, a)
     end
@@ -98,7 +81,7 @@ end
 
 function SWEP:DrawFourLines(t, degx, degy)
     local frac = t.Trace.Fraction
-    local bgcolor = t.IsSplatoon2 and t.Trace.Hit and self.Crosshair.color_nohit or color_white
+    local bgcolor = t.IsSplatoon2 and t.Trace.Hit and ColorAlpha(color_white, 64) or color_white
     local forecolor = t.HitEntity and ss.GetColor(self:GetNWInt "inkcolor")
     local dir = self:GetAimVector() * t.Distance
     local org = self:GetShootPos()

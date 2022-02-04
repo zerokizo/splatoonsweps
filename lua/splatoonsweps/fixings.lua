@@ -62,8 +62,8 @@ if isfunction(FindMetaTable "Player".SplatoonOffsets) then
 end
 
 -- View Extension disables FOV changes so "fix" it
-local t = hook.GetTable()
-if CLIENT and t.CalcView and t.CalcView["ViewExtension:CalcView"] then
+local ht = hook.GetTable()
+if CLIENT and ht.CalcView and ht.CalcView["ViewExtension:CalcView"] then
     ss.ViewExtensionCalcView = ss.ViewExtensionCalcView or hook.GetTable().CalcView["ViewExtension:CalcView"]
     hook.Remove("CalcView", "ViewExtension:CalcView")
     hook.Add("CalcView", "ViewExtension:CalcView", function( ply, org, ang, fov, zn, zf)

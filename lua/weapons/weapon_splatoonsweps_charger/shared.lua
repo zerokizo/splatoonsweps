@@ -147,7 +147,6 @@ function SWEP:SharedPrimaryAttack()
                     local ts = ss.GetTimeScale(self:GetOwner())
                     local elapsed = prog * p.mMaxChargeFrame / ts
                     local min = p.mMinChargeFrame / ts
-                    local ping = CLIENT and self:Ping() or 0
                     self:SetCharge(CurTime() + FrameTime() - elapsed - min)
                 end
 
@@ -211,7 +210,6 @@ function SWEP:Move(ply)
     local ShootSound = prog > .75 and self.ShootSound2 or self.ShootSound
     local pitch = (prog > .75 and 115 or 100) - prog * 20
     local pos, dir = self:GetFirePosition()
-    local ang = dir:Angle()
     local colradius = self:GetColRadius()
     local initspeed = self:GetInkVelocity()
     local maxrate = p.mSplashBetweenMaxSplashPaintRadiusRate

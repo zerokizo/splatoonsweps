@@ -87,7 +87,7 @@ function SWEP:MakeSquidModel(id)
     if IsValid(squid) then squid:Remove() end
     self:SetNWEntity("Squid", ents.Create "ent_splatoonsweps_squid")
     if not IsValid(self:GetNWEntity "Squid") then return end
-    local squid = self:GetNWEntity "Squid"
+    squid = self:GetNWEntity "Squid"
     squid:SetPos(self:GetOwner():GetPos())
     squid:SetAngles(self:GetOwner():GetAngles())
     squid:SetNWEntity("Owner", self:GetOwner())

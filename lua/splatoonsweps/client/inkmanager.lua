@@ -5,12 +5,9 @@ local ss = SplatoonSWEPs
 if not ss then return end
 local CVarWireframe = GetConVar "mat_wireframe"
 local CVarMinecraft = GetConVar "mat_showlowresimage"
-local IsHDREnabled = GetConVar "mat_hdr_level":GetInt() > 0
-local lightmapbrush = Material "splatoonsweps/lightmapbrush"
 local inkhdrscale = ss.vector_one * 0.5^2.2
 local inkmaterials = {}
 local rt = ss.RenderTarget
-local LightmapQueue = {}
 local MAX_QUEUE_TIME = ss.FrameToSec / 4
 local MAX_QUEUES_TOLERANCE = 5 -- Possible number of queues to be processed at once without losing FPS.
 for i = 1, 14 do
@@ -20,7 +17,6 @@ for i = 1, 14 do
     end
 end
 
-local amb = render.GetAmbientLightColor() * 0.25
 local function LightmapSample(pos, normal)
     local p = pos + normal * 0.5
     local c = render.ComputeLighting(p, normal)
@@ -103,7 +99,6 @@ local function ProcessPaintQueue()
     local ceil = math.ceil
     local Clamp = math.Clamp
     local Lerp = Lerp
-    local next = next
     local PaintQueue = ss.PaintQueue
     local SortedPairs = SortedPairs
     local SysTime = SysTime
@@ -115,7 +110,6 @@ local function ProcessPaintQueue()
     local PushRenderTarget = render.PushRenderTarget
     local PopRenderTarget = render.PopRenderTarget
     local SetScissorRect = render.SetScissorRect
-    local DrawTexturedRect = surface.DrawTexturedRect
     local DrawTexturedRectRotated = surface.DrawTexturedRectRotated
     local SetDrawColor = surface.SetDrawColor
     local SetMaterial = surface.SetMaterial
@@ -164,81 +158,6 @@ local function ProcessPaintQueue()
 
         Painted = 0
         yield()
-    end
-end
-
-local function ProcessLightmapSampling()
-    while not rt.Ready do coroutine.yield() end
-    local Lightmap = rt.Lightmap
-    local SysTime = SysTime
-    local Vector = Vector
-    local Angle = Angle
-    local RotateAroundAxis = Angle().RotateAroundAxis
-    local yield = coroutine.yield
-    local PushRenderTarget = render.PushRenderTarget
-    local PopRenderTarget = render.PopRenderTarget
-    local SetScissorRect = render.SetScissorRect
-    local SetMaterial = surface.SetMaterial
-    local SetDrawColor = surface.SetDrawColor
-    local DrawTexturedRect = surface.DrawTexturedRect
-    local NoTexture = draw.NoTexture
-    local Start2D = cam.Start2D
-    local End2D = cam.End2D
-    local ceil = math.ceil
-    local floor = math.floor
-    local ipairs = ipairs
-    local next = next
-    local To3D = ss.To3D
-    local UnitsToPixels = ss.UnitsToPixels
-    local UVToPixels = ss.UVToPixels
-    local Benchmark = SysTime()
-    local LIGHTMAP_RADIUS = 512 -- Pixels
-    while LIGHTMAP_RADIUS > 16 do
-        local LIGHTMAP_SIZE = LIGHTMAP_RADIUS * 2
-        for _, i in ipairs(ss.SortedSurfaceIDs) do
-            local s = ss.SurfaceArray[i]
-            if s.Displacement then
-                local angle = Angle(s.Angles)
-                local b = s.Bound * UnitsToPixels
-                local bound_offset = Vector(0, b.x, 0)
-                if s.Moved then
-                    RotateAroundAxis(angle, s.Normal, -90)
-                    b.x, b.y = b.y, b.x
-                end
-
-                local start = Vector(floor(s.u * ss.UVToPixels) - 1, floor(s.v * ss.UVToPixels) - 1)
-                local endpos = Vector(ceil(start.x + b.x) + 1, ceil(start.y + b.y) + 1)
-                local function ContinueYield()
-                    SetScissorRect(0, 0, 0, 0, false)
-                    End2D()
-                    PopRenderTarget()
-                    yield()
-                    PushRenderTarget(Lightmap)
-                    Start2D()
-                    SetScissorRect(start.x, start.y, endpos.x, endpos.y, true)
-                    NoTexture()
-                end
-
-                PushRenderTarget(Lightmap)
-                Start2D()
-                SetScissorRect(start.x, start.y, endpos.x, endpos.y, true)
-                NoTexture()
-                for x = start.x, endpos.x, LIGHTMAP_SIZE do
-                    for y = start.y, endpos.y, LIGHTMAP_SIZE do
-                        local pixel2d = Vector(x + LIGHTMAP_RADIUS - start.x, y + LIGHTMAP_RADIUS - start.y)
-                        local pos3d = To3D(pixel2d * ss.PixelsToUnits, s.Origin, angle)
-                        SetDrawColor(LightmapSample(pos3d, s.Normal))
-                        DrawTexturedRect(x, y, LIGHTMAP_SIZE, LIGHTMAP_SIZE)
-                        if SysTime() - Benchmark > 0.1 then ContinueYield() end
-                    end
-                end
-                SetScissorRect(0, 0, 0, 0, false)
-                End2D()
-                PopRenderTarget()
-            end
-        end
-
-        LIGHTMAP_RADIUS = LIGHTMAP_RADIUS / 2
     end
 end
 

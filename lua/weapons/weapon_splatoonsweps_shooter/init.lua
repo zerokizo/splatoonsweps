@@ -46,7 +46,7 @@ end
 function SWEP:NPCShoot_Primary(ShootPos, ShootDir)
     self:PrimaryAttack()
     if self.IsBlaster then return end
-    self:AddSchedule(self.Parameters.mRepeatFrame, 2, function(self, schedule)
+    self:AddSchedule(self.Parameters.mRepeatFrame, 2, function(_, schedule)
         self:PrimaryAttack()
     end)
 end

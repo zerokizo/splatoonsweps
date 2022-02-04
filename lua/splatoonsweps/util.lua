@@ -256,7 +256,6 @@ end
 --   Entity ply    | Optional.
 -- Returning:
 --   number scale  | The game timescale.
-local host_timescale = GetConVar "host_timescale"
 function ss.GetTimeScale(ply)
     return IsValid(ply) and ply:IsPlayer() and ply:GetLaggedMovementValue() or 1
 end

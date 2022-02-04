@@ -137,7 +137,6 @@ end
 
 function SWEP:DrawHitCrossBG(t) -- Hit cross pattern, background
     if not t.HitEntity then return end
-    local p = self.Parameters
     local mul = ss.ProtectedCall(self.GetScopedSize, self) or 1
     local frac = 1 - (t.Distance / self:GetRange()) / 2
     ss.DrawCrosshair.LinesHitBG(t.HitPosScreen.x, t.HitPosScreen.y, frac, mul)
@@ -183,7 +182,6 @@ function SWEP:GetIronSights()
     return self:GetADS()
 end
 
-local SwayTime = 12 * ss.FrameToSec
 local LeftHandAlt = {2, 1, 4, 3, 5, 6}
 function SWEP:GetViewModelPosition(pos, ang)
     local vm = self:GetViewModel()
@@ -209,7 +207,6 @@ function SWEP:GetViewModelPosition(pos, ang)
                 self.OldArmPos = 5
             elseif ss.GetOption "moveviewmodel" and not self:Crouching() then
                 if not self.Cursor then return pos, ang end
-                local x, y = self.Cursor.x, self.Cursor.y
                 self.OldArmPos = select(3, self:GetFirePosition())
             else
                 self.OldArmPos = 1
@@ -244,10 +241,10 @@ function SWEP:GetViewModelPosition(pos, ang)
         end
     end
 
-    local pos = LerpVector(f, self.BasePos, self.IronSightsPos[armpos])
-    local ang = LerpAngle(f, self.BaseAng, self.IronSightsAng[armpos])
+    local newpos = LerpVector(f, self.BasePos, self.IronSightsPos[armpos])
+    local newang = LerpAngle(f, self.BaseAng, self.IronSightsAng[armpos])
     if self:IsFirstTimePredicted() then
-        self.OldPos, self.OldAng = pos, ang
+        self.OldPos, self.OldAng = newpos, newang
     end
 
     return LocalToWorld(self.OldPos, self.OldAng, relpos, relang)

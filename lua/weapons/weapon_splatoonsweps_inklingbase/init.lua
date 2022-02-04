@@ -74,7 +74,7 @@ function SWEP:CreateRagdoll()
     local n = "SplatoonSWEPs: RagdollCollisionCheck" .. self:EntIndex()
     timer.Create(n, 0, 0, function()
         if not (IsValid(self) and IsValid(ragdoll)) then timer.Remove(n) return end
-        local nearest, ply = self:BoundingRadius()^2, NULL
+        local nearest, ply = self:BoundingRadius() ^ 2, NULL
         for _, p in ipairs(ss.PlayersReady) do
             local d = p:GetPos():DistToSqr(ragdoll:GetPos())
             if d < nearest then nearest, ply = d, p end

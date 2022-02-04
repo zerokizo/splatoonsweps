@@ -40,7 +40,7 @@ Otherwise, all victims splatted by the SWEPs will.]],
     LeftHand = "Left hand mode",
     LeftHand_help = "If checked, the view model will be placed on the left.",
     MoveViewmodel = "Move viewmodel to avoid walls",
-    MoveViewmodel_help = 'When "Avoid Walls" is enabled, the view model will be animated.',
+    MoveViewmodel_help = "When \"Avoid Walls\" is enabled, the view model will be animated.",
     NewStyleCrosshair = "Use Splatoon 2 crosshair",
     NPCInkColor = {
         __printname = "NPC's ink color",

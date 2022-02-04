@@ -29,21 +29,19 @@ end
 -- Returning:
 --   table      | A sequential table.
 function ss.SearchAABB(AABB, normal)
-    local function recursive(a)
+    local function recursive(aabb)
         local t = {}
-        if a.SurfIndices then
-            for _, i in ipairs(a.SurfIndices) do
+        if aabb.SurfIndices then
+            for _, i in ipairs(aabb.SurfIndices) do
                 local a = ss.SurfaceArray[i]
                 local max_diff = a.Displacement and ss.MAX_COS_DIFF_DISP or ss.MAX_COS_DIFF
-                if a.Normal:Dot(normal) > max_diff then
-                    if ss.CollisionAABB(a.AABB.mins, a.AABB.maxs, AABB.mins, AABB.maxs) then
-                        t[#t + 1] = a
-                    end
+                if a.Normal:Dot(normal) > max_diff and ss.CollisionAABB(a.AABB.mins, a.AABB.maxs, AABB.mins, AABB.maxs) then
+                    t[#t + 1] = a
                 end
             end
         else
-            local l = ss.AABBTree[a.Children[1]]
-            local r = ss.AABBTree[a.Children[2]]
+            local l = ss.AABBTree[aabb.Children[1]]
+            local r = ss.AABBTree[aabb.Children[2]]
             if l and ss.CollisionAABB(l.AABB.mins, l.AABB.maxs, AABB.mins, AABB.maxs) then
                 table.Add(t, recursive(l))
             end
@@ -172,55 +170,54 @@ function ss.PredictedThinkMoveHook(w, ply, mv)
         [mv:GetVelocity()] = true, -- Current velocity
         [ss.MoveEmulation.m_vecVelocity[ply] or false] = false,
     } do
-        if v then
-            local speed, vz = v:Length2D(), v.z -- Horizontal speed, Z component
-            if w:GetInWallInk() and mv:KeyDown(WALLCLIMB_KEYS) then -- Wall climbing
-                local sp = ply:GetShootPos()
-                local t = {
-                    start = sp, endpos = sp + ply:GetForward() * 32768,
-                    mask = ss.SquidSolidMask,
-                    collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
-                    filter = ply,
-                }
-                local fw = util.TraceLine(t)
-                t.endpos = sp - ply:GetForward() * 32768
-                local bk = util.TraceLine(t)
-                if fw.Fraction < bk.Fraction == mv:KeyDown(IN_FORWARD) then
-                    vz = math.max(math.abs(vz) * -.75,
-                    vz + math.min(12 + (mv:KeyPressed(IN_JUMP) and maxspeed / 4 or 0), maxspeed))
-                    if ply:OnGround() then
-                        t.endpos = sp + ply:GetRight() * 32768
-                        local r = util.TraceLine(t)
-                        t.endpos = sp - ply:GetRight() * 32768
-                        local l = util.TraceLine(t)
-                        if math.min(fw.Fraction, bk.Fraction) < math.min(r.Fraction, l.Fraction) then
-                            mv:AddKey(IN_JUMP)
-                        end
-                    end
-                end
-
-                t.start = mv:GetOrigin()
-                t.endpos = t.start + vector_up * ss.WALLCLIMB_STEP_CHECK_LENGTH
-                t.mins, t.maxs = ply:GetCollisionBounds()
-                local tr = util.TraceHull(t)
-                if tr.HitWorld then
-                    t.start = t.endpos + w:GetWallNormal() * ss.MAX_WALLCLIMB_STEP
-                    tr = util.TraceHull(t)
-                    if not tr.StartSolid and math.abs(tr.HitNormal.z) < ss.MAX_COS_DIFF then
-                        mv:SetOrigin(tr.HitPos)
+        if not v then continue end
+        local speed, vz = v:Length2D(), v.z -- Horizontal speed, Z component
+        if w:GetInWallInk() and mv:KeyDown(WALLCLIMB_KEYS) then -- Wall climbing
+            local sp = ply:GetShootPos()
+            local t = {
+                start = sp, endpos = sp + ply:GetForward() * 32768,
+                mask = ss.SquidSolidMask,
+                collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
+                filter = ply,
+            }
+            local fw = util.TraceLine(t)
+            t.endpos = sp - ply:GetForward() * 32768
+            local bk = util.TraceLine(t)
+            if fw.Fraction < bk.Fraction == mv:KeyDown(IN_FORWARD) then
+                vz = math.max(math.abs(vz) * -.75,
+                vz + math.min(12 + (mv:KeyPressed(IN_JUMP) and maxspeed / 4 or 0), maxspeed))
+                if ply:OnGround() then
+                    t.endpos = sp + ply:GetRight() * 32768
+                    local r = util.TraceLine(t)
+                    t.endpos = sp - ply:GetRight() * 32768
+                    local l = util.TraceLine(t)
+                    if math.min(fw.Fraction, bk.Fraction) < math.min(r.Fraction, l.Fraction) then
+                        mv:AddKey(IN_JUMP)
                     end
                 end
             end
 
-            if not (crouching and ply:OnGround()) and speed > maxspeed then -- Limits horizontal speed
-                v:Mul(maxspeed / speed)
-                speed = math.min(speed, maxspeed)
+            t.start = mv:GetOrigin()
+            t.endpos = t.start + vector_up * ss.WALLCLIMB_STEP_CHECK_LENGTH
+            t.mins, t.maxs = ply:GetCollisionBounds()
+            local tr = util.TraceHull(t)
+            if tr.HitWorld then
+                t.start = t.endpos + w:GetWallNormal() * ss.MAX_WALLCLIMB_STEP
+                tr = util.TraceHull(t)
+                if not tr.StartSolid and math.abs(tr.HitNormal.z) < ss.MAX_COS_DIFF then
+                    mv:SetOrigin(tr.HitPos)
+                end
             end
-
-            v.z = w.OnOutofInk and not w:GetInWallInk()
-            and math.min(vz, ply:GetJumpPower() * .7) or vz
-            if i then mv:SetVelocity(v) end
         end
+
+        if not (crouching and ply:OnGround()) and speed > maxspeed then -- Limits horizontal speed
+            v:Mul(maxspeed / speed)
+            speed = math.min(speed, maxspeed)
+        end
+
+        v.z = w.OnOutofInk and not w:GetInWallInk()
+        and math.min(vz, ply:GetJumpPower() * .7) or vz
+        if i then mv:SetVelocity(v) end
     end
 
     -- Send viewmodel animation.

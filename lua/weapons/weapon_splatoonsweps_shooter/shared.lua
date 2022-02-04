@@ -6,7 +6,6 @@ SWEP.IsShooter = true
 SWEP.HeroColor = {ss.GetColor(8), ss.GetColor(11), ss.GetColor(2), ss.GetColor(5)}
 
 local FirePosition = 10
-local rand = "SplatoonSWEPs: Spread"
 local randsplash = "SplatoonSWEPs: SplashNum"
 function SWEP:GetRange() return self.Range end
 function SWEP:GetInitVelocity() return self.Parameters.mInitVel end
@@ -30,7 +29,6 @@ function SWEP:GetFirePosition(ping)
     t.collisiongroup = COLLISION_GROUP_NONE
 
     local tr = util.TraceLine(t)
-    local trhull = util.TraceHull(t)
     local pos = shootpos + dp
     local min = {dir = 1, dist = math.huge, pos = pos}
 
@@ -256,7 +254,7 @@ function SWEP:CustomDataTables()
     self:AddNetworkVar("Int", "SplashInitMul")
 
     if self.Parameters.mTripleShotSpan > 0 then
-        self.TripleSchedule = self:AddNetworkSchedule(0, function(self, schedule)
+        self.TripleSchedule = self:AddNetworkSchedule(0, function(_, schedule)
             if schedule:GetDone() == 1 or schedule:GetDone() == 2 then
                 if self:GetNextPrimaryFire() > CurTime() then
                     schedule:SetDone(schedule:GetDone() - 1)

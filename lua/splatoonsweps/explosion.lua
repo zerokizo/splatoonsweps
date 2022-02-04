@@ -55,7 +55,7 @@ local function MakeExplosionSplashes(data, weapon)
         dropdata.InitPos = data.Origin + offsetdir * data.SplashHeightOffset
         dropdata.InitVel = ang:Forward() * speed
         dropdata.Yaw = ang.yaw
-        ss.AddInk(p, dropdata)
+        ss.AddInk({}, dropdata)
         ss.CreateDropEffect(dropdata, drawradius)
     end
 end
@@ -114,52 +114,55 @@ function ss.MakeExplosion(data)
             local target_weapon = ss.IsValidInkling(e)
             local shouldhit = IsValid(e) and e:Health() > 0 and ss.LastHitID[e] ~= projectileID
             local isally = ss.IsAlly(target_weapon, inkcolor) or ss.IsAlly(e, inkcolor)
-            if shouldhit and (not isally or hurtowner and e == owner) then
-                local dist = Vector()
-                local maxs, mins = e:OBBMaxs(), e:OBBMins()
-                local center = e:LocalToWorld(e:OBBCenter())
-                local size = (maxs - mins) / 2
-                for i, dir in pairs {
-                    x = e:GetForward(), y = e:GetRight(), z = e:GetUp()
-                } do
-                    local segment = dir:Dot(origin - center)
-                    local sign = segment == 0 and 0 or segment > 0 and 1 or -1
-                    segment = math.abs(segment)
-                    if segment > size[i] then
-                        dist = dist + sign * (size[i] - segment) * dir
+            if not shouldhit then continue end
+            if isally and not (hurtowner and e == owner) then continue end
+            local dist = Vector()
+            local maxs, mins = e:OBBMaxs(), e:OBBMins()
+            local center = e:LocalToWorld(e:OBBCenter())
+            local size = (maxs - mins) / 2
+            for i, dir in pairs {
+                x = e:GetForward(), y = e:GetRight(), z = e:GetUp()
+            } do
+                local segment = dir:Dot(origin - center)
+                local sign = segment == 0 and 0 or segment > 0 and 1 or -1
+                segment = math.abs(segment)
+                if segment > size[i] then
+                    dist = dist + sign * (size[i] - segment) * dir
+                end
+            end
+
+            local t = util.TraceLine {
+                start = origin,
+                endpos = origin + dist,
+                filter = {data.BombEntity, not hurtowner and owner or nil},
+                mask = MASK_SHOT,
+                collisiongroup = COLLISION_GROUP_NONE,
+            }
+            if not t.Hit or t.Entity == e then
+                if ShouldPerformEffect then
+                    ss.CreateHitEffect(inkcolor, damagedealt and 6 or 2, origin + dist, -dist, owner)
+                    if CLIENT and e ~= owner then
+                        damagedealt = true
+                        break
                     end
                 end
 
-                local t = util.TraceLine {
-                    start = origin,
-                    endpos = origin + dist,
-                    filter = {data.BombEntity, not hurtowner and owner or nil},
-                    mask = MASK_SHOT,
-                    collisiongroup = COLLISION_GROUP_NONE,
-                }
-                if not t.Hit or t.Entity == e then
-                    if ShouldPerformEffect then
-                        ss.CreateHitEffect(inkcolor, damagedealt and 6 or 2, origin + dist, -dist, owner)
-                        if CLIENT and e ~= owner then damagedealt = true break end
-                    end
+                ss.LastHitID[e] = projectileID -- Avoid multiple damages at once
+                damagedealt = damagedealt or ss.sp or e == owner
+                local dmg = GetDamage(dist:Length(), e)
+                local dt = bit.bor(DMG_BLAST, DMG_AIRBOAT, DMG_REMOVENORAGDOLL)
+                if not e:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
 
-                    ss.LastHitID[e] = projectileID -- Avoid multiple damages at once
-                    damagedealt = damagedealt or ss.sp or e == owner
-                    local dmg = GetDamage(dist:Length(), e)
-                    local dt = bit.bor(DMG_BLAST, DMG_AIRBOAT, DMG_REMOVENORAGDOLL)
-                    if not e:IsPlayer() then dt = bit.bor(dt, DMG_DISSOLVE) end
-
-                    d:SetDamage(dmg)
-                    d:SetDamageForce((e:WorldSpaceCenter() - origin):GetNormalized() * dmg)
-                    d:SetDamagePosition(e:WorldSpaceCenter())
-                    d:SetDamageType(dt)
-                    d:SetMaxDamage(dmg)
-                    d:SetReportedPosition(origin)
-                    d:SetAttacker(attacker)
-                    d:SetInflictor(inflictor)
-                    d:ScaleDamage(ss.ToHammerHealth)
-                    ss.ProtectedCall(e.TakeDamageInfo, e, d)
-                end
+                d:SetDamage(dmg)
+                d:SetDamageForce((e:WorldSpaceCenter() - origin):GetNormalized() * dmg)
+                d:SetDamagePosition(e:WorldSpaceCenter())
+                d:SetDamageType(dt)
+                d:SetMaxDamage(dmg)
+                d:SetReportedPosition(origin)
+                d:SetAttacker(attacker)
+                d:SetInflictor(inflictor)
+                d:ScaleDamage(ss.ToHammerHealth)
+                ss.ProtectedCall(e.TakeDamageInfo, e, d)
             end
         end
     end
@@ -176,7 +179,7 @@ function ss.MakeExplosion(data)
     e:SetFlags(effectflags)
     e:SetRadius(data.EffectRadius)
     if data.IsPredicted then
-        ss.UtilEffectPredicted(owner, effectname, e, true, data.IgnorePrediction)
+        ss.UtilEffectPredicted(owner, effectname, e, true, IgnorePrediction)
     else
         util.Effect(effectname, e, true, true)
     end
@@ -297,7 +300,7 @@ function ss.MakeBlasterExplosion(ink)
     local rmid = p.mCollisionRadiusMiddle * rmul
     local rfar = p.mCollisionRadiusFar * rmul
     local IsLP = CLIENT and LocalPlayer() == ink.Owner
-    local e = table.Merge(ss.MakeExplosionStructure(), {
+    local ex = table.Merge(ss.MakeExplosionStructure(), {
         ClassName = data.Weapon.ClassName,
         DamageRadius = rfar,
         DoDamage = true,
@@ -331,10 +334,10 @@ function ss.MakeBlasterExplosion(ink)
     })
 
     if ink.BlasterHitWall then
-        e.SplashInitAng:RotateAroundAxis(e.SplashInitAng:Right(), -90)
+        ex.SplashInitAng:RotateAroundAxis(ex.SplashInitAng:Right(), -90)
     end
 
-    ss.MakeExplosion(e)
+    ss.MakeExplosion(ex)
     if not p.mSphereSplashDropOn then return end
 
     -- Create a blaster's drop

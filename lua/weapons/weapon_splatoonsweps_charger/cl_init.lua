@@ -23,7 +23,7 @@ function SWEP:ClientInit()
 
     if not self.Scoped then return end
     self.RTScope = GetRenderTarget(ss.RenderTarget.Name.RTScope, 512, 512)
-    self:AddSchedule(0, function(self, sched)
+    self:AddSchedule(0, function(_, sched)
         if not (self.Scoped and IsValid(self:GetOwner())) then return end
         self:GetOwner():SetNoDraw(
             self:IsMine() and
@@ -164,7 +164,7 @@ end
 function SWEP:PreViewModelDrawn(vm, weapon, ply)
     ss.ProtectedCall(self:GetBase().PreViewModelDrawn, self, vm, weapon, ply)
     if not self.Scoped or self:GetNWBool "usertscope" then return end
-    render.SetBlend((1 - self:GetScopedProgress(true))^2)
+    render.SetBlend((1 - self:GetScopedProgress(true)) ^ 2)
 end
 
 function SWEP:PostDrawViewModel(vm, weapon, ply)

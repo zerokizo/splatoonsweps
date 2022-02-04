@@ -2,7 +2,6 @@
 local ss = SplatoonSWEPs
 if not ss then return end
 
-local MAX_INK_SIM_AT_ONCE = 60 -- Calculating ink trajectory at once
 local function DoScatterSplash(ink)
     local data, p = ink.Data, ink.Parameters
     if CurTime() < data.ScatterSplashTime then return end
@@ -115,7 +114,7 @@ local function HitPaint(ink, t)
     if length2d == lmin_ratio then data.Type = ss.GetDropType() end
     if data.DoDamage then
         if weapon.IsCharger then
-            -- HitSmoke(ink, t) -- TODO: Add smoke if the surface is not paintable
+            HitSmoke(ink, t) -- TODO: Add smoke if the surface is not paintable
             local radiusmul = ink.Parameters.mPaintRateLastSplash or 1
             if not hitfloor then radius = radius * Lerp(data.Charge or 0, radiusmul, 1) end
             if tr.LengthSum < (data.Range or 0) then
@@ -186,7 +185,6 @@ end
 
 local function HitEntity(ink, t)
     local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
-    local time = math.max(CurTime() - ink.InitTime, 0)
     local d, e, o = DamageInfo(), t.Entity, weapon:GetOwner()
     if weapon.IsCharger and data.Range and tr.LengthSum > data.Range then return end
     if ss.LastHitID[e] == data.ID then return end
@@ -228,7 +226,49 @@ local function HitEntity(ink, t)
     ss.ProtectedCall(e.TakeDamageInfo, e, d)
 end
 
-local function ProcessInkQueue(ply)
+local function ProcessInkQueue(ink, ply)
+    if not ink then return true end
+    local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
+    local removal = not IsValid(ink.Owner)
+    or not IsValid(weapon)
+    or not IsValid(weapon:GetOwner())
+
+    if not removal and (not ink.Owner:IsPlayer() or ink.Owner == ply) then
+        tr.filter = ss.MakeAllyFilter(ink.Owner)
+        Simulate(ink)
+        if tr.start:DistToSqr(tr.endpos) > 0 then
+            tr.maxs = ss.vector_one * data.ColRadiusWorld
+            tr.mins = -tr.maxs
+            tr.mask = ss.SquidSolidMaskBrushOnly
+            local trworld = util.TraceHull(tr)
+            tr.maxs = ss.vector_one * data.ColRadiusEntity
+            tr.mins = -tr.maxs
+            tr.mask = ss.SquidSolidMask
+            local trent = util.TraceHull(tr)
+            tr.LengthSum = tr.LengthSum + tr.start:Distance(trent.HitPos)
+            if ink.BlasterRemoval or not (trworld.Hit or ss.IsInWorld(trworld.HitPos)) then
+                removal = true
+            elseif data.DoDamage and IsValid(trent.Entity) and trent.Entity:Health() > 0 then
+                local w = ss.IsValidInkling(trent.Entity) -- If ink hits someone
+                if not (ss.IsAlly(trent.Entity, data.Color) or w and ss.IsAlly(w, data.Color)) then
+                    HitEntity(ink, trent)
+                end
+                removal = true
+            elseif trworld.Hit then
+                if trworld.StartSolid and tr.LifeTime < ss.FrameToSec then trworld = util.TraceLine(tr) end
+                if trworld.Hit and not (trworld.StartSolid and tr.LifeTime < ss.FrameToSec) then
+                    tr.endpos = trworld.HitPos - trworld.HitNormal * data.ColRadiusWorld * 2
+                    HitPaint(ink, util.TraceLine(tr))
+                    removal = true
+                end
+            end
+        end
+    end
+
+    return removal
+end
+
+local function ProcessInkQueueAll(ply)
     local Benchmark = SysTime()
     while true do
         repeat coroutine.yield() until IsFirstTimePredicted()
@@ -237,61 +277,21 @@ local function ProcessInkQueue(ply)
             local k = 1
             for i = 1, #inkgroup do
                 local ink = inkgroup[i]
-                local removal = not ink
-                if ink then
-                    local data, tr, weapon = ink.Data, ink.Trace, ink.Data.Weapon
-                    if not removal then
-                        removal = not IsValid(ink.Owner)
-                        or not IsValid(data.Weapon)
-                        or not IsValid(data.Weapon:GetOwner())
-                    end
-
-                    if not removal and (not ink.Owner:IsPlayer() or ink.Owner == ply) then
-                        tr.filter = ss.MakeAllyFilter(ink.Owner)
-                        Simulate(ink)
-                        if tr.start:DistToSqr(tr.endpos) > 0 then
-                            tr.maxs = ss.vector_one * data.ColRadiusWorld
-                            tr.mins = -tr.maxs
-                            tr.mask = ss.SquidSolidMaskBrushOnly
-                            local trworld = util.TraceHull(tr)
-                            tr.maxs = ss.vector_one * data.ColRadiusEntity
-                            tr.mins = -tr.maxs
-                            tr.mask = ss.SquidSolidMask
-                            local trent = util.TraceHull(tr)
-                            tr.LengthSum = tr.LengthSum + tr.start:Distance(trent.HitPos)
-                            if ink.BlasterRemoval or not (trworld.Hit or ss.IsInWorld(trworld.HitPos)) then
-                                removal = true
-                            elseif data.DoDamage and IsValid(trent.Entity) and trent.Entity:Health() > 0 then
-                                local w = ss.IsValidInkling(trent.Entity) -- If ink hits someone
-                                if not (ss.IsAlly(trent.Entity, data.Color) or w and ss.IsAlly(w, data.Color)) then
-                                    HitEntity(ink, trent)
-                                end
-                                removal = true
-                            elseif trworld.Hit then
-                                if trworld.StartSolid and tr.LifeTime < ss.FrameToSec then trworld = util.TraceLine(tr) end
-                                if trworld.Hit and not (trworld.StartSolid and tr.LifeTime < ss.FrameToSec) then
-                                    tr.endpos = trworld.HitPos - trworld.HitNormal * data.ColRadiusWorld * 2
-                                    HitPaint(ink, util.TraceLine(tr))
-                                    removal = true
-                                end
-                            end
-                        end
-
-                        if SysTime() - Benchmark > ss.FrameToSec then
-                            coroutine.yield()
-                            Benchmark = SysTime()
-                        end
-                    end
-                end
-
-                if removal then
+                if ProcessInkQueue(ink, ply) then
                     inkgroup[i] = nil
                 else -- Move i's kept value to k's position, if it's not already there.
                     if i ~= k then inkgroup[k], inkgroup[i] = ink end
                     k = k + 1 -- Increment position of where we'll place the next kept value.
                 end
 
-                if #inkgroup == 0 then ss.InkQueue[inittime] = nil end
+                if #inkgroup == 0 then
+                    ss.InkQueue[inittime] = nil
+                end
+
+                if SysTime() - Benchmark > ss.FrameToSec then
+                    coroutine.yield()
+                    Benchmark = SysTime()
+                end
             end
         end
 
@@ -395,7 +395,7 @@ function ss.DoDropSplashes(ink, iseffect)
     local data, tr, p = ink.Data, ink.Trace, ink.Parameters
     if not data.DoDamage then return end
     if data.SplashCount >= data.SplashNum then return end
-    local IsBamboozler = data.Weapon.IsBamboozler
+    -- local IsBamboozler = data.Weapon.IsBamboozler
     local IsBlaster = data.Weapon.IsBlaster
     local IsCharger = data.Weapon.IsCharger
     local DropDir = data.InitDir
@@ -488,7 +488,7 @@ local processes = {}
 hook.Add("Move", "SplatoonSWEPs: Simulate ink", function(ply, mv)
     local p = processes[ply]
     if not p or coroutine.status(p) == "dead" then
-        processes[ply] = coroutine.create(ProcessInkQueue)
+        processes[ply] = coroutine.create(ProcessInkQueueAll)
         p = processes[ply]
         table.Empty(ss.InkQueue)
     end

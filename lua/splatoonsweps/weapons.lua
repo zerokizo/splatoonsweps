@@ -24,7 +24,7 @@ function ss.SetChargingEye(self)
 end
 
 function ss.SetNormalEye(self)
-    local ply = self.Owner
+    local ply = self:GetOwner()
     local mdl = ply:GetModel()
     local f = ply:GetFlexIDByName "Blink_R"
     local IsTwilightModel = ss.TwilightPlayermodels[mdl]
@@ -669,7 +669,7 @@ local SplatoonSWEPsSlosherSplash = 7
 local sd, e = ss.DispatchEffect, EffectData()
 sd[SplatoonSWEPsMuzzleSplash] = function(self, options, pos, ang)
     local tpslag = 0
-    if self.IsSplatoonWeapon and self:IsCarriedByLocalPlayer() and self.Owner:ShouldDrawLocalPlayer() then
+    if self.IsSplatoonWeapon and self:IsCarriedByLocalPlayer() and self:GetOwner():ShouldDrawLocalPlayer() then
         tpslag = 128
     end
 
@@ -677,7 +677,8 @@ sd[SplatoonSWEPsMuzzleSplash] = function(self, options, pos, ang)
     local attindex = self:LookupAttachment(attachment)
     if attindex <= 0 then attindex = 1 end
 
-    local ang, a, s, r = angle_zero, 7, 2, 25
+    ang = angle_zero
+    local a, s, r = 7, 2, 25
     if options[2] == "CHARGER" then
         r, s = Lerp(self:GetFireAt(), 20, 60) / 2, 6
         if options[1] == 1 then
@@ -700,7 +701,7 @@ sd[SplatoonSWEPsMuzzleRing] = function(self, options, pos, ang)
     local numpieces = options[1]
     local da, r1, r2, t1, t2 = math.Rand(0, 360), 40, 30, 6, 13
     local tpslag = self:IsCarriedByLocalPlayer() and
-    self.Owner:ShouldDrawLocalPlayer() and 128 or 0
+    self:GetOwner():ShouldDrawLocalPlayer() and 128 or 0
     e:SetColor(self:GetNWInt "inkcolor")
     e:SetEntity(self)
 
@@ -729,13 +730,13 @@ end
 
 sd[SplatoonSWEPsMuzzleMist] = function(self, options, pos, ang)
     local mdl = self:IsTPS() and self or self:GetViewModel()
-    local pos, ang = self:GetMuzzlePosition()
     local dir = ang:Right()
     if not self:IsTPS() then
         if self:GetNWBool "lefthand" then dir = -dir end
         if self:GetADS() then dir = ang:Forward() end
     end
 
+    pos, ang = self:GetMuzzlePosition()
     e:SetAttachment(self:LookupAttachment "muzzle")
     e:SetColor(self:GetNWInt "inkcolor")
     e:SetEntity(mdl)
@@ -770,7 +771,7 @@ end
 
 local function MakeSwingEffect(self, sign)
     local color = self:GetNWInt "inkcolor"
-    local sign = self:GetNWBool "lefthand" and -sign or sign
+    sign = self:GetNWBool "lefthand" and -sign or sign
     e:SetEntity(self)
     e:SetAttachment(18)
     e:SetColor(color)

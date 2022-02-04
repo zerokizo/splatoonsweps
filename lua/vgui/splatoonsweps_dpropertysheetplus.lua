@@ -83,7 +83,6 @@ end
 function PANEL:Paint(w, h)
     local skin = derma.GetDefaultSkin()
     local PropertySheet = self:GetPropertySheet()
-    local Padding = PropertySheet:GetPadding()
     local dock = PropertySheet:GetTabDock()
     local y = 0
     local func = {
@@ -119,7 +118,7 @@ end
 derma.DefineControl("SplatoonSWEPs.DTabPlus", "", PANEL, "DTab")
 
 -- SplatoonSWEPs.DPropertySheetPlus
-local PANEL = {}
+PANEL = {}
 AccessorFunc(PANEL, "m_iTabDock", "TabDock", FORCE_NUMBER)
 AccessorFunc(PANEL, "m_iTabHeight", "TabHeight", FORCE_NUMBER)
 AccessorFunc(PANEL, "m_iMaxTabSize", "MaxTabSize", FORCE_NUMBER)
@@ -216,7 +215,6 @@ end
 
 function PANEL:Paint(w, h)
     local skin = derma.GetDefaultSkin()
-    local ActiveTab = self:GetActiveTab()
     local Offset = self:GetTabHeight() - self:GetPadding()
     local Pos = {
         [TOP] = {0, Offset, 0, Offset},

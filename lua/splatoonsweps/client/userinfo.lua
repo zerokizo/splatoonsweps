@@ -38,21 +38,23 @@ local function GetPlayermodel(i)
 end
 
 local function SetPlayerModel(self) -- Apply changes to preview model
-    local model, exists = GetPlayermodel()
-    local issquid = ss.DrLilRobotPlayermodels[model]
-    local campos = issquid and 26 or 34
-    local dz = vector_up * 20
-    self.AnimTime = SysTime()
-    self:SetModel(model)
-    self:SetLookAt(Vector(1) + dz)
-    self:SetCamPos(dz)
-    self.Entity:SetPos(Vector(issquid and 130 or 160, 0, -campos))
-    self.Entity:SetSequence "idle_fist"
-    self.Entity.GetPlayerColor = GetColor
-    self.Entity.GetInkColorProxy = GetColor
-    self.Entity:SetEyeTarget(vector_up * campos)
-    self.Entity.GetInfoNum = LocalPlayer().GetInfoNum
-    ss.SetSubMaterial_Workaround(self.Entity)
+    do
+        local model, _ = GetPlayermodel()
+        local issquid = ss.DrLilRobotPlayermodels[model]
+        local campos = issquid and 26 or 34
+        local dz = vector_up * 20
+        self.AnimTime = SysTime()
+        self:SetModel(model)
+        self:SetLookAt(Vector(1) + dz)
+        self:SetCamPos(dz)
+        self.Entity:SetPos(Vector(issquid and 130 or 160, 0, -campos))
+        self.Entity:SetSequence "idle_fist"
+        self.Entity.GetPlayerColor = GetColor
+        self.Entity.GetInkColorProxy = GetColor
+        self.Entity:SetEyeTarget(vector_up * campos)
+        self.Entity.GetInfoNum = LocalPlayer().GetInfoNum
+        ss.SetSubMaterial_Workaround(self.Entity)
+    end
 
     function self:OnRemove()
         if not IsValid(self.Weapon) then return end
@@ -88,7 +90,7 @@ local function SetPlayerModel(self) -- Apply changes to preview model
     end
 
     function self:Think()
-        local model = GetPlayermodel()
+        local model, _ = GetPlayermodel()
         if self:GetModel() ~= model then
             local issquid = ss.DrLilRobotPlayermodels[model]
             local campos = issquid and 26 or 34
@@ -203,7 +205,7 @@ local function GeneratePreview(tab)
     function tab.Preview:LayoutEntity(ent)
         if self.bAnimated then self:RunAnimation() end
         if self.Pressed then
-            local mx, my = gui.MousePos()
+            local mx, _ = gui.MousePos()
             self.Angles = self.Angles - Angle(0, (self.PressX or mx) - mx)
             self.PressX, self.PressY = gui.MousePos()
         end
@@ -389,11 +391,11 @@ local function GeneratePreferenceTab(tab)
         item.Model = model
         item:SetSize(size, size)
         item:SetModel(model)
-        item:SetToolTip(c)
+        item:SetTooltip(c)
         function item:DoClick() SendValue("playermodel", i) end
         function item:Think()
-            local new, exists = GetPlayermodel(self.ID)
-            if exists and self.Model ~= new then
+            local new, newexists = GetPlayermodel(self.ID)
+            if newexists and self.Model ~= new then
                 self:SetModel(new)
                 self.Model = new
             end
@@ -405,7 +407,7 @@ local function GeneratePreferenceTab(tab)
     tab.Preference.ResolutionSelector:SetSortItems(false)
     tab.Preference.ResolutionSelector:Dock(BOTTOM)
     tab.Preference.ResolutionSelector:SetSize(300, 17)
-    tab.Preference.ResolutionSelector:SetToolTip(ss.Text.DescRTResolution)
+    tab.Preference.ResolutionSelector:SetTooltip(ss.Text.DescRTResolution)
     tab.Preference.ResolutionSelector:SetValue(ss.Text.RTResolutions[ss.GetOption "rtresolution" + 1])
     for i = 1, #ss.Text.RTResolutions do
         tab.Preference.ResolutionSelector:AddChoice(ss.Text.RTResolutions[i])
@@ -415,7 +417,7 @@ local function GeneratePreferenceTab(tab)
     tab.Preference.LabelResolution = tab.Preference.Panel:Add "DLabel"
     tab.Preference.LabelResolution:Dock(BOTTOM)
     tab.Preference.LabelResolution:SetText(ss.Text.RTResolution)
-    tab.Preference.LabelResolution:SetToolTip(ss.Text.DescRTResolution)
+    tab.Preference.LabelResolution:SetTooltip(ss.Text.DescRTResolution)
     tab.Preference.LabelResolution:SetTextColor(tab.Preference.LabelResolution:GetSkin().Colours.Label.Dark)
     tab.Preference.LabelResolution:SizeToContents()
 
@@ -425,7 +427,7 @@ local function GeneratePreferenceTab(tab)
     tab.Preference.LabelResetRequired:Dock(BOTTOM)
     tab.Preference.LabelResetRequired:SetText(ss.Text.RTRestartRequired)
     tab.Preference.LabelResetRequired:SetTextColor(Color(255, 128, 128))
-    tab.Preference.LabelResetRequired:SetToolTip(ss.Text.DescRTResolution)
+    tab.Preference.LabelResetRequired:SetTooltip(ss.Text.DescRTResolution)
     tab.Preference.LabelResetRequired:SetVisible(false)
     tab.Preference.LabelResetRequired:SizeToContents()
 
@@ -563,7 +565,7 @@ end
 
 hook.Add("PopulateWeapons", "SplatoonSWEPs: Generate weapon list",
 function(PanelContent, tree, node)
-    local node = tree:AddNode("SplatoonSWEPs", MatWeaponListIcon)
+    node = tree:AddNode("SplatoonSWEPs", MatWeaponListIcon)
     node.PanelContent = PanelContent
     node.DoPopulate = GenerateWeaponContents
     node.OriginalThink = node.Think

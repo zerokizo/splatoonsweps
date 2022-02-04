@@ -102,7 +102,7 @@ function SWEP:GetBoneOrientation(basetab, tab, ent, bone_override)
 end
 
 function SWEP:RecreateModel(v, modelname)
-    local modelname = modelname or v.model ~= "" and v.model
+    modelname = modelname or v.model ~= "" and v.model
     if not (modelname and util.IsModelLoaded(modelname)) then return end
     v.modelEnt = ClientsideModel(modelname, RENDERGROUP_BOTH)
     if IsValid(v.modelEnt) then
@@ -183,7 +183,7 @@ function SWEP:ViewModelDrawn(vm)
         ss.ProtectedCall(self.DrawOnSubTriggerDown, self)
     end
 
-    for k, name in ipairs(self.vRenderOrder) do
+    for _, name in ipairs(self.vRenderOrder) do
         local v = self.VElements[name]
         if not v then self.vRenderOrder = nil break end
         if v.hide or not v.bone then continue end
@@ -218,9 +218,9 @@ function SWEP:ViewModelDrawn(vm)
                 model:SetSkin(skin)
             end
 
-            for k, v in pairs(name == "weapon" and self.Bodygroup or v.bodygroup or {}) do
-                if model:GetBodygroup(k) == v then continue end
-                model:SetBodygroup(k, v)
+            for k, b in pairs(name == "weapon" and self.Bodygroup or v.bodygroup or {}) do
+                if model:GetBodygroup(k) == b then continue end
+                model:SetBodygroup(k, b)
             end
 
             if v.surpresslightning then
@@ -288,12 +288,12 @@ function SWEP:DrawWorldModelTranslucent()
     end
 
 
-    for k, name in pairs(self.wRenderOrder) do
+    for _, name in pairs(self.wRenderOrder) do
         local v = self.WElements[name]
         if not v then self.wRenderOrder = nil break end
         if name == "subweaponusable" then
             local fraction = math.Clamp(self.JustUsableTime + 0.15 - CurTime(), 0, 0.15)
-            local size = -1600 * (fraction - 0.075)^2 + 20
+            local size = -1600 * (fraction - 0.075) ^ 2 + 20
             local inkconsume = ss.ProtectedCall(self.GetSubWeaponInkConsume, self) or 0
             v.size = {x = size, y = size}
             v.hide = not IsValid(self.WElements["inktank"].modelEnt) or self:GetInk() < inkconsume
@@ -340,9 +340,9 @@ function SWEP:DrawWorldModelTranslucent()
                 model:SetSkin(skin)
             end
 
-            for k, v in pairs(name == "weapon" and self.Bodygroup or v.bodygroup or {}) do
-                if model:GetBodygroup(k) == v then continue end
-                model:SetBodygroup(k, v)
+            for k, b in pairs(name == "weapon" and self.Bodygroup or v.bodygroup or {}) do
+                if model:GetBodygroup(k) == b then continue end
+                model:SetBodygroup(k, b)
             end
 
             if v.surpresslightning then
@@ -361,14 +361,13 @@ function SWEP:DrawWorldModelTranslucent()
                 model:SetBodygroup(model:FindBodygroupByName "Ink", ink < -16.5 and 1 or 0)
                 -- Ink wave
                 for i = 1, 19 do
-                    if i ~= 10 and i ~= 11 then
-                        local number = tostring(i)
-                        if i < 10 then number = "0" .. tostring(i) end
-                        local bone = model:LookupBone("bip_inktank_ink_" .. number)
-                        local delta = model:GetManipulateBonePosition(bone).y
-                        local write = math.Clamp(delta + math.sin(CurTime() + math.pi / 17 * i) / 100, -0.25, 0.25)
-                        model:ManipulateBonePosition(bone, Vector(0, write, 0))
-                    end
+                    if i == 10 or i == 11 then continue end
+                    local number = tostring(i)
+                    if i < 10 then number = "0" .. tostring(i) end
+                    local bone = model:LookupBone("bip_inktank_ink_" .. number)
+                    local delta = model:GetManipulateBonePosition(bone).y
+                    local write = math.Clamp(delta + math.sin(CurTime() + math.pi / 17 * i) / 100, -0.25, 0.25)
+                    model:ManipulateBonePosition(bone, Vector(0, write, 0))
                 end
 
                 model:SetupBones()

@@ -61,23 +61,23 @@ ss.MoveEmulation = ss.MoveEmulation or {
 }
 local FT = FrameTime
 local me, mv, ply = ss.MoveEmulation
-function ss.InitializeMoveEmulation(ply)
-    if not IsValid(ply) then return end
+function ss.InitializeMoveEmulation(p)
+    if not IsValid(p) then return end
     for var, t in pairs(me) do
-        if t[ply] ~= nil then continue end
-        if var:find "m_ang" then t[ply] = Angle()
-        elseif var:find "m_b" then t[ply] = false
-        elseif var:find "m_ent" then t[ply] = NULL
-        elseif var:find "m_vec" then t[ply] = Vector()
+        if t[p] ~= nil then continue end
+        if var:find "m_ang" then t[p] = Angle()
+        elseif var:find "m_b" then t[p] = false
+        elseif var:find "m_ent" then t[p] = NULL
+        elseif var:find "m_vec" then t[p] = Vector()
         elseif var:find "m_ch" or var:find "m_fl"
-        or var:find "m_n" then t[ply] = 0 end
+        or var:find "m_n" then t[p] = 0 end
     end
 
-    me.m_surfaceFriction[ply] = me.m_surfaceFriction[ply] or 1
-    me.m_surfaceProps[ply] = me.m_surfaceProps[ply] or 0
-    me.m_outJumpVel[ply] = me.m_outJumpVel[ply] or Vector()
-    me.m_outStepHeight[ply] = me.m_outStepHeight[ply] or 0
-    me.m_outWishVel[ply] = me.m_outWishVel[ply] or Vector()
+    me.m_surfaceFriction[p] = me.m_surfaceFriction[p] or 1
+    me.m_surfaceProps[p] = me.m_surfaceProps[p] or 0
+    me.m_outJumpVel[p] = me.m_outJumpVel[p] or Vector()
+    me.m_outStepHeight[p] = me.m_outStepHeight[p] or 0
+    me.m_outWishVel[p] = me.m_outWishVel[p] or Vector()
 end
 
 local COORD_FRACTIONAL_BITS = 5
@@ -85,9 +85,7 @@ local COORD_DENOMINATOR = bit.lshift(1, COORD_FRACTIONAL_BITS)
 local COORD_RESOLUTION = 1.0 / COORD_DENOMINATOR
 local DIST_EPSILON = .03125
 local FX_WATER_IN_SLIME = 0x01
-local GAMEMOVEMENT_JUMP_HEIGHT = 21.0 -- units
 local GAMEMOVEMENT_JUMP_TIME = 510.0 -- ms approx. - based on the 21 unit height jump
-local LIMIT_Z_DEG = math.cos(math.rad(180 - 30))
 local MAX_CLIP_PLANES = 5
 local PLAYER_FALL_PUNCH_THRESHOLD = 303.0 or 350 -- HL2 or Other
 local PLAYER_LAND_ON_FLOATING_OBJECT = 173 or 200 -- HL2 or Other
@@ -95,9 +93,6 @@ local PLAYER_MAX_SAFE_FALL_SPEED = 526.5 or 580 -- HL2 or Other
 local PLAYER_MIN_BOUNCE_SPEED = 173 or 200 -- HL2 or Other
 local PUNCH_DAMPING = 9.0
 local PUNCH_SPRING_CONSTANT = 65.0
-local RUMBLE_FALL_LONG = 18
-local RUMBLE_FALL_SHORT = 19
-local RUMBLE_FLAGS_NONE = 0
 local WATERJUMP_HEIGHT = 8
 local WL_NotInWater = 0
 local WL_Feet = 1
@@ -107,24 +102,22 @@ local function IsDead() return ply:Health() <= 0 and not ply:Alive() end
 local function GetAirSpeedCap() return 30.0 end
 local function GetCurrentGravity() return GetConVar "sv_gravity":GetFloat() end
 local function GetPlayerMins(ducked)
-    local mins, maxs
     if ducked or ply:Crouching() then
-        mins, maxs = ply:GetHullDuck()
+        local mins, _ = ply:GetHullDuck()
+        return mins
     else
-        mins, maxs = ply:GetHull()
+        local mins, _ = ply:GetHull()
+        return mins
     end
-
-    return mins
 end
 local function GetPlayerMaxs(ducked)
-    local mins, maxs
     if ducked or ply:Crouching() then
-        mins, maxs = ply:GetHullDuck()
+        local _, maxs = ply:GetHullDuck()
+        return maxs
     else
-        mins, maxs = ply:GetHull()
+        local _, maxs = ply:GetHull()
+        return maxs
     end
-
-    return maxs
 end
 local function GetPlayerViewOffset(ducked)
     return ducked and ply:GetViewOffsetDucked() or ply:GetViewOffset()
@@ -427,7 +420,7 @@ local function ClipVelocity(vin, normal, out, overbounce)
     -- Determine how far along plane to slide based on incoming direction.
     local backoff = vin:Dot(normal) * overbounce
     local angle = normal.z
-    local i, blocked = 0, 0x00 -- Assume unblocked.
+    local blocked = 0x00 -- Assume unblocked.
     if angle > 0 then -- If the plane that is blocking us has a positive z component, then assume it's a floor.
         blocked = bit.bor(blocked, 0x01)
     elseif angle == 0 then -- If the plane has no Z, it is vertical (wall/step)
@@ -508,9 +501,7 @@ local function CheckFalling()
         local bAlive = true
         local fvol = 0.5
 
-        if me.m_nWaterLevel[ply] > 0 then
-            -- They landed in water.
-        else
+        if me.m_nWaterLevel[ply] <= 0 then
             -- Scale it down if we landed on something that's floating...
             if me.m_entGroundEntity[ply]:IsEFlagSet(EFL_TOUCHING_FLUID) then
                 me.m_flFallVelocity[ply] = me.m_flFallVelocity[ply] - PLAYER_LAND_ON_FLOATING_OBJECT
@@ -603,7 +594,6 @@ local function CheckJumpButton()
 
     -- Add a little forward velocity based on your current forward velocity - if you are not sprinting.
     if ss.sp then
-        local pMoveData = mv
         local vecForward = Vector(me.m_vecForward[ply])
         vecForward.z = 0
         vecForward:Normalize()
@@ -740,10 +730,8 @@ local function CheckWaterJump()
     local tr = TracePlayerBBox(vecStart, vecEnd, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT)
     if tr.Fraction < 1.0 then -- solid at waist
         local pPhysObj = tr.Entity:GetPhysicsObject()
-        if IsValid(pPhysObj) then
-            if pPhysObj:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
-                return
-            end
+        if IsValid(pPhysObj) and pPhysObj:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
+            return
         end
 
         vecStart.z = me.m_vecOrigin[ply].z + GetPlayerViewOffset(ply:Crouching()).z + WATERJUMP_HEIGHT
@@ -1041,12 +1029,10 @@ local function TryPlayerMove(pFirstDest, pFirstTrace)
                 ClipVelocity(original_velocity, planes[a], me.m_vecVelocity[ply], 1)
                 for j = 1, numplanes do
                     b = j
-                    if j ~= i then
-                        -- Are we now moving against this plane?
-                        if me.m_vecVelocity[ply]:Dot(planes[j]) < 0 then
-                            break -- not ok
-                        end
-                    elseif j == numplanes then
+                    if j ~= i -- Are we now moving against this plane?
+                    and me.m_vecVelocity[ply]:Dot(planes[j]) < 0 then
+                        break -- not ok
+                    elseif j == i and j == numplanes then
                         b = numplanes + 1
                         break
                     end
@@ -1060,10 +1046,7 @@ local function TryPlayerMove(pFirstDest, pFirstTrace)
             end
 
             -- Did we go all the way through plane set
-            if a <= numplanes then
-                -- go along this plane
-                -- pmove.velocity is set in clipping call, no need to set again.
-            else -- go along the crease
+            if a > numplanes then -- go along the crease
                 if numplanes ~= 2 then
                     me.m_vecVelocity[ply]:Zero()
                     break
@@ -1209,7 +1192,7 @@ end
 
 local function AirMove()
     local fmove, smove = me.m_flForwardMove[ply], me.m_flSideMove[ply] -- Copy movement amounts
-    local forward, right, up = me.m_vecForward[ply], me.m_vecRight[ply], me.m_vecUp[ply] -- Determine movement angles
+    local forward, right = me.m_vecForward[ply], me.m_vecRight[ply] -- Determine movement angles
 
     -- Zero out z components of movement vectors
     forward.z, right.z = 0, 0
@@ -1244,7 +1227,7 @@ end
 
 local function WalkMove()
     local fmove, smove = me.m_flForwardMove[ply], me.m_flSideMove[ply] -- Copy movement amounts
-    local forward, right, up = me.m_vecForward[ply], me.m_vecRight[ply], me.m_vecUp[ply] -- Determine movement angles
+    local forward, right = me.m_vecForward[ply], me.m_vecRight[ply] -- Determine movement angles
     local oldground = me.m_entGroundEntity[ply]
 
     -- Zero out z components of movement vectors
@@ -1341,7 +1324,7 @@ local function WaterMove()
     --
     -- user intentions
     -- Determine movement angles
-    local forward, right, up = me.m_vecForward[ply], me.m_vecRight[ply], me.m_vecUp[ply]
+    local forward, right = me.m_vecForward[ply], me.m_vecRight[ply]
     local wishvel = forward * me.m_flForwardMove[ply] + right * me.m_flSideMove[ply]
 
     -- if we have the jump key down, move us up as well
@@ -1556,32 +1539,6 @@ local function SquidMove()
     FullWalkMove()
 end
 
-local function CheckFenceStand(pos, endpos, ignorenormals)
-    local t = { -- Check strictly if player stands on fence.
-        start = pos, endpos = endpos,
-        mins = GetPlayerMins(), maxs = GetPlayerMaxs(),
-        mask = ss.MASK_GRATE, collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
-        filter = ply,
-    }
-
-    local tr = util.TraceHull(t)
-    t.mask = ss.SquidSolidMask
-    local trsolid = util.TraceHull(t)
-    if ignorenormals then tr.HitNormal.z, trsolid.HitNormal.z = 1, 1 end
-
-    local b = tr.Entity == NULL or tr.HitNormal.z < .7
-    if b ~= (trsolid.Entity == NULL or trsolid.HitNormal.z < .7) then return not b, tr.StartSolid end
-    if b then
-        tr = TryTouchGroundInQuadrants(pos, t.endpos, ss.MASK_GRATE, COLLISION_GROUP_PLAYER_MOVEMENT, tr)
-        trsolid = TryTouchGroundInQuadrants(pos, t.endpos, ss.SquidSolidMask, COLLISION_GROUP_PLAYER_MOVEMENT, trsolid)
-        if ignorenormals then tr.HitNormal.z, trsolid.HitNormal.z = 1, 1 end
-        if not (tr.Entity == NULL or tr.HitNormal.z < .7) and
-            (trsolid.Entity == NULL or trsolid.HitNormal.z < .7) then
-            return true, tr.StartSolid
-        end
-    end
-end
-
 local function GetInFence(w, oldpos, newpos)
     if not ply:Crouching() then return false end
     local t = {
@@ -1709,18 +1666,18 @@ function ss.FinishMove(w, p, m)
     end
 end
 
-function ss.PlayerNoClip(w, ply, desired)
+function ss.PlayerNoClip(w, p, desired)
     if desired then return end
     local old = w:GetInFence()
     w:SetInFence(not old and util.TraceHull {
-        start = ply:GetPos(), endpos = ply:GetPos(),
+        start = p:GetPos(), endpos = p:GetPos(),
         mins = GetPlayerMins(), maxs = GetPlayerMaxs(),
         mask = ss.MASK_GRATE, collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT,
-        filter = ply,
+        filter = p,
     } .Hit)
 
     if CLIENT then
-        me.m_bInFence[ply] = w:GetInFence()
+        me.m_bInFence[p] = w:GetInFence()
     end
 
     return old == w:GetInFence()

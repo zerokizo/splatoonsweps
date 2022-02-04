@@ -93,15 +93,15 @@ if ShowBlasterRadius then
         local w = ss.IsValidInkling(ply)
         if not w then return end
         if not w.IsBlaster then return end
-        local pos, dir = w:GetFirePosition()
+        local firePos, fireDirection = w:GetFirePosition()
         local ink = {
-            DamageClose = w.Primary.DamageClose,
-            DamageMiddle = w.Primary.DamageMiddle,
-            DamageFar = w.Primary.DamageFar,
-            ColRadiusClose = w.Primary.ColRadiusClose,
-            ColRadiusMiddle = w.Primary.ColRadiusMiddle,
-            ColRadiusFar = w.Primary.ColRadiusFar,
-            endpos = pos + dir * w:GetRange(),
+            DamageClose = w.Parameters.mDamageNear,
+            DamageMiddle = w.Parameters.mDamageMiddle,
+            DamageFar = w.Parameters.mDamageFar,
+            ColRadiusClose = w.Parameters.mCollisionRadiusNear,
+            ColRadiusMiddle = w.Parameters.mCollisionRadiusMiddle,
+            ColRadiusFar = w.Parameters.mCollisionRadiusFar,
+            endpos = firePos + fireDirection * w:GetRange(),
         }
         d.DTick()
         d.DColor()
@@ -204,12 +204,12 @@ if CLIENT then
     if ShowDisplacement then
         function d.DLoop()
             local ply = LocalPlayer()
-            if not ply:KeyPressed(IN_SPEED) then return end
-            local t = ply:GetEyeTrace()
-            local n = t.HitNormal
-            local p = t.HitPos
-            local aabb = {mins = p, maxs = p}
-            for _, s in ss.SearchAABB(aabb, n) do
+            if not ply:KeyDown(IN_SPEED) then return end
+            local tr = ply:GetEyeTrace()
+            local normal = tr.HitNormal
+            local pos = tr.HitPos
+            local aabb = {mins = pos, maxs = pos}
+            for _, s in ss.SearchAABB(aabb, normal) do
                 if s.Displacement then
                     local verts = s.Displacement.Vertices
                     for i, v in ipairs(s.Displacement.Triangles) do
@@ -254,20 +254,20 @@ if ShowInkStateMesh then
         local surf = ShowInkStateSurf
         local ink = surf.InkSurfaces
         local colorid = ink[pos.x] and ink[pos.x][pos.y]
-        local c = ss.GetColor(colorid) or color_white
-        local p = ss.To3D(pos * gridsize, surf.Origin, surf.Angles)
+        local color = ss.GetColor(colorid) or color_white
         local sw, sh = surf.Bound.x, surf.Bound.y
         local gw, gh = math.floor(sw / gridsize), math.floor(sh / gridsize)
         d.DShort()
-        d.DColor(c.r, c.g, c.b, colorid and 64 or 16)
+        d.DColor(color.r, color.g, color.b, colorid and 64 or 16)
         d.DPoint(surf.Origin)
+        d.DText(surf.Origin, tostring(id))
         for x = 0, gw do
             for y = 0, gh do
                 local p = Vector(x, y) * gridsize
                 local org = ss.To3D(p, surf.Origin, surf.Angles)
-                local colorid = ink[x] and ink[x][y]
-                local c = ss.GetColor(colorid) or color_white
-                d.DColor(c.r, c.g, c.b, colorid and 64 or 16)
+                local cid = ink[x] and ink[x][y]
+                local c = ss.GetColor(cid) or color_white
+                d.DColor(c.r, c.g, c.b, cid and 64 or 16)
                 d.DABox(org, vector_origin, Vector(0, gridsize - 1, gridsize - 1), surf.Angles)
             end
         end

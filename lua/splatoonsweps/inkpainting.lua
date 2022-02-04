@@ -37,22 +37,20 @@ function ss.AddInkRectangle(color, inktype, localang, pos, radius, ratio, s)
     local paint_threshold = math.floor(gridarea / (dx * dy)) + 1
     for x = 0, w - 1, 0.5 do
         local tx = t[floor(x)]
-        if tx then
-            for y = 0, h - 1, 0.5 do
-                if tx[floor(y)] then
-                    local p = x * x_const - dx
-                    local q = y * y_const - dy
-                    local i = floor(p * cosd - q * sind + x0)
-                    local k = floor(p * sind + q * cosd + y0)
-                    if 0 <= i and i <= sw and 0 <= k and k <= sh then
-                        pointcount[i] = pointcount[i] or {}
-                        pointcount[i][k] = (pointcount[i][k] or 0) + 1
-                        if pointcount[i][k] > paint_threshold then
-                            ink[i] = ink[i] or {}
-                            if ink[i][k] ~= color then area = area + 1 end
-                            ink[i][k] = color
-                        end
-                    end
+        if not tx then continue end
+        for y = 0, h - 1, 0.5 do
+            if not tx[floor(y)] then continue end
+            local p = x * x_const - dx
+            local q = y * y_const - dy
+            local i = floor(p * cosd - q * sind + x0)
+            local k = floor(p * sind + q * cosd + y0)
+            if 0 <= i and i <= sw and 0 <= k and k <= sh then
+                pointcount[i] = pointcount[i] or {}
+                pointcount[i][k] = (pointcount[i][k] or 0) + 1
+                if pointcount[i][k] > paint_threshold then
+                    ink[i] = ink[i] or {}
+                    if ink[i][k] ~= color then area = area + 1 end
+                    ink[i][k] = color
                 end
             end
         end
@@ -84,7 +82,6 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
 
     local area = 0
     local ang = normal:Angle()
-    local ignoreprediction = not ply:IsPlayer() and SERVER and mp or nil
     local AABB = {mins = ss.vector_one * math.huge, maxs = -ss.vector_one * math.huge}
     local dot = -normal:Dot(ss.GetGravityDirection())
     ang.roll = math.abs(dot) > ss.MAX_COS_DIFF and angle * dot or ang.yaw
@@ -101,7 +98,7 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
         local _, localang = WorldToLocal(vector_origin, ang, vector_origin, s.Normal:Angle())
         localang = ang.yaw - localang.roll + s.DefaultAngles + (CLIENT and s.Moved and 90 or 0)
         localang = math.Round(math.NormalizeAngle(localang)) -- -180 to 179, integer
-        area = area + ss.AddInkRectangle(color, inktype, localang, pos, radius, ratio, s)
+        area = area + AddInkRectangle(color, inktype, localang, pos, radius, ratio, s)
 
         Order = Order + 1
         if engine.TickCount() > OrderTick then
@@ -189,5 +186,5 @@ function ss.GetSurfaceColorArea(org, mins, maxs, num, tracez, tolerance, filter)
     end
 
     local gcolorkey = table.GetWinningKey(gcolorlist)
-    return gcoloravailable / (num * 2 + 1)^2 > tolerance and gcolorkey or -1
+    return gcoloravailable / (num * 2 + 1) ^ 2 > tolerance and gcolorkey or -1
 end

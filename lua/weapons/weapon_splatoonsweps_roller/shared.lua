@@ -209,7 +209,6 @@ function SWEP:GetDamageParameters(t)
 end
 
 function SWEP:GetInitVelocity(i, splashnum, sb, sz, sx, sy, degmax)
-    local p = self.Parameters
     local frac = splashnum == 1 and 1 or (i - 1) / (splashnum - 1)
     local deg = (frac * 2 - 1) * degmax
     local forward = sb + util.SharedRandom(randvel, -sz, sz, i)
@@ -234,7 +233,7 @@ function SWEP:CreateInk(createnum)
     local angsign = self:GetIsSecondSwing() and 1 or -1
     local insidestart = (splashnum - insidenum) / 2
     local nextskip = 1
-    local function SpawnInk(self, i, t)
+    local function SpawnInk(i, t)
         if not self:IsFirstTimePredicted() then return end
         local issub = t == "sub"
         local isoutside = i < insidestart or splashnum - i < insidestart
@@ -248,9 +247,9 @@ function SWEP:CreateInk(createnum)
         local pfd, pfr, pnd, pnr = self:GetPaintParameters(issub)
         local colent, colworld = self:GetCollisionRadii(issub)
         local str = self:GetStraightFrame(issub)
-        local aperturefreeframe = issub -- Unknown parameter, unused for now
-        and p.mSplashSubCoverApertureFreeFrame
-        or p.mSplashCoverApertureFreeFrame
+        -- local aperturefreeframe = issub -- Unknown parameter, unused for now
+        -- and p.mSplashSubCoverApertureFreeFrame
+        -- or p.mSplashCoverApertureFreeFrame
 
         if initvelocity.x == 0 and initvelocity.y == 0 then yaw = ang.yaw end
         table.Merge(self.Projectile, {
@@ -314,13 +313,13 @@ function SWEP:CreateInk(createnum)
         if nextskip < skipnum and skiptable[i] then
             nextskip = nextskip + 1
         else
-            SpawnInk(self, i)
+            SpawnInk(i)
         end
     end
 
     if skipnum > 0 then return end
     for i = 1, p.mSplashSubNum do
-        SpawnInk(self, randomorder[i], "sub")
+        SpawnInk(randomorder[i], "sub")
     end
 end
 
@@ -337,7 +336,7 @@ function SWEP:SharedInit()
     self:SetSwingStartTime(CurTime())
     self:SetNextRollingEffectTime(CurTime())
     self:SetMode(self.MODE.READY)
-    self:AddSchedule(0, function(self, schedule)
+    self:AddSchedule(0, function(_, schedule)
         if self.IsBrush then return end
         self.Bodygroup[1] = self:GetInk() > 0 and 0 or 1
         if not self.IsHeroWeapon then return end
@@ -373,7 +372,6 @@ function SWEP:SharedPrimaryAttack(able, auto)
     local p = self.Parameters
     if mode == self.MODE.PAINT then return end
     if mode == self.MODE.ATTACK then return end
-    local swingdelay = self.IsBrush and 4 or 0
     local issecond = self.IsBrush and self:GetIsSecondSwing()
     if issecond then anim = ACT_VM_SECONDARYATTACK end
 
@@ -391,7 +389,6 @@ function SWEP:SharedPrimaryAttack(able, auto)
         self:ResetSequence(issecond and "fire2" or "fire")
 
         if not self:GetNWBool "dropatfeet" then return end
-        local p = self.Parameters
         if self:GetInk() < p.mInkConsumeSplash then return end
         local count = self:GetSwingCount() + 1
         if count >= p.mPaintBrushNearestBulletLoopNum then

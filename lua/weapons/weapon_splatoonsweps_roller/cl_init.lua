@@ -194,7 +194,6 @@ function SWEP:GetMuzzlePosition()
     return a.Pos, a.Ang
 end
 
-local SwayTime = 12 * ss.FrameToSec
 local LeftHandAlt = {2, 1, 4, 3, 5, 6}
 function SWEP:GetViewModelPosition(pos, ang)
     local vm = self:GetViewModel()
@@ -241,10 +240,10 @@ function SWEP:GetViewModelPosition(pos, ang)
         end
     end
 
-    local pos = LerpVector(f, self.BasePos, self.IronSightsPos[armpos])
-    local ang = LerpAngle(f, self.BaseAng, self.IronSightsAng[armpos])
+    local newpos = LerpVector(f, self.BasePos, self.IronSightsPos[armpos])
+    local newang = LerpAngle(f, self.BaseAng, self.IronSightsAng[armpos])
     if self:IsFirstTimePredicted() then
-        self.OldPos, self.OldAng = pos, ang
+        self.OldPos, self.OldAng = newpos, newang
     end
 
     return LocalToWorld(self.OldPos, self.OldAng, relpos, relang)

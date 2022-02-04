@@ -23,6 +23,8 @@ net.Receive("SplatoonSWEPs: Redownload ink data", function()
     if not finished then
         net.Start "SplatoonSWEPs: Redownload ink data"
         net.SendToServer()
+        LocalPlayer():PrintMessage(HUD_PRINTTALK,
+        "SplatoonSWEPs: " .. math.Round(prog * 100) .. "% downloaded")
         return
     end
 

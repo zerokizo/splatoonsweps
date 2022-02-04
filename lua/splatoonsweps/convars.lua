@@ -4,7 +4,7 @@ if not ss then return end
 
 require "greatzenkakuman/cvartree"
 local gc = greatzenkakuman.cvartree
-local prefix = "Splatoon SWEPs: "
+local HelpTextPrefix = "Splatoon SWEPs: "
 
 gc.OverrideHelpText = ss.Text.OverrideHelpText
 gc.SetCVarPrefix("splatoonsweps", {printname = ss.Text.Category})
@@ -34,7 +34,6 @@ local function MakeColorGUI(parent_panel, paneltable, cvar, admin)
     local element = vgui.Create("DPanel", parent_panel)
     local label = Label(paneltable.printname, element)
     local colorpicker = vgui.Create("DIconLayout", element)
-    local overridable = admin and not paneltable.options.serverside
     element:DockPadding(4, 0, 4, 4)
     label:Dock(TOP)
     label:SetTextColor(label:GetSkin().Colours.Label.Dark)
@@ -46,9 +45,8 @@ local function MakeColorGUI(parent_panel, paneltable, cvar, admin)
         local item = colorpicker:Add "DColorButton"
         item:SetSize(32, 32)
         item:SetColor(c)
-        item:SetToolTip(ColorNames[i])
+        item:SetTooltip(ColorNames[i])
         item:SetContentAlignment(5)
-        local l, t, r, b = item:GetDockMargin()
         function item:Think() item:SetText(i == cvar:GetInt() and "X" or "") end
         function item:DoClick()
             SendValue(cvarname, i)
@@ -93,7 +91,7 @@ local function RegisterConVars(opt, helptext, guitext)
                     options.typeconversion = tonumber
                 end
 
-                gc.AddCVar(cvarname, cvartable[1], prefix .. helptext[cvarname], options)
+                gc.AddCVar(cvarname, cvartable[1], HelpTextPrefix .. helptext[cvarname], options)
             else
                 gc.AddCVarPrefix(cvarname, {
                     subcategory = cvartable.__subcategory,

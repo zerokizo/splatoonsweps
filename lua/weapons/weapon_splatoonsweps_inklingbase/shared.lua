@@ -165,8 +165,6 @@ function SWEP:UpdateInkState() -- Set if player is in ink
     local c = self:GetNWInt "inkcolor"
     local filter = {self, self:GetOwner()}
     local org = self:GetOwner():GetPos()
-    local center = self:GetOwner():WorldSpaceCenter()
-    local mean = (center + org) / 2
     local fw, right = ang:Forward() * InkTraceLength, ang:Right() * InkTraceLength
     local mins, maxs = self:GetOwner():GetCollisionBounds()
     local ink_t = {filter = filter, mask = MASK_SHOT, maxs = maxs, mins = mins}
@@ -206,10 +204,8 @@ function SWEP:UpdateInkState() -- Set if player is in ink
     end
     if inink and not self:GetInInk() then self:GetOwner():SetDSP(14) end
     if not inink and self:GetInInk() then self:GetOwner():SetDSP(1) end
-    if self:GetOwner():IsPlayer() then
-        if not (self:GetOnEnemyInk() and self:GetOwner():KeyDown(IN_DUCK)) then
-            self:SetEnemyInkTouchTime(CurTime())
-        end
+    if self:GetOwner():IsPlayer() and not (self:GetOnEnemyInk() and self:GetOwner():KeyDown(IN_DUCK)) then
+        self:SetEnemyInkTouchTime(CurTime())
     end
 
     self:SetGroundColor(gcolor)
@@ -477,7 +473,7 @@ function SWEP:SetupDataTables()
         return getshootpos(self)
     end
 
-    self.HealSchedule = self:AddNetworkSchedule(0, function(self, schedule)
+    self.HealSchedule = self:AddNetworkSchedule(0, function(_, schedule)
         local healink = self:GetNWBool "canhealink" and self:GetInInk() -- Gradually heals the owner
         local timescale = ss.GetTimeScale(self:GetOwner())
         local delay = 10 / timescale
@@ -494,7 +490,7 @@ function SWEP:SetupDataTables()
         end
     end)
 
-    self.ReloadSchedule = self:AddNetworkSchedule(0, function(self, schedule)
+    self.ReloadSchedule = self:AddNetworkSchedule(0, function(_, schedule)
         local reloadamount = math.max(0, schedule:SinceLastCalled()) -- Recharging ink
         local reloadink = self:GetNWBool "canreloadink" and self:GetInInk()
         local timescale = ss.GetTimeScale(self:GetOwner())
