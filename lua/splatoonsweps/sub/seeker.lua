@@ -30,7 +30,7 @@ ss.seeker = {
         InitInkRadius = 10,
         InkConsume = 0.8,
         InkRecoverStop = 70,
-        
+
         Fly_InitVel_Estimated = 1.5,
         SeThreshold = 150,
     },
@@ -56,7 +56,7 @@ ss.seeker = {
         InitInkRadius = "du",
         InkConsume = "ink",
         InkRecoverStop = "f",
-        
+
         Fly_InitVel_Estimated = "du/f",
         SeThreshold = "du",
     },
@@ -91,24 +91,25 @@ function module:SearchTarget()
     local seeker_search_deg = self:GetFOV() / 4
     local maxdot, ent = math.cos(math.rad(seeker_search_deg)), nil
     for _, e in ipairs(ents.GetAll()) do
+        if not IsValid(e) then continue end
+        if not (e:IsPlayer() or e:IsNPC() or e:IsNextBot()) then continue end
+        if e:Health() == 0 then continue end
+        if e == self:GetOwner() then continue end
         local w = ss.IsValidInkling(e)
-        local isvalident = e:Health() > 0 and (e:IsPlayer() or e:IsNPC() or e:IsNextBot())
-        local inklingexception = w and (ss.IsAlly(self, w) or w:GetInInk())
-        if Either(w, inklingexception, isvalident) then
-            local t = util.TraceLine {
-                start = self:GetShootPos(),
-                endpos = e:WorldSpaceCenter(),
-                filter = {self, self.Owner, e},
-                mask = MASK_VISIBLE,
-            }
-            if not t.Hit then
-                local dir = e:WorldSpaceCenter() - self:GetShootPos()
-                dir:Normalize()
-                local dot = dir:Dot(self:GetAimVector())
-                if dot > maxdot then
-                    maxdot = dot
-                    ent = e
-                end
+        if w and (ss.IsAlly(self, w) or w:GetInInk()) then continue end
+        local t = util.TraceLine {
+            start = self:GetShootPos(),
+            endpos = e:WorldSpaceCenter(),
+            filter = {self, self:GetOwner(), e},
+            mask = MASK_VISIBLE,
+        }
+        if not t.Hit then
+            local dir = e:WorldSpaceCenter() - self:GetShootPos()
+            dir:Normalize()
+            local dot = dir:Dot(self:GetAimVector())
+            if dot > maxdot then
+                maxdot = dot
+                ent = e
             end
         end
     end
@@ -119,8 +120,8 @@ end
 if SERVER then
     function module:ServerSecondaryAttack(throwable)
         local e = ents.Create "ent_splatoonsweps_seeker"
-        e.Owner = self.Owner
         e.Target = self:SearchTarget()
+        e:SetOwner(self:GetOwner())
         e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
         e:SetInkColorProxy(self:GetInkColorProxy())
         e:SetPos(self:GetShootPos())
@@ -152,8 +153,8 @@ else
         cam.IgnoreZ(true)
         cam.Start2D()
         local c = ss.GetColor(ss.CrosshairColors[self:GetNWInt "inkcolor"])
-        local p = self:TranslateToWorldmodelPos(ent:WorldSpaceCenter())
-        local data = p:ToScreen()
+        local pos = self:TranslateToWorldmodelPos(ent:WorldSpaceCenter())
+        local data = pos:ToScreen()
         local x, y = data.x, data.y
         ss.DrawCrosshair.LinesHitBG(x, y, 0.4, 1)
         ss.DrawCrosshair.OuterCircleBG(x, y)

@@ -20,17 +20,15 @@ function ENT:Initialize()
     while base.ClassName ~= "ent_splatoonsweps_throwable" do base = base.BaseClass end
     base.Initialize(self)
     if CLIENT then return end
-    local p = self:GetPhysicsObject()
-    if not IsValid(p) then return end
-    p:SetMass(0.001)
+    local ph = self:GetPhysicsObject()
+    if not IsValid(ph) then return end
+    ph:SetMass(0.001)
 end
 
 if CLIENT then return end
 function ENT:PhysicsCollide(data, collider)
     local params = ss.burstbomb.Parameters
-    local rnear = params.Burst_Radius_Near
     local rmid = params.Burst_Radius_Middle
-    local dnear = params.Burst_Damage_Near
     local dmid = params.Burst_Damage_Middle
     local dfar = params.Burst_Damage_Far
     local ddirecthit = dfar + dmid

@@ -42,7 +42,7 @@ ss.burstbomb = {
         InkRecoverStop = 40,
         Shape_SphereD = 5,
         Shape_SphereR = 2,
-        
+
         -- Added by me
         PerformHitEffect = true,
 
@@ -86,7 +86,7 @@ ss.burstbomb = {
         InkRecoverStop = "f",
         Shape_SphereD = "du",
         Shape_SphereR = "du",
-    
+
         Fly_InitVel_Estimated = "du/f",
         Fly_AirFrm = "f",
     },
@@ -113,7 +113,7 @@ end
 if CLIENT then return end
 function module:ServerSecondaryAttack(throwable)
     local e = ents.Create "ent_splatoonsweps_burstbomb"
-    e.Owner = self.Owner
+    e:SetOwner(self:GetOwner())
     e:SetNWInt("inkcolor", self:GetNWInt "inkcolor")
     e:SetInkColorProxy(self:GetInkColorProxy())
     e:SetPos(self:GetShootPos() + self:GetAimVector() * 20)

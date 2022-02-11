@@ -18,21 +18,21 @@ ss.SplashWallRunning = Sound "splatoonsweps/weapons/sub/splashwall/running.wav"
 ss.SprinklerRunning = Sound "splatoonsweps/weapons/sub/sprinkler/running.wav"
 
 sound.Add {
-	channel = CHAN_WEAPON,
-	name = "SplatoonSWEPs.BombExplosion",
-	level = ss.WeaponSoundLevel,
-	sound = "splatoonsweps/explosion/bomb.mp3",
-	volume = ss.WeaponSoundVolume,
-	pitch = 100,
+    channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.BombExplosion",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/explosion/bomb.mp3",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
 }
 
 sound.Add {
-	channel = CHAN_WEAPON,
-	name = "SplatoonSWEPs.BurstBombExplosion",
-	level = ss.WeaponSoundLevel,
-	sound = "splatoonsweps/explosion/burstbomb.mp3",
-	volume = ss.WeaponSoundVolume,
-	pitch = 100,
+    channel = CHAN_WEAPON,
+    name = "SplatoonSWEPs.BurstBombExplosion",
+    level = ss.WeaponSoundLevel,
+    sound = "splatoonsweps/explosion/burstbomb.mp3",
+    volume = ss.WeaponSoundVolume,
+    pitch = 100,
 }
 
 sound.Add {

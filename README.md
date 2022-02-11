@@ -1,5 +1,7 @@
 # SplatoonSWEPs
 
+[![Discord Banner 2](https://discordapp.com/api/guilds/933039683259224135/widget.png?style=banner2)](https://discord.gg/XyRXGxSYwY)
+
 This is a huge rework of my existing addon, [SplatoonSWEPs][1].  
 If you are interested in this project, watch this the following video for a brief introduction.  
 [![Youtube](https://img.youtube.com/vi/2ca3UeLlCZs/0.jpg)](https://www.youtube.com/watch?v=2ca3UeLlCZs)

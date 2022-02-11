@@ -12,7 +12,7 @@ function ENT:PhysicsCollide(data, collider)
     self:StopSound "SplatoonSWEPs.SubWeaponThrown"
     self:EmitSound(ss.disruptor.BurstSound)
     SafeRemoveEntity(self)
-    
+
     local c = self:GetNWInt "inkcolor"
     local e = EffectData()
     local p = ss.disruptor.Parameters
@@ -46,7 +46,7 @@ function ENT:PhysicsCollide(data, collider)
             local r = math.max(-mins.x, -mins.y, maxs.x, maxs.y) * 0.1
             timer.Create(effectname, 0.125, 0, function()
                 if not IsValid(t) then return end
-                local e = EffectData()
+                e = EffectData()
                 e:SetOrigin(t:GetPos())
                 e:SetRadius(r)
                 e:SetColor(c)

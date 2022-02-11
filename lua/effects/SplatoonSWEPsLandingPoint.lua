@@ -5,7 +5,6 @@ if not ss then return end
 local TRACE_SIZE = 15
 local mat = Material "splatoonsweps/crosshair/landing_point"
 local mdl = Model "models/hunter/misc/sphere075x075.mdl"
-local p = ss.splatbomb.Parameters
 local function CheckVars(self)
     if not IsValid(self.Weapon) then return end
     if not IsValid(self.Weapon:GetOwner()) then return end
@@ -14,9 +13,9 @@ local function CheckVars(self)
 end
 
 local function RefreshPos(self, pos)
-    local pos = pos or GetViewEntity():GetPos()
     local ang = self.Normal:Angle()
     ang:RotateAroundAxis(ang:Right(), 90)
+    pos = pos or GetViewEntity():GetPos()
     self:SetAngles(ang)
     self:SetPos(pos)
     self:SetRenderOrigin(pos)
@@ -78,6 +77,7 @@ function EFFECT:Think()
 
     self.Positions = {initpos}
     local count = 0
+    local p = ss.splatbomb.Parameters
     repeat
         tr.start = tr.endpos
         tr.endpos = tr.endpos + velocity * dt
@@ -97,7 +97,7 @@ function EFFECT:Think()
 
     self.Positions[#self.Positions + 1] = self.Positions[#self.Positions]
     + velocity * dt - self.Normal * TRACE_SIZE
-    
+
     RefreshPos(self)
     return self.Weapon:GetThrowing() and self.Weapon:GetKey() == IN_ATTACK2
 end
