@@ -11,25 +11,25 @@ function ss.OpenMiniMap()
     end
 
     if not bb then return end
-    local props = vgui.Create("DProperties")
-    local frame = vgui.Create("DFrame")
-    -- local entpos = LocalPlayer():GetPos()
     local mins, maxs = bb.mins, bb.maxs
-    -- local sky3d = GetConVar "r_3dsky"
-    -- local sky2d = GetConVar "r_drawskybox"
-    -- local sky = util.QuickTrace(entpos, vector_up * 32768, LocalPlayer())
-    local scale = 2048
-    local relx = 0
-    local rely = 0
-    local shiftx = (maxs.x + mins.x) / 2 / scale
-    local shifty = (maxs.y + mins.y) / 2 / scale
-    local shiftz = (maxs.z + 1) / scale
-    local fov = math.deg(math.atan2(math.max(maxs.x, maxs.y, -mins.x, -mins.y) / scale, shiftz))
-    -- local menuopen = false
-    local zooming = false
     local msx = maxs.y - mins.y
     local msy = maxs.x - mins.x
     local msxy = math.max(msx, msy)
+    local shiftx = (maxs.x + mins.x) / 2
+    local shifty = (maxs.y + mins.y) / 2
+    local shiftz = maxs.z + 1
+    -- shiftx = LocalPlayer():GetPos().x
+    -- shifty = LocalPlayer():GetPos().y
+    -- shiftz = LocalPlayer():GetPos().z + LocalPlayer():OBBMaxs().z + 10
+    -- shiftx = 0
+    -- shifty = 0
+    -- shiftz = 0
+    -- local width = 900
+    -- local x, y, w, h = 0, 0, width * msx / msy, width
+    local orthoscale = msxy / 2
+
+    local props = vgui.Create("DProperties")
+    local frame = vgui.Create("DFrame")
     props:Dock(FILL)
     frame:SetSize(900 * msx / msy, 900)
     frame:Center()
@@ -80,38 +80,38 @@ function ss.OpenMiniMap()
         relx = ((gui.MouseX() - x) - sizex * 0.5) / (sizex * 0.5)
         rely = ((gui.MouseY() - y) - sizey * 0.5) / (sizey * 0.5)
 
-        if math.abs(relx) < 1.01 && math.abs(rely) < 1.01 then
-            if not zooming then
-                local en = 0.6
-                local sense = 3
+        -- if math.abs(relx) < 1.01 && math.abs(rely) < 1.01 then
+            -- if not zooming then
+                -- local en = 0.6
+                -- local sense = 3
 
-                if relx > en then
-                    shifty = shifty - RealFrameTime() * Lerp((relx - en) / en, 0, sense)
-                elseif relx < -en then
-                    shifty = shifty + RealFrameTime() * Lerp((-relx - en) / en, 0, sense)
-                end
+                -- if relx > en then
+                --     shifty = shifty - RealFrameTime() * Lerp((relx - en) / en, 0, sense)
+                -- elseif relx < -en then
+                --     shifty = shifty + RealFrameTime() * Lerp((-relx - en) / en, 0, sense)
+                -- end
 
-                if rely > en then
-                    shiftx = shiftx - RealFrameTime() * Lerp((rely - en) / en, 0, sense)
-                elseif rely < -en then
-                    shiftx = shiftx + RealFrameTime() * Lerp((-rely - en) / en, 0, sense)
-                end
-            end
+                -- if rely > en then
+                --     shiftx = shiftx - RealFrameTime() * Lerp((rely - en) / en, 0, sense)
+                -- elseif rely < -en then
+                --     shiftx = shiftx + RealFrameTime() * Lerp((-rely - en) / en, 0, sense)
+                -- end
+            -- end
 
-            zooming = false
+            -- zooming = false
 
-            if input.IsMouseDown(MOUSE_RIGHT) then
-                zooming = true
+            -- if input.IsMouseDown(MOUSE_RIGHT) then
+            --     zooming = true
 
-                local en = 0.3
-                local sense = 1
+            --     local en = 0.3
+            --     local sense = 1
 
-                if rely > en then
-                    shiftz = shiftz - RealFrameTime() * Lerp((rely - en) / en, 0, sense)
-                elseif rely < -en then
-                    shiftz = shiftz + RealFrameTime() * Lerp((-rely - en) / en, 0, sense)
-                end
-            end
+            --     if rely > en then
+            --         shiftz = shiftz - RealFrameTime() * Lerp((rely - en) / en, 0, sense)
+            --     elseif rely < -en then
+            --         shiftz = shiftz + RealFrameTime() * Lerp((-rely - en) / en, 0, sense)
+            --     end
+            -- end
 
             if not input.IsKeyDown(KEY_LSHIFT) then frame:Close() end
             -- if(input.IsKeyDown(KEY_R) && !IsValid(menu)) then
@@ -129,7 +129,7 @@ function ss.OpenMiniMap()
 
             --     menuopen = true
             -- end
-        end
+        -- end
     end
 
     -- local matMaterial = Material "pp/texturize"
@@ -143,14 +143,14 @@ function ss.OpenMiniMap()
         y = y + y1
 
         local oldclip = DisableClipping(true)
-        local orthoscale = msxy / 2
+        -- local orthoscale = msxy / 2 * 0.25
         ss.DisableRenderingSkyBox = true
         render.RenderView {
             drawviewmodel = false,
-            origin = Vector(shiftx, shifty, shiftz) * scale,
+            origin = Vector(shiftx, shifty, shiftz),
             angles = Angle(90, 0, 0),
             aspectratio = msx / msy,
-            fov = fov,
+            -- fov = fov,
             x = x, y = y,
             w = w, h = h,
             ortho = {
