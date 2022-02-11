@@ -183,7 +183,7 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
         include "splatoonsweps/server/buildsurfaces.lua"
         data.MapCRC = mapCRC
         data.AABBTree = ss.SanitizeJSONLimit(ss.AABBTree)
-        data.MinimapAreaBounds = s.SanitizeJSONLimit(ss.MinimapAreaBounds)
+        data.MinimapAreaBounds = ss.SanitizeJSONLimit(ss.MinimapAreaBounds)
         data.SurfaceArray = ss.SanitizeJSONLimit(ss.SurfaceArray)
         data.UVInfo = {
             AreaBound = ss.AreaBound,

@@ -13,19 +13,19 @@ function ss.OpenMiniMap()
     if not bb then return end
     local props = vgui.Create("DProperties")
     local frame = vgui.Create("DFrame")
-    local entpos = LocalPlayer():GetPos()
+    -- local entpos = LocalPlayer():GetPos()
     local mins, maxs = bb.mins, bb.maxs
-    local sky3d = GetConVar "r_3dsky"
-    local sky2d = GetConVar "r_drawskybox"
-    local sky = util.QuickTrace(entpos, vector_up * 32768, LocalPlayer())
+    -- local sky3d = GetConVar "r_3dsky"
+    -- local sky2d = GetConVar "r_drawskybox"
+    -- local sky = util.QuickTrace(entpos, vector_up * 32768, LocalPlayer())
     local scale = 2048
     local relx = 0
     local rely = 0
     local shiftx = (maxs.x + mins.x) / 2 / scale
     local shifty = (maxs.y + mins.y) / 2 / scale
-    local shiftz = (maxs.z - 1) / scale
+    local shiftz = (maxs.z + 1) / scale
     local fov = math.deg(math.atan2(math.max(maxs.x, maxs.y, -mins.x, -mins.y) / scale, shiftz))
-    local menuopen = false
+    -- local menuopen = false
     local zooming = false
     local msx = maxs.y - mins.y
     local msy = maxs.x - mins.x
@@ -50,15 +50,15 @@ function ss.OpenMiniMap()
     panel:Dock(FILL)
     panel:SetText("")
     panel:SetSize(600, 600)
-    
-    panel.DoClick = function(s)
-        local x, y = s:GetPos()
-        local x1, y1 = s:GetParent():GetPos()
 
-        local x = x + x1
-        local y = y + y1
+    -- panel.DoClick = function(s)
+        -- local x, y = s:GetPos()
+        -- local x1, y1 = s:GetParent():GetPos()
 
-        local sizex, sizey = s:GetSize()
+        -- local x = x + x1
+        -- local y = y + y1
+
+        -- local sizex, sizey = s:GetSize()
 
         -- net.Start("rebel_mortar_msg")
         -- net.WriteEntity(self)
@@ -66,49 +66,49 @@ function ss.OpenMiniMap()
         -- net.WriteVector(util.AimVector(Angle(90, 0, 0), fov, gui.MouseX() - x, gui.MouseY() - y, sizex, sizey))
         -- net.WriteInt(attack, 8)
         -- net.SendToServer()
-    end
+    -- end
 
     panel.Think = function(s)
         local x, y = s:GetPos()
         local x1, y1 = s:GetParent():GetPos()
 
-        local x = x + x1
-        local y = y + y1
+        x = x + x1
+        y = y + y1
 
         local sizex, sizey = s:GetSize()
 
         relx = ((gui.MouseX() - x) - sizex * 0.5) / (sizex * 0.5)
         rely = ((gui.MouseY() - y) - sizey * 0.5) / (sizey * 0.5)
 
-        if(math.abs(relx) < 1.01 && math.abs(rely) < 1.01) then
-            if(!zooming) then
+        if math.abs(relx) < 1.01 && math.abs(rely) < 1.01 then
+            if not zooming then
                 local en = 0.6
                 local sense = 3
 
-                if(relx > en) then
+                if relx > en then
                     shifty = shifty - RealFrameTime() * Lerp((relx - en) / en, 0, sense)
-                elseif(relx < -en) then
+                elseif relx < -en then
                     shifty = shifty + RealFrameTime() * Lerp((-relx - en) / en, 0, sense)
                 end
 
-                if(rely > en) then
+                if rely > en then
                     shiftx = shiftx - RealFrameTime() * Lerp((rely - en) / en, 0, sense)
-                elseif(rely < -en) then
+                elseif rely < -en then
                     shiftx = shiftx + RealFrameTime() * Lerp((-rely - en) / en, 0, sense)
                 end
             end
 
             zooming = false
 
-            if(input.IsMouseDown(MOUSE_RIGHT)) then
+            if input.IsMouseDown(MOUSE_RIGHT) then
                 zooming = true
 
                 local en = 0.3
                 local sense = 1
 
-                if(rely > en) then
+                if rely > en then
                     shiftz = shiftz - RealFrameTime() * Lerp((rely - en) / en, 0, sense)
-                elseif(rely < -en) then
+                elseif rely < -en then
                     shiftz = shiftz + RealFrameTime() * Lerp((-rely - en) / en, 0, sense)
                 end
             end
@@ -132,23 +132,22 @@ function ss.OpenMiniMap()
         end
     end
 
-    local matMaterial = Material "pp/texturize"
-    local texturize = "pp/texturize/plain.png"
-    local pMaterial = Material(texturize)
+    -- local matMaterial = Material "pp/texturize"
+    -- local texturize = "pp/texturize/plain.png"
+    -- local pMaterial = Material(texturize)
     panel.Paint = function(s, w, h)
         local x, y = s:GetPos()
         local x1, y1 = s:GetParent():GetPos()
 
-        local x = x + x1
-        local y = y + y1
+        x = x + x1
+        y = y + y1
 
         local oldclip = DisableClipping(true)
         local orthoscale = msxy / 2
         ss.DisableRenderingSkyBox = true
-        -- FIXME: 正投影図の時、傾けないと床が出ない　傾けると"近い"方が描画されない
         render.RenderView {
             drawviewmodel = false,
-            origin = LocalPlayer():GetPos() + vector_up * 100, -- Vector(shiftx, shifty, shiftz) * scale - vector_up * 100,
+            origin = Vector(shiftx, shifty, shiftz) * scale,
             angles = Angle(90, 0, 0),
             aspectratio = msx / msy,
             fov = fov,
@@ -160,10 +159,10 @@ function ss.OpenMiniMap()
                 top    = -1 * orthoscale * msy / msx,
                 bottom =  1 * orthoscale * msy / msx,
             },
-            znear = 0,
-            zfar = 10,
+            znear = 2,
+            zfar = 32768,
         }
-    
+
         -- render.CopyRenderTargetToTexture(render.GetScreenEffectTexture())
         -- matMaterial:SetFloat("$scalex", w / 2048)
         -- matMaterial:SetFloat("$scaley", h / 2048 / 8)
@@ -177,7 +176,7 @@ function ss.OpenMiniMap()
     end
 end
 
-hook.Add("HUDPaint", "test", function()
+hook.Remove("HUDPaint", "test", function()
     local bb
     for i, t in ipairs(ss.MinimapAreaBounds) do
         if LocalPlayer():GetPos():WithinAABox(t.mins, t.maxs) then
@@ -193,9 +192,18 @@ hook.Add("HUDPaint", "test", function()
     local msxy = math.max(msx, msy)
     local shiftx = (maxs.x + mins.x) / 2
     local shifty = (maxs.y + mins.y) / 2
-    local shiftz = maxs.z - 1
-    local x, y, w, h = 0, 0, 900 * msx / msy, 900
+    local shiftz = maxs.z + 1
+    -- shiftx = LocalPlayer():GetPos().x
+    -- shifty = LocalPlayer():GetPos().y
+    -- shiftz = LocalPlayer():GetPos().z + LocalPlayer():OBBMaxs().z + 10
+    -- shiftx = 0
+    -- shifty = 0
+    -- shiftz = 0
+    local width = 900
+    local x, y, w, h = 0, 0, width * msx / msy, width
     local orthoscale = msxy / 2
+    -- orthoscale = 800
+    debugoverlay.Axis(Vector(), Angle(), 100, FrameTime() * 2, true)
     ss.DisableRenderingSkyBox = true
     -- render.ClearStencil()
     -- render.SetStencilEnable(true)
@@ -213,9 +221,9 @@ hook.Add("HUDPaint", "test", function()
     render.RenderView {
         drawviewmodel = false,
         origin = Vector(shiftx, shifty, shiftz),
-        angles = Angle(90-0, 0, 0),
+        angles = Angle(90, 0, 0),
         aspectratio = msx / msy,
-        fov = fov,
+        -- fov = fov,
         x = x, y = y,
         w = w, h = h,
         ortho = {
@@ -224,7 +232,7 @@ hook.Add("HUDPaint", "test", function()
             top    = -1 * orthoscale * msy / msx,
             bottom =  1 * orthoscale * msy / msx,
         },
-        znear = 0,
+        znear = 2,
         zfar = 32768,
     }
     -- render.SuppressEngineLighting(false)
