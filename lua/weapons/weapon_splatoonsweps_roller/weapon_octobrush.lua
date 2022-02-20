@@ -5,8 +5,8 @@ if not (ss and SWEP) then return end
 SWEP.Bodygroup = {0}
 SWEP.SplashSound = "SplatoonSWEPs.RollerSplashMedium"
 SWEP.RollSoundName = ss.OctoBrushRun
-SWEP.Special = "squidbeakon"
-SWEP.Sub = "kraken"
+SWEP.Sub = "squidbeakon"
+SWEP.Special = "kraken"
 SWEP.Variations = {{
     Bodygroup = {1},
     Customized = true,

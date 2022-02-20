@@ -37,10 +37,10 @@ function sd.ShowInkChecked(r, s)
     local c = ss.GetColor(r.color)
     d.DColor()
     d.DPoly {
-    ss.To3D(debugv[1], s.Origin, s.Angles),
-    ss.To3D(debugv[2], s.Origin, s.Angles),
-    ss.To3D(debugv[3], s.Origin, s.Angles),
-    ss.To3D(debugv[4], s.Origin, s.Angles),
+        ss.To3D(debugv[1], s.Origin, s.Angles),
+        ss.To3D(debugv[2], s.Origin, s.Angles),
+        ss.To3D(debugv[3], s.Origin, s.Angles),
+        ss.To3D(debugv[4], s.Origin, s.Angles),
     }
     d.DColor(c.r, c.g, c.b)
     for b in pairs(r.bounds) do

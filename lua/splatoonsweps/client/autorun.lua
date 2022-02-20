@@ -20,6 +20,8 @@ SplatoonSWEPs = SplatoonSWEPs or {
     PlayerHullChanged = {},
     PlayerShouldResetCamera = {},
     RenderTarget = {},
+    WaterMesh = {},
+    WaterSurfaces = {},
     WeaponRecord = {},
 }
 
@@ -54,11 +56,13 @@ function ss.PrepareInkSurface(data)
     ss.AABBTree = ss.DesanitizeJSONLimit(data.AABBTree)
     ss.MinimapAreaBounds = ss.DesanitizeJSONLimit(data.MinimapAreaBounds)
     ss.SurfaceArray = ss.DesanitizeJSONLimit(data.SurfaceArray)
+    ss.WaterSurfaces = ss.DesanitizeJSONLimit(data.WaterSurfaces)
     ss.AreaBound  = data.UVInfo.AreaBound
     ss.AspectSum  = data.UVInfo.AspectSum
     ss.AspectSumX = data.UVInfo.AspectSumX
     ss.AspectSumY = data.UVInfo.AspectSumY
     ss.SURFACE_ID_BITS = select(2, math.frexp(#ss.SurfaceArray))
+    for _, f in ipairs(ss.WaterSurfaces) do f.Material = Material(f.texname) end
 
     if ss.SplatoonMapPorts[game.GetMap()] then INK_SURFACE_DELTA_NORMAL = 2 end
     local numsurfs = #ss.SurfaceArray

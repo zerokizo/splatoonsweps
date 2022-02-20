@@ -485,7 +485,9 @@ function ss.KeyPress(self, ply, key)
     end
 
     ss.ProtectedCall(self.KeyPress, self, ply, key)
-    if CLIENT and key == IN_SPEED then ss.OpenMiniMap() end
+    if CLIENT and (ss.sp or IsFirstTimePredicted()) and key == IN_SPEED then
+        ss.OpenMiniMap()
+    end
 
     local squid = self:GetNWEntity "Squid"
     if key == IN_JUMP and ply:OnGround() and IsValid(squid)

@@ -67,16 +67,17 @@ local LUMP = { -- Lump names. most of these are unused in SplatoonSWEPs.
     PHYSLEVEL                     = 62,
     DISP_MULTIBLEND               = 63,
 }
-local TextureFilterBits = bit.bor(unpack {
+local TextureFilterBits = bit.bor(
     SURF_SKY,
     SURF_WARP,
     SURF_NOPORTAL,
     SURF_TRIGGER,
     SURF_NODRAW,
     SURF_HINT,
-    SURF_SKIP,
-})
+    SURF_SKIP
+)
 local SurfaceArray = {}
+local WaterSurfaces = {}
 local MapName = game.GetMap()
 local BSPFilePath = string.format("maps/%s.bsp", MapName)
 local BSPFile = file.Open(BSPFilePath, "rb", "GAME")
@@ -339,7 +340,7 @@ local function ReadFaces()
 
     BSPFile:Seek(header.offset)
     header.num = math.min(math.floor(header.length / size) - 1, 65536 - 1)
-    for _ = 0, header.num do
+    for faceindex = 0, header.num do
         local face = {}
         local planeIndex = read "UShort"
         local PlaneTable = planes[planeIndex]
@@ -446,7 +447,12 @@ local function ReadFaces()
                 face.Displacement = disp
             end
 
-            lump[#lump + 1] = face
+            lump[faceindex] = face
+        elseif texlow:find "water" then
+            face.IsWaterSurface = true
+            face.texname = texname
+            face.Vertices = verts
+            lump[faceindex] = face
         end
     end
 end
@@ -673,6 +679,15 @@ local function ReadLeafs()
     end
 end
 
+local function ReadLeafFaces()
+    local size = 2 -- LEAFFACES structure size
+    local header = BSP.Header[LUMP.LEAFFACES]
+    local lump = BSP.Data[LUMP.LEAFFACES]
+    BSPFile:Seek(header.offset)
+    header.num = math.floor(header.length / size) - 1
+    for i = 0, header.num do lump[i + 1] = read "UShort" end
+end
+
 util.TimerCycle()
 ReadBSPHeader()
 ReadPlanes()
@@ -683,11 +698,12 @@ ReadTexData()
 ReadTexInfos()
 ReadFaces()
 ReadLeafs()
+ReadLeafFaces()
 ReadGameLump()
 
 local NumDisplacements = 0
-for _, face in ipairs(BSP.Data[LUMP.FACES]) do
-    if face.Vertices then
+for _, face in SortedPairs(BSP.Data[LUMP.FACES]) do
+    if not face.IsWaterSurface and face.Vertices then
         SurfaceArray[#SurfaceArray + 1] = MakeBrushSurface(face.Vertices, face.Displacement)
         SurfaceArray[#SurfaceArray].LightmapInfo = {
             Offset = face.LightmapOffset,
@@ -702,17 +718,21 @@ for _, face in ipairs(BSP.Data[LUMP.FACES]) do
             NumDisplacements = NumDisplacements + 1
         end
     end
+
+    if face.IsWaterSurface then
+        WaterSurfaces[#WaterSurfaces + 1] = face
+    end
 end
 
-for _, lump in ipairs(BSP.Data[LUMP.LEAFS]) do
-    local area = lump.area
+for _, leaf in ipairs(BSP.Data[LUMP.LEAFS]) do
+    local area = leaf.area
     if area > 0 then
         if not ss.MinimapAreaBounds[area] then
             ss.MinimapAreaBounds[area] = { mins = ss.vector_one * 16384, maxs = ss.vector_one * -16384 }
         end
 
-        ss.MinimapAreaBounds[area].mins = ss.MinVector(ss.MinimapAreaBounds[area].mins, lump.mins)
-        ss.MinimapAreaBounds[area].maxs = ss.MaxVector(ss.MinimapAreaBounds[area].maxs, lump.maxs)
+        ss.MinimapAreaBounds[area].mins = ss.MinVector(ss.MinimapAreaBounds[area].mins, leaf.mins)
+        ss.MinimapAreaBounds[area].maxs = ss.MaxVector(ss.MinimapAreaBounds[area].maxs, leaf.maxs)
     end
 end
 
@@ -848,6 +868,7 @@ print("MAKE", util.TimerCycle())
 ss.AABBTree = AABBTree
 ss.NumDisplacements = NumDisplacements
 ss.SurfaceArray = SurfaceArray
+ss.WaterSurfaces = WaterSurfaces
 for _, s in ipairs(SurfaceArray) do
     ss.AreaBound = ss.AreaBound + s.Area
     ss.AspectSum = ss.AspectSum + s.Bound.y / s.Bound.x

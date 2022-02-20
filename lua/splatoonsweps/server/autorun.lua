@@ -21,6 +21,7 @@ SplatoonSWEPs = SplatoonSWEPs or {
     PlayersReady = {},
     RenderTarget = {},
     WeaponRecord = {},
+    WaterSurfaces = {},
 }
 
 include "splatoonsweps/const.lua"
@@ -185,6 +186,7 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
         data.AABBTree = ss.SanitizeJSONLimit(ss.AABBTree)
         data.MinimapAreaBounds = ss.SanitizeJSONLimit(ss.MinimapAreaBounds)
         data.SurfaceArray = ss.SanitizeJSONLimit(ss.SurfaceArray)
+        data.WaterSurfaces = ss.SanitizeJSONLimit(ss.WaterSurfaces)
         data.UVInfo = {
             AreaBound = ss.AreaBound,
             AspectSum = ss.AspectSum,
@@ -197,6 +199,7 @@ hook.Add("InitPostEntity", "SplatoonSWEPs: Serverside Initialization", function(
         ss.AABBTree = ss.DesanitizeJSONLimit(data.AABBTree)
         ss.MinimapAreaBounds = ss.DesanitizeJSONLimit(data.MinimapAreaBounds)
         ss.SurfaceArray = ss.DesanitizeJSONLimit(data.SurfaceArray)
+        ss.WaterSurfaces = ss.DesanitizeJSONLimit(data.WaterSurfaces)
     end
 
     -- This is needed due to a really annoying bug (GitHub/garrysmod-issues #1495)
