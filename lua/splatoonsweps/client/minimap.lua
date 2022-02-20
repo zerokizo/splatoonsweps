@@ -37,10 +37,12 @@ function ss.OpenMiniMap()
     panel:SetText("")
     panel:SetSize(600, 600)
 
+    local toggle = true
     local keydown = input.IsKeyDown(KEY_LSHIFT)
     panel.Think = function(s)
-        if not keydown and input.IsKeyDown(KEY_LSHIFT) then frame:Close() end
-        keydown = input.IsKeyDown(KEY_LSHIFT)
+        local k = input.IsKeyDown(KEY_LSHIFT)
+        if Either(toggle, not keydown and k, not k) then frame:Close() end
+        keydown = k
     end
 
     panel.Paint = function(s, w, h)
@@ -69,35 +71,14 @@ function ss.OpenMiniMap()
 end
 
 local WaterMaterial = Material "gm_construct/water_13_beneath"
-local WaterSurfaceColor = Color(32, 32, 64)
-local WATER_SURFACE_DELTA = vector_up * .125
 hook.Add("PreDrawTranslucentRenderables", "SplatoonSWEPs: Draw water surfaces", function(bDrawingDepth, bDrawingSkybox)
     if not ss.IsDrawingMinimap then return end
     render.SetMaterial(WaterMaterial)
-    for _, f in ipairs(ss.WaterSurfaces) do
-        local v = f.Vertices
-        if #v == 4 then
-            local v1 = v[1] + WATER_SURFACE_DELTA
-            local v2 = v[2] + WATER_SURFACE_DELTA
-            local v3 = v[3] + WATER_SURFACE_DELTA
-            local v4 = v[4] + WATER_SURFACE_DELTA
-            render.DrawQuad(v1, v2, v3, v4, WaterSurfaceColor)
-        end
-    end
-
+    for i, m in ipairs(ss.WaterMesh) do m:Draw() end
     render.OverrideDepthEnable(true, true)
     render.UpdateRefractTexture()
     render.SetMaterial(ss.GetWaterMaterial())
-    for _, f in ipairs(ss.WaterSurfaces) do
-        local v = f.Vertices
-        if #v == 4 then
-            local v1 = v[1] + WATER_SURFACE_DELTA * 2
-            local v2 = v[2] + WATER_SURFACE_DELTA * 2
-            local v3 = v[3] + WATER_SURFACE_DELTA * 2
-            local v4 = v[4] + WATER_SURFACE_DELTA * 2
-            render.DrawQuad(v1, v2, v3, v4)
-        end
-    end
+    for i, m in ipairs(ss.WaterMesh) do m:Draw() end
     render.OverrideDepthEnable(false)
 end)
 
