@@ -87,6 +87,19 @@ if CLIENT then
         return true
     end
 
+    local mat = Material "sprites/sent_ball"
+    function ENT:Draw()
+        if not ss.IsDrawingMinimap then
+            self:DrawModel()
+            return
+        end
+
+        local normal = -EyeAngles():Forward()
+        render.SetMaterial(mat)
+        render.DrawQuadEasy(self:GetPos() + vector_up * 800 + normal * 1000, normal,
+                            800, 800, self:GetInkColorProxy():ToColor(), 0)
+    end
+
     return
 end
 

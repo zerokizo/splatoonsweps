@@ -60,8 +60,7 @@ function ss.OpenMiniMap()
         local width = right - left
         local height = bottom - top
         local aspectratio = w / h
-        local addMarginAxisY = width > height
-        if aspectratio < 1 then addMarginAxisY = not addMarginAxisY end
+        local addMarginAxisY = aspectratio < (width / height)
         if addMarginAxisY then
             local diff = width / aspectratio - height
             local margin = diff / 2
@@ -74,6 +73,12 @@ function ss.OpenMiniMap()
             right = right + margin
         end
         ss.IsDrawingMinimap = true
+        render.PushCustomClipPlane(Vector( 0,  0, -1), -maxs.z - 0.5)
+        render.PushCustomClipPlane(Vector( 0,  0,  1),  mins.z - 0.5)
+        render.PushCustomClipPlane(Vector(-1,  0,  0), -maxs.x - 0.5)
+        render.PushCustomClipPlane(Vector( 1,  0,  0),  mins.x - 0.5)
+        render.PushCustomClipPlane(Vector( 0, -1,  0), -maxs.y - 0.5)
+        render.PushCustomClipPlane(Vector( 0,  1,  0),  mins.y - 0.5)
         render.RenderView {
             drawviewmodel = false,
             origin = org,
@@ -88,8 +93,14 @@ function ss.OpenMiniMap()
                 bottom = bottom,
             },
             znear = 1,
-            zfar = 32768,
+            zfar = 56756,
         }
+        render.PopCustomClipPlane()
+        render.PopCustomClipPlane()
+        render.PopCustomClipPlane()
+        render.PopCustomClipPlane()
+        render.PopCustomClipPlane()
+        render.PopCustomClipPlane()
         ss.IsDrawingMinimap = false
     end
 end
