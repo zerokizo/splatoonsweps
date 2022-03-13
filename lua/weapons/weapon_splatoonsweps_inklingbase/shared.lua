@@ -222,7 +222,9 @@ function SWEP:GetHandPos()
     if not self:GetOwner():IsPlayer() then return self:GetShootPos() end
 
     local e = (SERVER or self:IsTPS()) and self:GetOwner() or self:GetViewModel()
-    return e:GetBoneMatrix(e:LookupBone "ValveBiped.Bip01_R_Hand"):GetTranslation()
+    local boneid = e:LookupBone "ValveBiped.Bip01_R_Hand"
+    or e:LookupBone "ValveBiped.Weapon_bone" or 0
+    return e:GetBoneMatrix(boneid):GetTranslation()
 end
 
 function SWEP:GetViewModel(index)
