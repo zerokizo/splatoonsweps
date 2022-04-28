@@ -212,7 +212,7 @@ if CLIENT then
             for _, s in ss.SearchAABB(aabb, normal) do
                 if s.Displacement then
                     local verts = s.Displacement.Vertices
-                    for i, v in ipairs(s.Displacement.Triangles) do
+                    for _, v in ipairs(s.Displacement.Triangles) do
                         local t = {verts[v[1]].pos, verts[v[2]].pos, verts[v[3]].pos}
                         local n = (t[1] - t[2]):Cross(t[3] - t[2]):GetNormalized() * .8
                         d.DPoly({t[1] + n, t[2] + n, t[3] + n}, false)

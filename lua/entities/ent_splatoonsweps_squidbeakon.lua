@@ -39,6 +39,13 @@ function ENT:Initialize()
     self:SetSkin(1)
     self:SetLightEmitState(1)
     self:SetLightEmitTime(CurTime() + p.LightEmitInitialDelay)
+
+    self.MinimapEffectTime = CurTime() + p.LightEmitInitialDelay
+    self.MinimapEffectDuration = 0
+    for _, t in ipairs(self.LightEmitTimeTable) do
+        self.MinimapEffectDuration = self.MinimapEffectDuration + t
+    end
+    self.MinimapEffectInterval = self.MinimapEffectDuration * 2
     timer.Simple(p.DeploySoundDelay, function()
         if not IsValid(self) then return end
         self:EmitSound "SplatoonSWEPs.BeakonDeploy"
@@ -65,14 +72,25 @@ function ENT:UpdateLightEmission()
     if t < self.LightEmitTimeTable[state] then return end
     self:SetLightEmitTime(CurTime())
     self:SetLightEmitState(state + 1)
-    if state > 3 then self:SetLightEmitState(1) end
-    if SERVER and state == 1 then self:EmitSound "SplatoonSWEPs.BeakonIdle" end
+    if state > 3 then
+        self:SetLightEmitState(1)
+    elseif SERVER and state == 1 then
+        self:EmitSound "SplatoonSWEPs.BeakonIdle"
+    end
+end
+
+function ENT:UpdateMinimapEffect()
+    local t = CurTime() - self.MinimapEffectTime
+    if t > self.MinimapEffectInterval then
+        self.MinimapEffectTime = CurTime()
+    end
 end
 
 if CLIENT then
     function ENT:Think()
         self:SetNextClientThink(CurTime())
         self:UpdateLightEmission()
+        self:UpdateMinimapEffect()
 
         local td = self:GetNWFloat "DeployFinishedTime"
         if td <= 0 then return true end
@@ -87,17 +105,8 @@ if CLIENT then
         return true
     end
 
-    local mat = Material "sprites/sent_ball"
     function ENT:Draw()
-        if not ss.IsDrawingMinimap then
-            self:DrawModel()
-            return
-        end
-
-        local normal = -EyeAngles():Forward()
-        render.SetMaterial(mat)
-        render.DrawQuadEasy(self:GetPos() + vector_up * 800 + normal * 1000, normal,
-                            800, 800, self:GetInkColorProxy():ToColor(), 0)
+        self:DrawModel()
     end
 
     return

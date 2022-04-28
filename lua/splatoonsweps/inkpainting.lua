@@ -8,7 +8,7 @@ local POINT_BOUND = ss.vector_one * .1
 local reference_polys = {}
 local reference_vert = Vector(1)
 local circle_polys = 360 / 12
-for i = 1, circle_polys do
+for _ = 1, circle_polys do
     reference_polys[#reference_polys + 1] = Vector(reference_vert)
     reference_vert:Rotate(Angle(0, circle_polys))
 end
@@ -85,7 +85,7 @@ function ss.Paint(pos, normal, radius, color, angle, inktype, ratio, ply, classn
     local AABB = {mins = ss.vector_one * math.huge, maxs = -ss.vector_one * math.huge}
     local dot = -normal:Dot(ss.GetGravityDirection())
     ang.roll = math.abs(dot) > ss.MAX_COS_DIFF and angle * dot or ang.yaw
-    for i, v in ipairs(reference_polys) do
+    for _, v in ipairs(reference_polys) do
         local vertex = ss.To3D(v * radius, pos, ang)
         AABB.mins = ss.MinVector(AABB.mins, vertex)
         AABB.maxs = ss.MaxVector(AABB.maxs, vertex)

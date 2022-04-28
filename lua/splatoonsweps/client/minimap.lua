@@ -6,7 +6,7 @@ local toggle = true
 local cos, sin, rad = math.cos, math.sin, math.rad
 function ss.OpenMiniMap()
     local bb
-    for i, t in ipairs(ss.MinimapAreaBounds) do
+    for _, t in ipairs(ss.MinimapAreaBounds) do
         if LocalPlayer():GetPos():WithinAABox(t.mins, t.maxs) then
             bb = t
             break
@@ -28,10 +28,11 @@ function ss.OpenMiniMap()
     local props = vgui.Create("DProperties")
     local frame = vgui.Create("DFrame")
     local panel = vgui.Create("DButton", frame)
+    local windowsize = ScrH() * 0.6
     props:Dock(FILL)
     frame:SetSizable(true)
-    frame:SetSize(ScrH(), ScrH())
-    frame:Center()
+    frame:SetSize(windowsize, windowsize)
+    frame:SetPos(10, 10)
     frame:MakePopup()
     frame:SetTitle("Splatoon SWEPs: Minimap")
     panel:Dock(FILL)
@@ -49,15 +50,21 @@ function ss.OpenMiniMap()
         desiredAngle = inclined and inclinedAngle or upAngle
     end
 
-    function panel:Paint(w, h)
-        currentAngle.yaw = math.ApproachAngle(currentAngle.yaw, desiredAngle.yaw, angleRate * RealFrameTime())
-        currentAngle.pitch = math.ApproachAngle(currentAngle.pitch, desiredAngle.pitch, angleRate * RealFrameTime())
-        local x, y = self:LocalToScreen(0, 0)
-        local left = -bbsize.y * cos(rad(currentAngle.yaw))
-        local right = bbsize.x * sin(rad(currentAngle.yaw))
-        local top = -bbsize.z * sin(rad(90 - currentAngle.pitch))
-        local bottom = bbsize.x * cos(rad(currentAngle.yaw)) + bbsize.y * sin(rad(currentAngle.yaw)) + bbsize.z * sin(rad(90 - currentAngle.pitch))
-        local width = right - left
+    local function UpdateCameraAngles()
+        currentAngle.yaw = math.ApproachAngle(
+            currentAngle.yaw, desiredAngle.yaw, angleRate * RealFrameTime())
+        currentAngle.pitch = math.ApproachAngle(
+            currentAngle.pitch, desiredAngle.pitch, angleRate * RealFrameTime())
+    end
+
+    local function GetOrthoPos(w, h)
+        local left   = -bbsize.y * cos(rad(currentAngle.yaw))
+        local right  =  bbsize.x * sin(rad(currentAngle.yaw))
+        local top    = -bbsize.z * cos(rad(currentAngle.pitch))
+        local bottom =  bbsize.x * cos(rad(currentAngle.yaw))
+                     +  bbsize.y * sin(rad(currentAngle.yaw))
+                     +  bbsize.z * cos(rad(currentAngle.pitch))
+        local width  = right - left
         local height = bottom - top
         local aspectratio = w / h
         local addMarginAxisY = aspectratio < (width / height)
@@ -72,6 +79,16 @@ function ss.OpenMiniMap()
             left = left - margin
             right = right + margin
         end
+
+        return {
+            left   = left,
+            right  = right,
+            top    = top,
+            bottom = bottom,
+        }
+    end
+
+    local function DrawMap(x, y, w, h, ortho)
         ss.IsDrawingMinimap = true
         render.PushCustomClipPlane(Vector( 0,  0, -1), -maxs.z - 0.5)
         render.PushCustomClipPlane(Vector( 0,  0,  1),  mins.z - 0.5)
@@ -83,15 +100,9 @@ function ss.OpenMiniMap()
             drawviewmodel = false,
             origin = org,
             angles = currentAngle,
-            aspectratio = aspectratio,
             x = x, y = y,
             w = w, h = h,
-            ortho = {
-                left   = left,
-                right  = right,
-                top    = top,
-                bottom = bottom,
-            },
+            ortho = ortho,
             znear = 1,
             zfar = 56756,
         }
@@ -103,17 +114,54 @@ function ss.OpenMiniMap()
         render.PopCustomClipPlane()
         ss.IsDrawingMinimap = false
     end
+
+    local function TransformPosition(pos, w, h, ortho)
+        local localpos = WorldToLocal(pos, angle_zero, org, currentAngle)
+        local x = math.Remap(localpos.y, -ortho.right, -ortho.left,   w, 0)
+        local y = math.Remap(localpos.z,  ortho.top,    ortho.bottom, h, 0)
+        return x, y
+    end
+
+    local rgbmin = 64
+    local beakonmat = Material("splatoonsweps/icons/beakon.png", "alphatest")
+    local function DrawBeakons(w, h, ortho)
+        local s = math.min(w, h) * 0.025 -- beakon icon size
+        surface.SetMaterial(beakonmat)
+        for _, b in ipairs(ents.FindByClass "ent_splatoonsweps_squidbeakon") do
+            local pos = b:GetPos()
+            local x, y = TransformPosition(pos, w, h, ortho)
+            local c = b:GetInkColorProxy():ToColor()
+            c.r = math.max(c.r, rgbmin)
+            c.g = math.max(c.g, rgbmin)
+            c.b = math.max(c.b, rgbmin)
+            surface.SetDrawColor(c)
+            surface.DrawTexturedRect(x - s / 2, y - s / 2, s, s)
+            local t = CurTime() - b.MinimapEffectTime
+            local f = math.TimeFraction(0, b.MinimapEffectDuration, t)
+            local a = Lerp(f, 255, 64)
+            surface.DrawCircle(x, y, s, c)
+            surface.DrawCircle(x, y, Lerp(f, 0, s), ColorAlpha(c, a))
+        end
+    end
+
+    function panel:Paint(w, h)
+        local x, y = self:LocalToScreen(0, 0)
+        local ortho = GetOrthoPos(w, h)
+        UpdateCameraAngles()
+        DrawMap(x, y, w, h, ortho)
+        DrawBeakons(w, h, ortho)
+    end
 end
 
 local WaterMaterial = Material "gm_construct/water_13_beneath"
 hook.Add("PreDrawTranslucentRenderables", "SplatoonSWEPs: Draw water surfaces", function(bDrawingDepth, bDrawingSkybox)
     if not ss.IsDrawingMinimap then return end
     render.SetMaterial(WaterMaterial)
-    for i, m in ipairs(ss.WaterMesh) do m:Draw() end
+    for _, m in ipairs(ss.WaterMesh) do m:Draw() end
     render.OverrideDepthEnable(true, true)
     render.UpdateRefractTexture()
     render.SetMaterial(ss.GetWaterMaterial())
-    for i, m in ipairs(ss.WaterMesh) do m:Draw() end
+    for _, m in ipairs(ss.WaterMesh) do m:Draw() end
     render.OverrideDepthEnable(false)
 end)
 

@@ -36,14 +36,14 @@ local function DrawMeshes(bDrawingDepth, bDrawingSkybox)
     render.SetMaterial(rt.Material) -- Ink base texture
     render.SetLightmapTexture(rt.Lightmap) -- Set custom lightmap
     render.OverrideDepthEnable(true, true) -- Write to depth buffer for translucent surface culling
-    for i, m in ipairs(ss.IMesh) do m:Draw() end -- Draw ink surface
+    for _, m in ipairs(ss.IMesh) do m:Draw() end -- Draw ink surface
     render.OverrideDepthEnable(false) -- Back to default
     render.SetToneMappingScaleLinear(hdrscale) -- Back to default
 
     if not LocalPlayer():FlashlightIsOn() and #ents.FindByClass "*projectedtexture*" == 0 then return end
     render.PushFlashlightMode(true) -- Ink lit by player's flashlight or projected texture
     render.SetMaterial(rt.Material) -- Ink base texture
-    for i, m in ipairs(ss.IMesh) do m:Draw() end -- Draw once again
+    for _, m in ipairs(ss.IMesh) do m:Draw() end -- Draw once again
     render.PopFlashlightMode() -- Back to default
 end
 
