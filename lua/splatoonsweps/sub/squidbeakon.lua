@@ -77,7 +77,7 @@ ss.ConvertUnits(ss.squidbeakon.Parameters, ss.squidbeakon.Units)
 local module = ss.squidbeakon.Merge
 local p = ss.squidbeakon.Parameters
 function module:CanSecondaryAttack()
-    return self:GetInk() > p.InkConsume
+    return self:GetInk() >= p.InkConsume
 end
 
 function module:GetSubWeaponInkConsume()

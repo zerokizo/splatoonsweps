@@ -67,7 +67,7 @@ ss.ConvertUnits(ss.splashwall.Parameters, ss.splashwall.Units)
 local module = ss.splashwall.Merge
 local p = ss.splashwall.Parameters
 function module:CanSecondaryAttack()
-    return self:GetInk() > p.mInkConsume
+    return self:GetInk() >= p.mInkConsume
 end
 
 function module:GetSubWeaponInkConsume()

@@ -68,7 +68,7 @@ ss.ConvertUnits(ss.inkmine.Parameters, ss.inkmine.Units)
 local module = ss.inkmine.Merge
 local p = ss.inkmine.Parameters
 function module:CanSecondaryAttack()
-    return self:GetInk() > p.InkConsume
+    return self:GetInk() >= p.InkConsume
 end
 
 function module:GetSubWeaponInkConsume()
