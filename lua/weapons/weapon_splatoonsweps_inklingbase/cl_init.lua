@@ -142,10 +142,10 @@ end
 function SWEP:OnRemove()
     local vm = self:GetViewModel()
     if IsValid(vm) then self:ResetBonePositions(vm) end
-    for k, v in pairs(self.VElements) do
+    for _, v in pairs(self.VElements) do
         if IsValid(v.modelEnt) then v.modelEnt:Remove() end
     end
-    for k, v in pairs(self.WElements) do
+    for _, v in pairs(self.WElements) do
         if IsValid(v.modelEnt) then v.modelEnt:Remove() end
     end
 

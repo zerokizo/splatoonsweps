@@ -160,7 +160,7 @@ function SWEP:BackupInfo()
         ViewOffsetDucked = self:GetOwner():GetViewOffsetDucked()
     }
     self.BackupPlayerInfo.HullMins, self.BackupPlayerInfo.HullMaxs = self:GetOwner():GetHullDuck()
-    for k, v in pairs(self.BackupPlayerInfo.Playermodel.BodyGroups) do
+    for _, v in pairs(self.BackupPlayerInfo.Playermodel.BodyGroups) do
         v.num = self:GetOwner():GetBodygroup(v.id)
     end
 

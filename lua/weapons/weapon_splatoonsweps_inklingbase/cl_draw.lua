@@ -148,7 +148,7 @@ function SWEP:CreateModels(t)
                 local params = {["$basetexture"] = v.sprite}
                 -- make sure we create a unique name based on the selected options
                 local tocheck = {"nocull", "additive", "vertexalpha", "vertexcolor", "ignorez"}
-                for i, j in pairs(tocheck) do
+                for _, j in ipairs(tocheck) do
                     if v[j] then
                         params["$" .. j] = 1
                         name = name .. "1"
