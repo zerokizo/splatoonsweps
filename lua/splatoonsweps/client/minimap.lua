@@ -2,7 +2,7 @@
 local ss = SplatoonSWEPs
 if not ss then return end
 
-local toggle = true
+local toggle = false
 local cos, sin, rad = math.cos, math.sin, math.rad
 function ss.OpenMiniMap()
     local bb
@@ -28,27 +28,16 @@ function ss.OpenMiniMap()
     local props = vgui.Create("DProperties")
     local frame = vgui.Create("DFrame")
     local panel = vgui.Create("DButton", frame)
-    local windowsize = ScrH() * 0.6
     props:Dock(FILL)
     frame:SetSizable(true)
-    frame:SetSize(windowsize, windowsize)
+    frame:SetSize(ScrH() * 0.6, ScrH() * 0.85)
     frame:SetPos(10, 10)
     frame:MakePopup()
+    frame:SetKeyboardInputEnabled(false)
+    frame:SetMouseInputEnabled(true)
     frame:SetTitle("Splatoon SWEPs: Minimap")
     panel:Dock(FILL)
     panel:SetText("")
-
-    local keydown = input.IsKeyDown(KEY_LSHIFT)
-    function panel:Think()
-        local k = input.IsKeyDown(KEY_LSHIFT)
-        if Either(toggle, not keydown and k, not k) then frame:Close() end
-        keydown = k
-    end
-
-    function panel:DoClick()
-        inclined = not inclined
-        desiredAngle = inclined and inclinedAngle or upAngle
-    end
 
     local function UpdateCameraAngles()
         currentAngle.yaw = math.ApproachAngle(
@@ -67,6 +56,8 @@ function ss.OpenMiniMap()
         local width  = right - left
         local height = bottom - top
         local aspectratio = w / h
+        -- bottom = bottom - height * 0.5 * cos(rad(currentAngle.pitch))
+        -- height = bottom - top
         local addMarginAxisY = aspectratio < (width / height)
         if addMarginAxisY then
             local diff = width / aspectratio - height
@@ -141,6 +132,43 @@ function ss.OpenMiniMap()
             local a = Lerp(f, 255, 64)
             surface.DrawCircle(x, y, s, c)
             surface.DrawCircle(x, y, Lerp(f, 0, s), ColorAlpha(c, a))
+        end
+    end
+
+    local keydown = input.IsKeyDown(KEY_LSHIFT)
+    function panel:Think()
+        local k = input.IsKeyDown(KEY_LSHIFT)
+        if Either(toggle, not keydown and k, not k) then frame:Close() end
+        keydown = k
+    end
+
+    function panel:DoDoubleClick()
+        inclined = not inclined
+        desiredAngle = inclined and inclinedAngle or upAngle
+    end
+
+    function panel:DoClick()
+        local weapon = ss.IsValidInkling(LocalPlayer())
+        if not weapon then return end
+        local x, y = self:ScreenToLocal(input.GetCursorPos())
+        local w, h = panel:GetSize()
+        local ortho = GetOrthoPos(w, h)
+        local pc = weapon:GetNWInt "inkcolor"
+        local s = math.min(w, h) * 0.025 -- beakon icon size
+        for _, b in ipairs(ents.FindByClass "ent_splatoonsweps_squidbeakon") do
+            local c = b:GetNWInt "inkcolor"
+            if c ~= pc then continue end
+            local pos = b:GetPos()
+            local bx, by = TransformPosition(pos, w, h, ortho)
+            if math.Distance(x, y, bx, by) < s then
+                local dir = pos - LocalPlayer():GetPos()
+                local yaw = dir:Angle().yaw
+                net.Start "SplatoonSWEPs: Super jump"
+                net.WriteEntity(b)
+                net.WriteVector(pos)
+                net.WriteFloat(yaw)
+                net.SendToServer()
+            end
         end
     end
 
