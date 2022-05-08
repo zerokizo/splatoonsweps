@@ -158,7 +158,7 @@ function ss.OpenMiniMap()
         for _, b in ipairs(ents.FindByClass "ent_splatoonsweps_squidbeakon") do
             local c = b:GetNWInt "inkcolor"
             if c ~= pc then continue end
-            local pos = b:GetPos()
+            local pos = b:WorldSpaceCenter()
             local bx, by = TransformPosition(pos, w, h, ortho)
             if math.Distance(x, y, bx, by) < s then
                 local dir = pos - LocalPlayer():GetPos()
